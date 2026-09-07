@@ -1,0 +1,1 @@
+  GPModules.register("createNeuralService",function createNeuralService(runtime){return Object.freeze({recordBehavior:runtime.recordBehavior,generateDailyMix:runtime.generateDailyMix,getUserModel:runtime.getUserModel});});

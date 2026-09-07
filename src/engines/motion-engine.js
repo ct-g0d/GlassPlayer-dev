@@ -1,0 +1,1 @@
+  GPModules.register("createMotionEngine",function createMotionEngine(runtime){return Object.freeze({transitionView:runtime.transitionView,transitionSector:runtime.transitionSector,setPopover:runtime.setPopover,refresh:runtime.refresh});});

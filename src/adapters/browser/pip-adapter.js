@@ -1,0 +1,1 @@
+  GPModules.register("createBrowserPiPAdapter",function createBrowserPiPAdapter(){return Object.freeze({supported:()=>document.pictureInPictureEnabled===true,request:video=>video.requestPictureInPicture(),exit:()=>document.pictureInPictureElement?document.exitPictureInPicture():Promise.resolve()});});

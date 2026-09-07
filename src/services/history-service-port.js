@@ -1,0 +1,1 @@
+  GPModules.register("createHistoryService",function createHistoryService(runtime){return Object.freeze({checkpoint:runtime.checkpoint,incrementPlayCount:runtime.incrementPlayCount,render:runtime.render,getSnapshot:runtime.getSnapshot,destroy:runtime.destroy});});

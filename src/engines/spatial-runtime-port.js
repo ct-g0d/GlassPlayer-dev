@@ -1,0 +1,1 @@
+  GPModules.register("createSpatialEngine",function createSpatialEngine(runtime){return Object.freeze({setEnabled:runtime.setEnabled,setMode:runtime.setMode,getSnapshot:runtime.getSnapshot,destroy:runtime.destroy});});

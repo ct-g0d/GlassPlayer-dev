@@ -1,0 +1,1 @@
+  GPModules.register("createPiPService",function createPiPService(runtime){return Object.freeze({open:runtime.open,close:runtime.close,sync:runtime.sync,destroy:runtime.destroy,getSnapshot:runtime.getSnapshot});});

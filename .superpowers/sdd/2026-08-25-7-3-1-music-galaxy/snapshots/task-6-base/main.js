@@ -1,0 +1,79 @@
+  /* ================= init ================= */
+  GP.changelog.render();
+  loadPrefs();
+  buildFontPicker();
+  render();
+  updateAmbient();
+  updateArtDisplay();
+  drawWaveform();
+  applyLanguage();
+  GP.ui.mount(document);GP.ui.observe(document.body);
+  applyViewportFit();
+  initializeSelectionGliders();
+  if(document.fonts?.ready)document.fonts.ready.then(()=>requestAnimationFrame(initializeSelectionGliders));
+  setTimeout(scheduleViewportFit, 60); // re-measure once fonts/layout settle
+  setTimeout(scheduleViewportFit, 300); // and once more after async layout settles fully
+
+  /* ================= GP Core 4.0 — Peregrine Lake bootstrap =================
+     The legacy runtime remains the single implementation while its public
+     capabilities are exposed through explicit factories, ports and services.
+     No second AudioContext, queue, playlist, persistence path or listener set
+     is created here. */
+  const contracts=GPModules.createContracts();
+  GP.eqPresets=GPModules.createEqPresets(eqPresets);
+  const bus=GPModules.createEventBus();
+  const actions=GPModules.createActions();
+  const selectors=GPModules.createSelectors();
+  const store=GPModules.createStore({actions,bus,initialState:{
+    library:{tracks:playlist.map(track=>({id:track.id,title:track.title,artist:track.artist,album:track.album||""})),currentTrackId:playlist[currentIndex]?.id||null,sortMode:librarySortMode,importStatus:importRunning?"running":"idle"},
+    playback:{status:isPlaying?"playing":"paused",wantsPlayback,position:Number(audio.currentTime)||0,duration:Number(audio.duration)||0,volume:parseFloat($("#vol")?.value)||.7,mode:playMode,crossfadeEnabled,crossfadeSeconds},
+    queue:{items:[...playQueue],manualActive:manualQueueActive,playingQueuedTrack,resumeTrackId:queueResumeIndex==null?null:playlist[queueResumeIndex]?.id||null,shuffleTimeline:[...shuffleTimeline],shuffleCursor:shuffleTimelineCursor},
+    settings:{language:uiLanguage,theme:themeMode,backgroundMode:bgMode,coverMode:coverDisplayMode,adaptiveColor:adaptiveColorOn,spatialEnabled,spatialMode,loudnessNormalizationEnabled,eqPreset:eqPresetKey},
+    analysis:{activeTrackId:null,pending:[],completed:GP.performance.spectrum.completed,failed:GP.performance.spectrum.failed},
+    ui:{activeView:$(".view.active")?.dataset.view||"player",activePanel:$("#panelTabs .active")?.dataset.panel||"queue",historyMode:$("#historyModeSeg .active")?.dataset.historyMode||"time"}
+  }});
+  const adapters=Object.freeze({
+    clock:GPModules.createBrowserClockAdapter(),
+    mediaSession:GPModules.createBrowserMediaSessionAdapter(),
+    file:GPModules.createBrowserFileAdapter({fileInput:$("#fileInput"),folderInput:$("#folderInput")}),
+    pip:GPModules.createBrowserPiPAdapter(),
+    storage:GPModules.createStoragePort(GPDatabase)
+  });
+  const audioEngine=GPModules.createAudioEngine({
+    init:ensureAudioCtx,loadTrack:(trackId,autoplay=false)=>{const index=typeof trackId==="number"?trackId:playlist.findIndex(track=>track.id===trackId);return index>=0?loadTrack(index,autoplay):undefined;},
+    play:playAudio,pause:pauseAudio,seek:seconds=>{audio.currentTime=Math.max(0,Math.min(Number(audio.duration)||0,Number(seconds)||0));},
+    setVolume:value=>{ensureAudioCtx();const volume=Math.max(0,Math.min(1,Number(value)||0));masterGain.gain.value=volume;if($("#vol"))$("#vol").value=String(volume);},
+    setEQ:applyEQPreset,setSpatialMode:mode=>selectSpatialMode(mode,true),setSpatialEnabled,
+    startCrossfade:()=>maybeTriggerAutoCrossfade(),stop:pauseAudio,destroy:()=>{},
+    getRuntimeSnapshot:()=>Object.freeze({activeDeck:activeIdx,status:isPlaying?"playing":"paused",position:Number(audio.currentTime)||0,duration:Number(audio.duration)||0,crossfading})
+  });
+  const recognitionEngine=GPModules.createRecognitionEngine({recognizeAudioEssence,detectAudioPayload,extractFileMetadata,extractGenre});
+  const spectrumAnalyzer=GPModules.createSpectrumAnalyzer({analyze:track=>GPAnalyzer.analyze(track),readCached:key=>GPAnalyzer.readCached(key),processPending:()=>Promise.resolve(),version:GP_SPECTRUM_ALGORITHM_VERSION});
+  const spatialRuntime=GPModules.createSpatialEngine({setEnabled:setSpatialEnabled,setMode:mode=>selectSpatialMode(mode,true),getSnapshot:()=>Object.freeze({enabled:spatialEnabled,mode:spatialMode}),destroy:()=>{}});
+  const motionEngine=GPModules.createMotionEngine({transitionView:switchPrimaryView,transitionSector:transitionMotionSector,setPopover:setMotionPopover,refresh:()=>{updateAllGliders(false);refreshScrollEdgeFrames();}});
+  const playbackService=GPModules.createPlaybackService({bus,events:contracts.events,runtime:{play:playAudio,pause:pauseAudio,toggle:togglePlay,playTrack:(trackId,options={})=>audioEngine.loadTrack(trackId,options.autoplay!==false),next:nextTrack,previous:prevTrack,seek:audioEngine.seek,setVolume:audioEngine.setVolume,snapshot:audioEngine.getRuntimeSnapshot}});
+  const queueService=GPModules.createQueueService({add:trackId=>{const index=playlist.findIndex(track=>track.id===trackId);return index>=0?enqueueTrack(index,"end"):false;},playNext:trackId=>{const index=playlist.findIndex(track=>track.id===trackId);return index>=0?enqueueTrack(index,"next"):false;},remove:removeQueuedAt,clear:clearPlayQueue,reorder:moveQueuedTrack,resolveNextTrack:()=>playQueue[0]||null,resolvePreviousTrack:()=>shuffleTimeline[shuffleTimelineCursor-1]||null,getVisibleQueue:()=>Object.freeze([...playQueue]),restoreLibraryOrder:releaseQueuePlaybackContext});
+  const libraryService=GPModules.createLibraryService({pickFiles:adapters.file.pickAudioFiles,pickFolder:adapters.file.pickAudioFolder,importFiles:addFiles,rescan:rescanImportedLibrary,sort:mode=>{librarySortMode=mode;render($("#search")?.value||"");},search:query=>render(query),getTracks:()=>Object.freeze(playlist.map(track=>Object.freeze({id:track.id,title:track.title,artist:track.artist,album:track.album||""})))});
+  const spectrumService=GPModules.createSpectrumService({analyzer:spectrumAnalyzer,storage:adapters.storage,bus,events:contracts.events});
+  const historyService=GPModules.createHistoryService({checkpoint:emitListeningCheckpoint,incrementPlayCount,render:renderHistory,getSnapshot:()=>Object.freeze(structuredClone(loadHistoryStore())),destroy:()=>{}});
+  const galaxyService=GPModules.createGalaxyService();
+  const neuralService=GPModules.createNeuralService({recordBehavior:recordBehaviorEvent,generateDailyMix,getUserModel:()=>GPDatabase.getUserModel("default"),galaxy:galaxyService});
+  const galaxyView=GPModules.createGalaxyView({galaxy:galaxyService,getTracks:()=>Object.freeze(playlist.map(track=>{
+    const mfccValues=Array.isArray(track.mfcc?.mean)?track.mfcc.mean.slice(0,13):Array.isArray(track.mfcc)?track.mfcc.slice(0,13):null;
+    return Object.freeze({
+      id:track.id,spectrumId:track.spectrumId||null,audioEssenceKey:track.audioEssenceKey||null,contentKey:track.contentKey||null,
+      title:track.title||"",artist:track.artist||"",album:track.album||"",genre:track.genre||null,inferredGenre:track.inferredGenre||null,genreSecondary:track.genreSecondary||null,
+      bpm:Number.isFinite(track.bpm)?track.bpm:null,bpmConfidence:Number.isFinite(track.bpmConfidence)?track.bpmConfidence:null,
+      mfcc:mfccValues?Object.freeze({mean:Object.freeze(mfccValues)}):null,energy:Number.isFinite(track.energy)?track.energy:null,
+      loudness:Number.isFinite(track.loudness)?track.loudness:(Number.isFinite(track.loudnessDb)?track.loudnessDb:null),duration:Number.isFinite(track.duration)?track.duration:null
+    });
+  }))});
+  galaxyView.mount(document);window.refreshMusicGalaxy=galaxyView.refresh;
+  const settingsService=GPModules.createSettingsService({load:loadPrefs,save:savePrefs,setTheme:mode=>{themeMode=mode;applyTheme();savePrefs();},setLanguage:GP.i18n.setLanguage,setSpatialEnabled,setSpatialMode:mode=>selectSpatialMode(mode,true),getSnapshot:()=>Object.freeze({language:uiLanguage,theme:themeMode,backgroundMode:bgMode,coverMode:coverDisplayMode,adaptiveColor:adaptiveColorOn,spatialEnabled,spatialMode,loudnessNormalizationEnabled,eqPreset:eqPresetKey})});
+  const pipService=GPModules.createPiPService({open:async()=>{if(!document.pictureInPictureElement)return toggleTraditionalPiP();},close:async()=>{if(document.pictureInPictureElement)return toggleTraditionalPiP();},sync:syncTraditionalPiP,destroy:cleanupTraditionalPiP,getSnapshot:()=>Object.freeze({open:document.pictureInPictureElement===gpVideoPipVideo})});
+  const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
+  const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
+  const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
+  const publicFacade=Object.freeze({generation:7,version:"7.3.0",architecture:"Peregrine Lake",engines:Object.freeze({core:"GP Core 4.1",fusion:"GP Fusion Engine 3.0",motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:"GP Spectrum Engine 2.2",neural:"GP Neural Engine 2.1 — Resonance Boost"}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous}),selectors,getState:store.getState});
+  window.GP=publicFacade;
+})();

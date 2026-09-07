@@ -1,0 +1,1 @@
+  GPModules.register("createLibraryService",function createLibraryService(runtime){return Object.freeze({pickFiles:runtime.pickFiles,pickFolder:runtime.pickFolder,importFiles:runtime.importFiles,rescan:runtime.rescan,sort:runtime.sort,search:runtime.search,getTracks:runtime.getTracks});});

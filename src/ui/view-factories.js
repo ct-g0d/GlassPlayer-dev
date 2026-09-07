@@ -1,0 +1,3 @@
+  GPModules.register("createView",function createView({name,refresh}){let mounted=false;return Object.freeze({name,mount(){mounted=true;},render(snapshot){if(mounted&&refresh)refresh(snapshot);},refresh(){if(mounted&&refresh)refresh();},destroy(){mounted=false;},isMounted:()=>mounted});});
+  ["Player","Library","History","Settings","Changelog","Sound"].forEach(name=>{GPModules.register(`create${name}View`,deps=>GPModules.createView({name:name.toLowerCase(),refresh:deps?.refresh}));});
+  GPModules.register("createSharedControls",function createSharedControls(runtime){return Object.freeze({mount:runtime.mount,refresh:runtime.refresh,destroy:runtime.destroy});});

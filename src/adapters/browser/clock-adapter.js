@@ -1,0 +1,1 @@
+  GPModules.register("createBrowserClockAdapter",function createBrowserClockAdapter(){return Object.freeze({now:()=>Date.now(),date:()=>new Date(),setTimeout:(fn,ms)=>window.setTimeout(fn,ms),clearTimeout:id=>window.clearTimeout(id),requestFrame:fn=>window.requestAnimationFrame(fn),cancelFrame:id=>window.cancelAnimationFrame(id)});});

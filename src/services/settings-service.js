@@ -1,0 +1,1 @@
+  GPModules.register("createSettingsService",function createSettingsService(runtime){return Object.freeze({load:runtime.load,save:runtime.save,setTheme:runtime.setTheme,setLanguage:runtime.setLanguage,setSpatialEnabled:runtime.setSpatialEnabled,setSpatialMode:runtime.setSpatialMode,getSnapshot:runtime.getSnapshot});});
