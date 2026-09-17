@@ -12,6 +12,7 @@
 
   function updateNowPlayingUI(t){
     transitionNowPlayingMeta(t.title,t.artist);
+    syncNowFormatTag(t);
     seekProgress = 0; drawWaveform();
     $("#curTime").textContent = "0:00"; $("#durTime").textContent = t.duration ? fmtTime(t.duration) : "0:00";
     updateArtDisplay();syncCurrentTrackPlaybackIndicator();
@@ -35,7 +36,7 @@
   }
 
   function loadTrack(idx, autoplay){
-    if(idx<0 || idx>=playlist.length) return;
+    if(!Number.isInteger(idx)||idx<0 || idx>=playlist.length) return;
     const doCrossfade = crossfadeEnabled && currentIndex !== -1 && autoplay !== false && isPlaying;
     if(doCrossfade){ crossfadeTo(idx); return; }
     const doClickSafeSwap=currentIndex!==-1&&autoplay!==false&&isPlaying;
@@ -60,6 +61,7 @@
   }
 
   function crossfadeTo(idx,durationOverride=null){
+    if(!Number.isInteger(idx)||idx<0||idx>=playlist.length)return;
     ensureAudioCtx();
     flushHistory();
     if(crossfadeSwapTimer){ clearTimeout(crossfadeSwapTimer); crossfadeSwapTimer=null; }
@@ -107,6 +109,7 @@
 
   function maybeTriggerAutoCrossfade(){
     if(!wantsPlayback||!isPlaying||!crossfadeEnabled || crossfading || !audio.duration || sleepTimerMode === "end" || playMode === "repeatOne" || (playingQueuedTrack&&playQueue.length===0)) return;
+    if(!playlist.length)return;
     const remaining = audio.duration - audio.currentTime;
     if(remaining <= crossfadeSeconds && audio.duration > crossfadeSeconds*1.5){
       let nextIdx = takeNextQueuedIndex();
@@ -221,7 +224,7 @@
     setPlaybackVisualState(false);
     if(!manualQueueActive)positionCurrentQueueRow(false);
   }
-  function togglePlay(){ (wantsPlayback||(!audio.paused&&!audio.ended)) ? pauseAudio() : playAudio(); }
+  function togglePlay(){ if(audio.ended){playAudio();return;} (wantsPlayback||!audio.paused) ? pauseAudio() : playAudio(); }
   function updatePlayIcon(){
     $("#playIcon").innerHTML = isPlaying ? '<rect x="7" y="5" width="4" height="14" rx="1.4"/><rect x="13" y="5" width="4" height="14" rx="1.4"/>' : '<path d="M9.25 5.7C8.5 5.25 8 5.62 8 6.5v11c0 .88.5 1.25 1.25.8l9.1-5.5c.78-.47.78-1.13 0-1.6z"/>';
     $("#miniEq").classList.toggle("playing", isPlaying);
@@ -282,6 +285,7 @@
   function onEnded(){
     if(!wantsPlayback||!isPlaying)return;
     if(crossfading) return; // already advanced proactively
+    if(!playlist.length){pauseAudio();return;}
     recordComplete(playlist[currentIndex]);
     if(sleepTimerMode === "end"){ pauseAudio(); clearSleepTimer(); return; }
     if(playMode === "repeatOne"){recordBehaviorEvent("replay",playlist[currentIndex],{automaticLoop:true,duration:audio.duration});audio.currentTime=0;beginBehaviorTrack(playlist[currentIndex],"repeat");resetBehaviorMediaClock();playAudio();return;}

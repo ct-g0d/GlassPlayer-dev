@@ -317,6 +317,19 @@
     if(typeof realignTypographyGliders==="function")realignTypographyGliders();
   }
   function applyFontFamily(){syncTypographyLanguage();}
+  function primaryStackFamily(stack){
+    const match=String(stack||"").match(/^\s*(?:"([^"]+)"|'([^']+)'|([^,]+))/);
+    return (match?.[1]||match?.[2]||match?.[3]||"").trim();
+  }
+  function verifyFontAvailable(stack){
+    // 7.4.0: a missing family used to fail silently (CJK kept PingFang while
+    // the Apple profile fell back to Segoe UI). Tell the user instead.
+    try{
+      const family=primaryStackFamily(stack),generic=family.toLowerCase();
+      if(!family||generic==="sans-serif"||generic==="serif"||generic==="monospace")return;
+      if(document.fonts?.check&&!document.fonts.check(`16px "${family.replace(/"/g,"")}"`))showToast(tr(`系统未安装「${family}」，已使用回退字体`,`“${family}” is not installed; using a fallback font`));
+    }catch(error){}
+  }
   function syncFontPicker(){
     const select = $("#fontSelect");
     const selected = select.options[select.selectedIndex];
@@ -342,9 +355,9 @@
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.3.1"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.0"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
-      [tr("引擎","Engines"),engineList||"GP Core 4.1 · GP Fusion Engine 4.0 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
+      [tr("引擎","Engines"),engineList||"GP Core 4.2 · GP Fusion Engine 4.1 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
     ];
     aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>`<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div><div class="setting-hint">${escapeHTML(value)}</div></div></div>`).join("");
@@ -365,6 +378,20 @@
     if(top<margin)top=Math.min(window.innerHeight-popHeight-margin,rect.bottom+gap);
     const left=Math.max(margin,Math.min(window.innerWidth-rect.width-margin,rect.left));
     pop.style.left=`${left}px`;pop.style.top=`${Math.max(margin,top)}px`;
+  }
+  function refreshFontAvailability(){
+    // 7.4.0: mark options whose first family is not installed so a silent
+    // fallback is never mistaken for a broken switch.
+    $$("#fontPickerPop .font-picker-option").forEach(button=>{
+      let available=true;
+      try{
+        const family=primaryStackFamily(button.dataset.fontValue);
+        if(family&&document.fonts?.check)available=document.fonts.check(`16px "${family.replace(/"/g,"")}"`);
+      }catch(error){available=true;}
+      button.dataset.available=available?"1":"0";
+      if(available)button.removeAttribute("title");
+      else button.title=tr("系统未安装此字体，会使用回退字体","This font is not installed; a fallback will be used");
+    });
   }
   function buildFontPicker(){
     const select = $("#fontSelect");
@@ -406,7 +433,8 @@
     });
     document.addEventListener("click", e => { if(!e.target.closest("#fontPicker")&&!e.target.closest("#fontPickerPop")) closeFontPicker(); });
     window.addEventListener("resize",()=>{if(pop.classList.contains("show"))requestAnimationFrame(positionFontPickerPortal);},{passive:true});
-    syncFontPicker();
+    syncFontPicker();refreshFontAvailability();
+    if(document.fonts?.ready)document.fonts.ready.then(()=>refreshFontAvailability());
   }
   let typographyGliderFrame=0;
   function realignTypographyGliders(){
@@ -415,6 +443,7 @@
   }
   $("#fontSelect").addEventListener("change", () => {
     applyFontFamily();
+    verifyFontAvailable(document.documentElement.style.getPropertyValue("--font-family"));
     syncFontPicker();
     savePrefs();
     scheduleViewportFit();

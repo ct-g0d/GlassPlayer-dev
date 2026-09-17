@@ -130,7 +130,7 @@
   }
   function updateAdaptiveTextColors(palette=lastFavoriteBackdropPalette){
     const black=[12,12,14],white=[248,248,250];
-    $$(".view-header h2,.galaxy-title").forEach(title=>{const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
+    $$(".view-header h2").forEach(title=>{const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
   }
   function updateContextualControlColors(palette=lastFavoriteBackdropPalette){
     const selectors="#addFilesBtn,#addFolderBtn,#sortBtn,#playMixBtn,#eqPresetButton,.export-log-btn,.release-tag";
@@ -436,7 +436,7 @@
   let currentNowTitleText="",titleMeasureTimer=0,titleResizeTimer=0,titleMarqueeRevision=0,titleMarqueeAnimation=null,lastTitleLayoutScale=0,nowPlayingMetaRevision=0,nowPlayingMetaAnimations=[];
   function syncTitleLanguage(){
     const language=document.documentElement.lang||(uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh-CN");
-    $$("#nowTitle,#nowArtist,.view-header h2,.galaxy-title").forEach(node=>node?.setAttribute("lang",language));
+    $$("#nowTitle,#nowArtist,.view-header h2").forEach(node=>node?.setAttribute("lang",language));
     if(typeof refreshNowTitleMarquee==="function")refreshNowTitleMarquee();
   }
   function stopNowTitleMarquee(){
@@ -494,6 +494,12 @@
     if(!lastTitleLayoutScale||Math.abs(scale-lastTitleLayoutScale)>.002)refreshNowTitleMarquee();
   }
   function setNowPlayingTitle(text){currentNowTitleText=text||"";refreshNowTitleMarquee();}
+  function syncNowFormatTag(track){
+    const tag=$("#nowFormatTag");if(!tag)return;
+    const lossless=String(track?.format||"").toUpperCase()==="FLAC";
+    tag.hidden=!lossless;
+    if(lossless)tag.textContent=tr("无损","Lossless");
+  }
   function transitionNowPlayingMeta(title,artist){
     const revision=++nowPlayingMetaRevision,nodes=[$("#nowTitle"),$("#nowArtist")].filter(Boolean);
     stopNowTitleMarquee();

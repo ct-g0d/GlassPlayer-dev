@@ -174,12 +174,16 @@
     d.addEventListener("playing",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);}});
     d.addEventListener("pause",()=>{
       if(d!==audio)return;
+      // 7.3.2: a native pause arriving with ended/crossfading set is the track
+      // finishing or handing over, not a user pause — keep the intent so the
+      // following ended event can advance instead of stalling.
+      if(d.ended||crossfading){setPlaybackVisualState(false);return;}
       emitListeningCheckpoint("pause");
       setPlaybackVisualState(false);
       if(!pendingPlayToken)wantsPlayback=false;
     });
     d.addEventListener("error",()=>{
-      if(d!==audio)return;
+      if(d!==audio||d.ended)return;
       pendingPlayToken=0;wantsPlayback=false;setPlaybackVisualState(false);
     });
     d.addEventListener("timeupdate", () => {

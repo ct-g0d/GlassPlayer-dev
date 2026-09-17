@@ -4,16 +4,45 @@
       version:"Unreleased", date:"待定", kind:"ideas",
       summary:"GP Gen 8–9+ 产品路线：继续完善基于缓存声学特征的推荐体验；Electron Lake 与 EXE 迁移正式顺延至 Gen 9+。",
       sections:[
-        {title:"Gen 8 — Galaxy-Aware Recommendation",items:[
-          "使用音乐银河缓存的 MFCC + BPM 距离重度优化随机播放与每日推荐，使单个推荐歌单在风格、音色和 tempo 上保持合理连贯。",
-          "算法仍需保留新鲜度、多样性与随机性，不能因为声学距离接近而无限重复同一艺人或同一小型星系。",
-          "MFCC、BPM、二维坐标和聚类结果继续写入 IndexedDB，歌曲未变化时不重复分析。"
+        {title:"Gen 8 — Recommendation Quality",items:[
+          "继续用缓存的 MFCC、BPM 与离线风格关系优化每日推荐与随机播放的连贯性，同时保留新鲜度、多样性与随机性。",
+          "MFCC、BPM 与分析结果继续写入 IndexedDB，歌曲未变化时不重复分析。"
         ]},
         {title:"Gen 9+ — Electron Lake",items:[
           "Electron Lake、SQLite和从单文件HTML迁移为桌面EXE的计划由原Gen 5+正式推迟至Gen 9及以后。",
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.4.0", date:"2026-09-18", kind:"minor",
+      summary:"典藏更新：自建歌单与我喜欢收藏上线，听歌记录右下角加入年度报告，播放界面为无损格式加上标识，并修复字体切换问题。",
+      sections:[
+        {title:"歌单与喜欢",items:["曲库工具栏新增歌单切换，可以新建、重命名、删除自建歌单，把歌曲加入歌单或从歌单移除，并在歌单内按顺序连续播放。","每首歌新增爱心按钮，喜欢会同时教会 Resonance Boost 你的偏好；喜欢的歌曲自动收进我喜欢。"]},
+        {title:"年度报告",items:["听歌记录右下角新增年度报告按钮，每年 12 月 31 日至次年 1 月 14 日自动弹出当年报告。","往年报告随时可以查看，并能下载为可交互的独立 HTML 文件；年份会自动往前迭代。"]},
+        {title:"播放与字体",items:["播放界面在 FLAC 歌曲标题同行显示无损小徽标，其他格式保持原样。","字体选择器会标出系统未安装的字体，切换到缺失字体时会有回退提示，不再静默没有变化。"]},
+        {title:"引擎版本",items:["GP Core 4.2、GP Fusion Engine 4.1、GP Motion Engine 4.1、GP Spatial Engine 1.1、GP Spectrum Engine 2.3 与 GP Neural Engine 2.2 保持不变。"]}
+      ],english:{summary:"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge on the Player and font-switch feedback.",sections:[
+        {title:"Playlists and Likes",items:["The Library toolbar gains a playlist switcher: create, rename and delete custom playlists, add songs or remove them, and play straight through a playlist in order.","Every song gains a like button; likes also teach Resonance Boost your taste, and liked songs collect under Liked automatically."]},
+        {title:"Annual Report",items:["Listening History gains an annual-report button at the bottom right; each year's report opens automatically from December 31 through January 14.","Past yearly reports stay viewable any time and download as an interactive standalone HTML file; years roll forward automatically."]},
+        {title:"Playback and Typography",items:["The Player shows a small inline lossless badge on the FLAC song title row and stays unchanged for other formats.","The font picker marks families your system has not installed, and switching to a missing font shows a fallback notice instead of silently changing nothing."]},
+        {title:"Engine Versions",items:["GP Core 4.2, GP Fusion Engine 4.1, GP Motion Engine 4.1, GP Spatial Engine 1.1, GP Spectrum Engine 2.3 and GP Neural Engine 2.2 remain unchanged."]}
+      ]}
+    },
+    {
+      version:"7.3.2", date:"2026-09-17", kind:"patch",
+      summary:"STABILITY UPDATE：移除音乐银河产品线，修复播完自动暂停与导入后切歌问题，并让大批量导入先关闭对话框、后台继续补齐音频特征。",
+      sections:[
+        {title:"音乐银河移除",items:["导航与主界面不再提供音乐银河入口；已导入歌曲、听歌记录、用户偏好与缓存分析不受影响。","每日推荐改用本地缓存特征与离线风格关系计算相似度，不再依赖银河服务。"]},
+        {title:"播放稳定性",items:["修复歌曲自然播完被误判为手动暂停导致停住的问题，播完会自动进入下一首。","播放结束状态下的播放/暂停切换只需要一次操作；跨淡入与空歌单的越界保护补齐，切歌失败不再静默卡住。"]},
+        {title:"导入速度",items:["导入对话框在歌曲入库、列表渲染与推荐生成完成后即关闭，音频特征分析转入后台继续补齐并自动刷新相关界面。","同一歌曲的时长、封面与信息读取改为并行，数据物化并发提升，导入等待中的空转让步减少，固定收尾等待改为绘制提交确认。"]},
+        {title:"引擎版本",items:["GP Core 更新至 4.2，GP Fusion Engine 更新至 4.1；GP Motion Engine 4.1、GP Spatial Engine 1.1、GP Spectrum Engine 2.3 与 GP Neural Engine 2.2 保持不变。"]}
+      ],english:{summary:"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import track switching, and lets large imports close the dialog first while audio analysis continues in the background.",sections:[
+        {title:"Music Galaxy Removal",items:["The navigation and main area no longer offer a Music Galaxy entry; imported songs, listening history, user preference and cached analysis are unaffected.","Daily Mix now computes similarity from local cached features and offline genre relations without the Galaxy service."]},
+        {title:"Playback Stability",items:["Fixed tracks stalling at the end because a natural finish was mistaken for a manual pause; playback now advances automatically.","Toggling play after a track ends takes one action; crossfade and empty-library guards are completed so failed switches no longer stall silently."]},
+        {title:"Import Speed",items:["The import dialog closes once songs are stored, lists rendered and recommendations generated, while audio feature analysis continues in the background and refreshes the affected views automatically.","Duration, artwork and metadata reads for the same song now run in parallel with higher materialization concurrency, fewer idle yields while importing, and paint-confirmed completion instead of a fixed wait."]},
+        {title:"Engine Versions",items:["GP Core advances to 4.2 and GP Fusion Engine to 4.1; GP Motion Engine 4.1, GP Spatial Engine 1.1, GP Spectrum Engine 2.3 and GP Neural Engine 2.2 remain unchanged."]}
+      ]}
     },
     {
       version:"7.3.1", date:"2026-08-25", kind:"patch",
@@ -2435,6 +2464,8 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
+    "7.3.2":"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import switching, and moves audio analysis behind the import dialog.",
     "7.3.1":"GALAXY UPDATE adds Music Galaxy for exploring acoustic and tempo relationships, with Daily Mix reusing the same similarity model.",
     "7.3.0":"HOTFIX BUILD improves spatial clarity, recommendation variety, scroll intent, EQ control, ambient transitions and Library artwork.",
     "7.2.2":"HOTFIX BUILD keeps imports moving after minimize, reduces Daily Mix spinner jank, and continues 7.2.2 with a shared 1360px canvas, Russian UI, no Library filter, fixed font-picker rows, stronger distinct ambient modes and independent History scrolling.",
@@ -3873,14 +3904,14 @@
       const minors=generations.get(generation);if(!minors.has(minor))minors.set(minor,[]);minors.get(minor).push({release,i});
     });
     const releaseButton=({release,i})=>`<button class="release-button ripple-target" data-release-index="${i}"><strong>${escapeHTML(release.version)}</strong></button>`;
-    const tree=[...generations.entries()].map(([generation,minors])=>`<details class="release-generation" ${generation==="7"?"open":""}><summary>Gen ${generation}</summary><div class="release-generation-body">${[...minors.entries()].map(([minor,items])=>`<details class="release-minor" ${minor==="7.3"?"open":""}><summary>${escapeHTML(minor)}</summary><div class="release-minor-body">${items.map(releaseButton).join("")}</div></details>`).join("")}</div></details>`).join("");
+    const tree=[...generations.entries()].map(([generation,minors])=>`<details class="release-generation" ${generation==="7"?"open":""}><summary>Gen ${generation}</summary><div class="release-generation-body">${[...minors.entries()].map(([minor,items])=>`<details class="release-minor" ${minor==="7.4"?"open":""}><summary>${escapeHTML(minor)}</summary><div class="release-minor-body">${items.map(releaseButton).join("")}</div></details>`).join("")}</div></details>`).join("");
     index.innerHTML = `<div class="release-index-label">${tr("选择版本","Select Version")}</div>${direct.map(releaseButton).join("")}${tree}`;
     if(!index.dataset.wired){index.addEventListener("click", e => {const summary=e.target.closest("summary");if(summary&&index.contains(summary)){e.preventDefault();toggleReleaseBranch(summary.parentElement);return;}const button = e.target.closest(".release-button");if(button)selectRelease(Number(button.dataset.releaseIndex),true);});index.dataset.wired="1";}
     selectRelease(1,false);
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.3.1 — GALAXY UPDATE`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.0 — COLLECTION UPDATE`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -3895,7 +3926,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.3.1 GALAXY UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.4.0 COLLECTION UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}

@@ -47,35 +47,8 @@ New Peregrine interfaces are **Experimental** unless stated otherwise. They retu
 | History Service `checkpoint/incrementPlayCount/render/getSnapshot/destroy` | Candidate | reason or none | storage errors retain existing policy | listening persistence and DOM render | Playback/History View | no-false-time and range tests |
 | Spectrum Service `analyze/readCached/processPending` | Experimental | track/key → Promise | emits `analysis:failed`, rethrows | cache read/write and completion event | Library/Neural | success/failure event test |
 | Neural Service `recordBehavior/generateDailyMix/getUserModel` | Candidate | behavior/track/count → Promise/result | storage errors retain existing fallback | existing behavior/model/recommendation persistence | UI, History | confidence/fallback/no-manual-queue test |
-| Music Galaxy Service `featureVector/compareTracks/buildLayout/recommendationSimilarity` | Candidate | cached track snapshots/vectors and optional layout size → frozen read-only results | missing/invalid feature values use deterministic fallbacks; non-array layout input returns an empty layout | none | Galaxy View, Neural/Daily Mix | deterministic vector/comparison/layout tests; no DOM/storage/audio/network dependency |
 | Settings Service `load/save/setTheme/setLanguage/setSpatialEnabled/setSpatialMode/getSnapshot` | Candidate | setting value → existing result/frozen snapshot | invalid values follow existing guards | existing preference storage and UI refresh | Settings View | restore/theme/language test |
 | PiP Service `open/close/sync/destroy/getSnapshot` | Candidate | none/force flag → Promise/result | browser errors shown by existing modal | one Canvas/Video/stream lifecycle | Player View | cleanup/sync/resize test |
-
-### Music Galaxy Service signatures
-
-```text
-featureVector(track = {}) -> GalaxyFeatureVector
-compareTracks(leftTrack, rightTrack) -> GalaxyComparison
-buildLayout(tracks = [], options = { width, height }) -> GalaxyLayout
-recommendationSimilarity(leftTrack, rightTrack) -> GalaxyComparison
-```
-
-- `GalaxyFeatureVector` exposes a 13-value MFCC vector, completeness,
-  BPM/confidence, coverage/confidence, stable key and read-only genre labels.
-- `GalaxyComparison` exposes bounded `mfcc`, `tempo`, `genre`, `overall`,
-  `coverage` and `confidence` scores.
-- `GalaxyLayout` exposes width, height, read-only point/cluster/label
-  collections, coverage and a deterministic signature. Width and height use a
-  120 px minimum; empty or non-array input returns an empty layout.
-- `recommendationSimilarity` is the compatibility alias of `compareTracks`,
-  so Neural/Daily Mix and Galaxy View share one similarity definition.
-- Existing track snapshots and already-produced feature vectors remain valid
-  inputs. Missing acoustic fields use deterministic local fallbacks; no
-  persistence migration, event, Store field, history identity, Queue or audio
-  contract is added.
-- The service is pure and stateless. It may read bundled offline Genre
-  Relations, but it must not access DOM, storage, audio or the network. Only
-  Galaxy View and Neural/Daily Mix are authorized consumers.
 
 ## Data and UI
 

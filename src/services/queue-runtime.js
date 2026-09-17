@@ -16,8 +16,11 @@
         <div class="track-plays">${playCount}</div>
         <div class="track-dur">${t.duration ? fmtTime(t.duration) : "--:--"}</div>
         <div class="track-actions">
+          <button class="track-action track-like ripple-target${isLikedTrack(playlist[idx])?" active":""}" data-idx="${idx}" aria-pressed="${isLikedTrack(playlist[idx])}" title="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}" aria-label="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
           <button class="track-action queue-next ripple-target" data-idx="${idx}" title="下一首播放" aria-label="下一首播放"><svg class="rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path class="list-next-triangle" d="M5.9 5.55c-.52-.36-.9-.12-.9.52v11.86c0 .64.38.88.9.52l8.45-5.93c.48-.34.48-.7 0-1.04z"/><path class="list-next-echo" d="M19 5.8v12.4"/><path class="list-next-bar" d="M19 5.8v12.4"/></svg></button>
           <button class="track-action queue-add ripple-target" data-idx="${idx}" title="加入播放队列" aria-label="加入播放队列"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="queue-bars"><path d="M4 6h9M4 12h7M4 18h7"/></g><path class="queue-plus-wave" d="M17 11v8M13 15h8"/><path class="queue-plus" d="M17 11v8M13 15h8"/></svg></button>
+          ${options.playlistRemove?"":`<button class="track-action playlist-add ripple-target" data-idx="${idx}" title="${tr("添加到歌单","Add to playlist")}" aria-label="${tr("添加到歌单","Add to playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h9M4 12h9M4 18h5"/><path d="M17.5 13v7M14 16.5h7"/></svg></button>`}
+          ${options.playlistRemove?`<button class="track-action playlist-remove ripple-target" data-idx="${idx}" title="${tr("从歌单移除","Remove from playlist")}" aria-label="${tr("从歌单移除","Remove from playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`:""}
         </div>
       </div>`;
   }
@@ -30,6 +33,9 @@
         event.stopPropagation();const idx=+button.dataset.idx;
         if(button.classList.contains("queue-next"))enqueueTrack(idx,"next");
         else if(button.classList.contains("queue-add"))enqueueTrack(idx,"end");
+        else if(button.classList.contains("track-like"))toggleLike(idx,{source:container.id==="recommendList"?"recommendation":"library"});
+        else if(button.classList.contains("playlist-add"))openRowPlaylistPop(idx,button);
+        else if(button.classList.contains("playlist-remove"))removeTrackFromPlaylist(activePlaylistId(),idx);
         else if(button.classList.contains("track-remove"))removeTrack(idx);
         return;
       }
@@ -39,6 +45,237 @@
       }
     });
   }
+  /* ============ user playlists + liked songs (7.4.0 典藏更新) ============
+     Queue Service owns the single manual queue AND user-defined playlists.
+     Playlists persist as one record in the existing recommendations store
+     (no schema/version change). Tracks are referenced by stable
+     neuralTrackId keys, never by playlist index or runtime id. Likes are
+     behavior events so Resonance Boost learns them; the liked set is
+     derived latest-wins from those events (unlike persists with signal 0). */
+  const USER_PLAYLISTS_RECORD_ID="userPlaylists";
+  let userPlaylistsCache=null,userPlaylistsLoaded=false;
+  let likedKeys=new Set(),likedKeysLoaded=false;
+  let libraryCollectionMode="all";
+  let collectionScopeActive=false;
+  function playlistTrackKey(track){try{return neuralTrackId(track);}catch(error){return track?.id||null;}}
+  async function loadUserPlaylists(){
+    try{
+      const record=await GPDatabase.getRecommendations(USER_PLAYLISTS_RECORD_ID);
+      const lists=Array.isArray(record?.lists)?record.lists.filter(item=>item&&typeof item.id==="string"&&Array.isArray(item.trackKeys)):[];
+      userPlaylistsCache={version:1,lists:lists.map(item=>({id:item.id,name:String(item.name||tr("未命名歌单","Untitled Playlist")).slice(0,30),createdAt:Number(item.createdAt)||Date.now(),updatedAt:Number(item.updatedAt)||Date.now(),trackKeys:item.trackKeys.filter(key=>key!==null&&key!==undefined)}))};
+    }catch(error){userPlaylistsCache={version:1,lists:[]};}
+    userPlaylistsLoaded=true;return userPlaylistsCache;
+  }
+  async function saveUserPlaylists(){
+    if(!userPlaylistsCache)return false;
+    try{await GPDatabase.saveRecommendations({id:USER_PLAYLISTS_RECORD_ID,version:1,updatedAt:Date.now(),lists:userPlaylistsCache.lists});return true;}
+    catch(error){console.warn("User playlists persistence failed",error);return false;}
+  }
+  function userPlaylists(){return userPlaylistsCache?.lists||[];}
+  function findUserPlaylist(id){return userPlaylists().find(item=>item.id===id)||null;}
+  function activePlaylistId(){return libraryCollectionMode.startsWith("pl:")?libraryCollectionMode.slice(3):null;}
+  function activePlaylist(){const id=activePlaylistId();return id?findUserPlaylist(id):null;}
+  async function loadUserPlaylistsIfNeeded(){if(!userPlaylistsLoaded)await loadUserPlaylists();return userPlaylistsCache;}
+  async function createUserPlaylist(name){
+    const clean=String(name||"").trim().slice(0,30);
+    if(!clean){showToast(tr("请输入歌单名称","Enter a playlist name"));return null;}
+    await loadUserPlaylistsIfNeeded();
+    const list={id:`pl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`,name:clean,createdAt:Date.now(),updatedAt:Date.now(),trackKeys:[]};
+    userPlaylistsCache.lists.push(list);
+    if(await saveUserPlaylists()){showToast(tr(`已创建歌单「${clean}」`,`Created playlist “${clean}”`));setLibraryCollectionMode(`pl:${list.id}`);return list;}
+    userPlaylistsCache.lists.pop();showToast(tr("歌单保存失败","Playlist save failed"));return null;
+  }
+  async function renameUserPlaylist(id,name){
+    const list=findUserPlaylist(id),clean=String(name||"").trim().slice(0,30);
+    if(!list||!clean)return false;
+    list.name=clean;list.updatedAt=Date.now();
+    if(await saveUserPlaylists()){syncPlaylistUI();return true;}
+    return false;
+  }
+  async function deleteUserPlaylist(id){
+    const list=findUserPlaylist(id);if(!list)return false;
+    userPlaylistsCache.lists=userPlaylistsCache.lists.filter(item=>item.id!==id);
+    if(await saveUserPlaylists()){
+      showToast(tr(`已删除歌单「${list.name}」`,`Deleted playlist “${list.name}”`));
+      if(activePlaylistId()===id)setLibraryCollectionMode("all");else syncPlaylistUI();
+      return true;
+    }
+    await loadUserPlaylists();syncPlaylistUI();return false;
+  }
+  async function addTrackToPlaylist(id,idx){
+    const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
+    const key=playlistTrackKey(track);if(key===null||key===undefined)return false;
+    if(list.trackKeys.includes(key)){showToast(tr(`「${track.title}」已在歌单「${list.name}」中`,`“${track.title}” is already in “${list.name}”`));return false;}
+    list.trackKeys.push(key);list.updatedAt=Date.now();
+    if(await saveUserPlaylists()){showToast(tr(`已将「${track.title}」加入「${list.name}」`,`Added “${track.title}” to “${list.name}”`));syncPlaylistUI(true);return true;}
+    list.trackKeys=list.trackKeys.filter(item=>item!==key);return false;
+  }
+  async function removeTrackFromPlaylist(id,idx){
+    const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
+    const key=playlistTrackKey(track),before=list.trackKeys.length;
+    list.trackKeys=list.trackKeys.filter(item=>item!==key);
+    if(list.trackKeys.length===before)return false;
+    list.updatedAt=Date.now();
+    if(await saveUserPlaylists()){render(searchInputSafe());return true;}
+    await loadUserPlaylists();render(searchInputSafe());return false;
+  }
+  function collectionTrackIndices(){
+    if(libraryCollectionMode==="liked")return playlist.map((track,idx)=>idx).filter(idx=>{const key=playlistTrackKey(playlist[idx]);return key!==null&&likedKeys.has(key);});
+    const list=activePlaylist();
+    if(list){
+      const position=new Map();list.trackKeys.forEach((key,order)=>{if(!position.has(key))position.set(key,order);});
+      return playlist.map((track,idx)=>[position.get(playlistTrackKey(track)),idx]).filter(([order])=>order!==undefined).sort((a,b)=>a[0]-b[0]).map(([,idx])=>idx);
+    }
+    return playlist.map((_,idx)=>idx);
+  }
+  function collectionTrackIndicesForMode(mode){
+    const keep=libraryCollectionMode;libraryCollectionMode=mode;
+    const out=collectionTrackIndices();libraryCollectionMode=keep;return out;
+  }
+  function syncCollectionScope(){
+    // Collection-scoped sequential playback reuses the existing overrideQueue
+    // consumer chain (next/previous/ended/crossfade). It has no other producer.
+    if(libraryCollectionMode==="all"){if(collectionScopeActive){overrideQueue=null;collectionScopeActive=false;}return;}
+    overrideQueue=collectionTrackIndices();collectionScopeActive=true;
+  }
+  function isLikedTrack(track){if(!track)return false;try{const key=playlistTrackKey(track);return key!==null&&likedKeys.has(key);}catch(error){return false;}}
+  function syncLikeButtons(){
+    document.querySelectorAll("#trackList .track-like").forEach(button=>{
+      const track=playlist[+button.dataset.idx];if(!track)return;
+      const liked=isLikedTrack(track);
+      button.classList.toggle("active",liked);button.setAttribute("aria-pressed",String(liked));
+      const label=liked?tr("取消喜欢","Unlike"):tr("喜欢","Like");button.title=label;button.setAttribute("aria-label",label);
+    });
+  }
+  async function refreshLikedKeys(){
+    try{
+      const events=await GPDatabase.getBehaviorEvents()||[],latest=new Map();
+      events.forEach(event=>{if(event?.type!=="like"||event.spectrumId===null||event.spectrumId===undefined)return;latest.set(event.spectrumId,event);});
+      likedKeys=new Set([...latest.entries()].filter(([,event])=>event?.context?.liked!==false).map(([key])=>key));
+    }catch(error){likedKeys=new Set();}
+    likedKeysLoaded=true;syncLikeButtons();
+    if(libraryCollectionMode==="liked")render(searchInputSafe());
+  }
+  async function toggleLike(idx,options={}){
+    const track=playlist[idx];if(!track)return;
+    const key=playlistTrackKey(track);if(key===null||key===undefined)return;
+    const liked=!likedKeys.has(key);
+    await recordBehaviorEvent("like",track,{liked,source:options.source||"library"});
+    if(liked)likedKeys.add(key);else likedKeys.delete(key);
+    syncLikeButtons();
+    if(libraryCollectionMode==="liked")render(searchInputSafe());else syncPlaylistUI(true);
+    showToast(liked?tr(`已喜欢「${track.title}」`,`Liked “${track.title}”`):tr(`已取消喜欢「${track.title}」`,`Unliked “${track.title}”`));
+  }
+  function collectionDisplayName(){
+    if(libraryCollectionMode==="liked")return tr("我喜欢","Liked");
+    const list=activePlaylist();if(list)return list.name;
+    return tr("全部歌曲","All Songs");
+  }
+  function playCollectionNow(){
+    const members=collectionTrackIndices();
+    if(!members.length){showToast(tr("这个歌单还没有可播放的歌曲","No playable songs in this collection"));return;}
+    members.forEach(idx=>{const id=playlist[idx]?.id;if(id&&!playQueue.includes(id))playQueue.push(id);});
+    manualQueueActive=true;beginQueuedPlayback();pendingSelectionSource="playlist";
+    loadTrack(members[0],true);renderMiniQueue();
+    showToast(tr(`正在播放${collectionDisplayName()}（${members.length} 首）`,`Playing ${collectionDisplayName()} (${members.length} songs)`));
+  }
+  function setLibraryCollectionMode(mode){
+    libraryCollectionMode=mode==="liked"||mode.startsWith("pl:")?mode:"all";
+    syncCollectionScope();syncPlaylistUI();
+  }
+  function syncPlaylistUI(skipRender=false){
+    const label=$("#playlistBtnText"),pop=$("#playlistPop"),bar=$("#collectionBar");
+    if(label)label.textContent=`${tr("歌单","Playlists")}：${collectionDisplayName()}`;
+    if(pop){
+      const rows=[{mode:"all",name:tr("全部歌曲","All Songs"),count:playlist.length},{mode:"liked",name:`♥ ${tr("我喜欢","Liked")}`,count:collectionTrackIndicesForMode("liked").length}].concat(userPlaylists().map(list=>({mode:`pl:${list.id}`,name:list.name,count:list.trackKeys.length,id:list.id})));
+      pop.querySelectorAll("[data-collection]").forEach(node=>node.remove());
+      const anchor=pop.querySelector(".playlist-pop-divider");
+      rows.forEach(row=>{
+        const item=document.createElement("div");item.className="playlist-pop-row";item.dataset.collection=row.mode;
+        const pick=document.createElement("button");pick.type="button";pick.className="ripple-target";pick.dataset.collection=row.mode;
+        const name=document.createElement("span");name.textContent=row.name;
+        const count=document.createElement("em");count.textContent=row.count;
+        pick.append(name,count);pick.classList.toggle("active",libraryCollectionMode===row.mode);
+        item.appendChild(pick);
+        if(row.id){
+          const del=document.createElement("button");del.type="button";del.className="playlist-pop-del ripple-target";del.dataset.deletePlaylist=row.id;
+          del.title=tr("删除歌单","Delete playlist");del.setAttribute("aria-label",tr("删除歌单","Delete playlist"));del.textContent="×";
+          item.appendChild(del);
+        }
+        if(anchor)anchor.before(item);else pop.appendChild(item);
+      });
+      const input=$("#playlistNameInput"),confirm=$("#playlistConfirmBtn"),active=activePlaylist();
+      if(input&&document.activeElement!==input)input.value=active?active.name:"";
+      if(confirm)confirm.textContent=active?tr("重命名","Rename"):tr("新建歌单","New Playlist");
+    }
+    if(bar){
+      const active=libraryCollectionMode!=="all";
+      bar.classList.toggle("show",active);
+      if(active){
+        const members=collectionTrackIndices();
+        bar.querySelector(".collection-name").textContent=collectionDisplayName();
+        bar.querySelector(".collection-count").textContent=tr(`${members.length} 首`,`${members.length} songs`);
+      }
+    }
+    if(!skipRender)render(searchInputSafe());
+  }
+  $("#playlistBtn").addEventListener("click",event=>{event.stopPropagation();syncPlaylistUI(true);const pop=$("#playlistPop"),show=!pop.classList.contains("show");setMotionPopover(pop,show);if(show)requestAnimationFrame(()=>{try{$("#playlistNameInput")?.focus({preventScroll:true});}catch(error){}});});
+  $("#playlistPop").addEventListener("click",async event=>{
+    const del=event.target.closest("[data-delete-playlist]");
+    if(del){event.stopPropagation();await deleteUserPlaylist(del.dataset.deletePlaylist);return;}
+    if(event.target.closest("#playlistCreateRow"))return;
+    const row=event.target.closest("[data-collection]");
+    if(!row||!row.dataset.collection)return;
+    event.stopPropagation();setLibraryCollectionMode(row.dataset.collection);setMotionPopover($("#playlistPop"),false);
+  });
+  $("#playlistConfirmBtn").addEventListener("click",async event=>{
+    event.stopPropagation();
+    const input=$("#playlistNameInput"),active=activePlaylist();
+    if(active)await renameUserPlaylist(active.id,input.value);
+    else await createUserPlaylist(input.value);
+  });
+  $("#playlistNameInput").addEventListener("keydown",event=>{
+    if(event.key==="Enter"){event.preventDefault();$("#playlistConfirmBtn").click();}
+    event.stopPropagation();
+  });
+  $("#collectionPlayBtn").addEventListener("click",event=>{event.stopPropagation();playCollectionNow();});
+  document.addEventListener("click",event=>{if(!event.target.closest("#playlistWrap"))setMotionPopover($("#playlistPop"),false);});
+  let pendingRowPlaylistIdx=-1;
+  function openRowPlaylistPop(idx,anchor){
+    pendingRowPlaylistIdx=idx;
+    const pop=$("#rowPlaylistPop");if(!pop)return;
+    pop.querySelectorAll("[data-row-playlist]").forEach(node=>node.remove());
+    const lists=userPlaylists();
+    if(!lists.length)pop.querySelector(".row-playlist-empty").style.display="block";
+    else{
+      pop.querySelector(".row-playlist-empty").style.display="none";
+      lists.forEach(list=>{
+        const button=document.createElement("button");button.type="button";button.className="ripple-target";button.dataset.rowPlaylist=list.id;
+        const name=document.createElement("span");name.textContent=list.name;
+        const count=document.createElement("em");count.textContent=list.trackKeys.length;
+        button.append(name,count);pop.appendChild(button);
+      });
+    }
+    if(pop.parentElement!==document.body)document.body.appendChild(pop);
+    pop.style.position="fixed";pop.style.zIndex="320";
+    const rect=anchor.getBoundingClientRect(),width=200;
+    pop.style.width=`${width}px`;
+    pop.style.left=`${Math.max(10,Math.min(window.innerWidth-width-10,rect.right-width))}px`;
+    const below=rect.bottom+8,popHeight=Math.min(320,48+lists.length*44);
+    pop.style.top=`${Math.max(10,(below+popHeight>window.innerHeight-10)?rect.top-popHeight-8:below)}px`;
+    setMotionPopover(pop,true);
+  }
+  $("#rowPlaylistPop").addEventListener("click",async event=>{
+    if(event.target.closest("#rowPlaylistNew")){event.stopPropagation();setMotionPopover($("#rowPlaylistPop"),false);syncPlaylistUI(true);setMotionPopover($("#playlistPop"),true);return;}
+    const button=event.target.closest("[data-row-playlist]");
+    if(!button)return;event.stopPropagation();
+    setMotionPopover($("#rowPlaylistPop"),false);
+    if(pendingRowPlaylistIdx>=0)await addTrackToPlaylist(button.dataset.rowPlaylist,pendingRowPlaylistIdx);
+    pendingRowPlaylistIdx=-1;
+  });
+  document.addEventListener("click",event=>{if(!event.target.closest("#rowPlaylistPop")&&!event.target.closest(".playlist-add"))setMotionPopover($("#rowPlaylistPop"),false);});
+  loadUserPlaylists().then(()=>syncPlaylistUI(true));
+  refreshLikedKeys();
   function normalizeSearchText(value){
     return String(value||"").normalize("NFKD").replace(/\p{M}+/gu,"").toLocaleLowerCase().replace(/[\s\p{P}\p{S}]+/gu,"");
   }
@@ -135,14 +372,15 @@
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(n => n.remove());
     emptyState.style.display = playlist.length === 0 ? "block" : "none";
-    const visibleIndices=playlist.map((_,idx)=>idx);
+    const visibleIndices=collectionTrackIndices();
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
-    const result=rankedLibrarySearch(visibleIndices,q),rows=result.indices.map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:rank+1,playCount:playCounts.get(playlist[idx].id)||0}));
+    const result=rankedLibrarySearch(visibleIndices,q),rows=result.indices.map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:rank+1,playCount:playCounts.get(playlist[idx].id)||0,playlistRemove:activePlaylistId()!==null}));
     updateSearchFeedback(result.similar,q,result.empty);
     if(rows.length)listEl.insertAdjacentHTML("beforeend",rows.join(""));
     wireRows(listEl);
+    syncPlaylistUI(true);
     renderMiniQueue();
   }
   async function renderLibraryIncrementally(filterText,chunkSize=12){
@@ -151,17 +389,18 @@
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(node=>node.remove());
     emptyState.style.display=playlist.length===0?"block":"none";
-    const visibleIndices=playlist.map((_,idx)=>idx);
+    const visibleIndices=collectionTrackIndices();
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
     const result=rankedLibrarySearch(visibleIndices,q),filtered=result.indices;updateSearchFeedback(result.similar,q,result.empty);
     for(let offset=0;offset<filtered.length;offset+=chunkSize){
-      const rows=filtered.slice(offset,offset+chunkSize).map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:offset+rank+1,playCount:playCounts.get(playlist[idx].id)||0}));
+      const rows=filtered.slice(offset,offset+chunkSize).map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:offset+rank+1,playCount:playCounts.get(playlist[idx].id)||0,playlistRemove:activePlaylistId()!==null}));
       if(rows.length)listEl.insertAdjacentHTML("beforeend",rows.join(""));
       await new Promise(resolve=>requestAnimationFrame(resolve));
     }
     wireRows(listEl);
+    syncPlaylistUI(true);
   }
   let lastPlaybackIndicatorIndex=-1;
   function syncCurrentTrackPlaybackIndicator(){
@@ -480,12 +719,19 @@
       playbackIntentToken++;pendingPlayToken=0;wantsPlayback=false;decks.forEach(deck=>deck.pause());audio.src="";isPlaying=false;currentIndex=-1;
       $("#discRotor").classList.remove("spinning","paused");resetDiscRotationTimeline();$("#diskReader").classList.remove("engaged");
       setNowPlayingTitle(tr("未选择歌曲","No Song Selected")); $("#nowArtist").textContent = tr("拖入或导入音乐开始播放","Drop or import music to begin");
+      syncNowFormatTag(null);
       seekProgress = 0; drawWaveform();
       updatePlayIcon(); updateArtDisplay(); updateAmbient();
     } else if(idx < currentIndex){ currentIndex--; }
     if(overrideQueue){ overrideQueue = overrideQueue.filter(i => i !== idx).map(i => i > idx ? i-1 : i); if(!overrideQueue.length) overrideQueue = null; }
     for(let i=playQueue.length-1;i>=0;i--){ if(playQueue[i] === removedTrack.id) playQueue.splice(i,1); }
     if(playQueue.length===0){manualQueueActive=false;releaseQueuePlaybackContext();}
+    const removedKey=playlistTrackKey(removedTrack);
+    if(userPlaylistsCache&&removedKey!==null&&removedKey!==undefined){
+      let touched=false;
+      userPlaylistsCache.lists.forEach(list=>{const before=list.trackKeys.length;list.trackKeys=list.trackKeys.filter(key=>key!==removedKey);if(list.trackKeys.length!==before){touched=true;list.updatedAt=Date.now();}});
+      if(touched){saveUserPlaylists();if(libraryCollectionMode!=="all")render(searchInputSafe());}
+    }
     reservedSongIdentities.delete(songIdentity(removedTrack.artist,removedTrack.title));
     if(removedTrack.contentKey)reservedAudioFingerprints.delete(removedTrack.contentKey);
     if(removedTrack.coverUrl) URL.revokeObjectURL(removedTrack.coverUrl);

@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glass Player 7.3.1</title>
+<title>Glass Player 7.4.0</title>
 <link id="faviconLink" rel="icon" type="image/svg+xml" href="">
-<link rel="stylesheet" href="./app.css?v=7.3.1-r1">
+<link rel="stylesheet" href="./app.css?v=7.4.0-r1">
 </head>
 <body data-theme="light">
 
@@ -49,10 +49,6 @@
     <svg class="single-alpha-icon rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path class="motion-part motion-axis-y" d="M3 20.5V3.5"/><path class="motion-part motion-axis-x" d="M3.5 21h17"/><path class="motion-part motion-graph-line" d="M7 15l4-4 3 3 5-6"/></svg>
     <span class="nav-label">听歌记录</span>
   </button>
-  <button class="nav-item ripple-target" data-view="galaxy">
-    <svg class="single-alpha-icon rounded-glyph galaxy-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse class="motion-part motion-galaxy-ring ring-outer" cx="12" cy="12" rx="10.25" ry="4.65" stroke-width="1.8"/><ellipse class="motion-part motion-galaxy-ring ring-middle" cx="12" cy="12" rx="7.15" ry="3.05" stroke-width="1.8" opacity=".78"/><ellipse class="motion-part motion-galaxy-ring ring-inner" cx="12" cy="12" rx="3.75" ry="1.42" stroke-width="1.8" opacity=".68"/><circle class="motion-part motion-galaxy-star star-a" cx="18.7" cy="5.6" r=".82" fill="currentColor" stroke="none"/><circle class="motion-part motion-galaxy-star star-b" cx="5.25" cy="18.2" r=".7" fill="currentColor" stroke="none"/><circle class="motion-part motion-galaxy-star star-c" cx="20.1" cy="14.55" r=".58" fill="currentColor" stroke="none"/></svg>
-    <span class="nav-label">音乐银河</span>
-  </button>
   <button class="nav-item ripple-target" data-view="settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path class="motion-part motion-gear-outer" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
     <span class="nav-label">设置</span>
@@ -81,7 +77,10 @@
           </div>
           <img id="staticCover" class="static-cover" style="display:none;">
         </div>
-        <div class="track-title" id="nowTitle">未选择歌曲</div>
+        <div class="now-title-row">
+          <div class="track-title" id="nowTitle">未选择歌曲</div>
+          <span class="now-format-tag" id="nowFormatTag" hidden>无损</span>
+        </div>
         <div class="track-artist" id="nowArtist">拖入或导入音乐开始播放</div>
 
         <div class="progress-row">
@@ -194,6 +193,16 @@
           </div>
         </div>
         <button class="pill-btn library-tool-btn ripple-target" id="libraryViewBtn" type="button" aria-pressed="false" aria-label="切换列表和网格视图" title="列表 / Grid">视图</button>
+        <div class="playlist-wrap" id="playlistWrap">
+          <button class="pill-btn library-tool-btn sort-btn ripple-target" id="playlistBtn"><span id="playlistBtnText">歌单：全部歌曲</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg></button>
+          <div class="sort-pop glass gp-motion-popover" id="playlistPop">
+            <div class="playlist-create-row" id="playlistCreateRow">
+              <input id="playlistNameInput" maxlength="30" placeholder="新建歌单名称" autocomplete="off">
+              <button class="ripple-target" id="playlistConfirmBtn" type="button">新建歌单</button>
+            </div>
+            <div class="playlist-pop-divider"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="import-btns library-imports">
@@ -203,6 +212,11 @@
       <button class="pill-btn ripple-target" id="addFolderBtn">
         <svg class="import-folder-icon rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><defs><clipPath id="folderPaperReveal"><rect x="4.5" y="0" width="15" height="10.2"/></clipPath></defs><path class="import-folder-back" d="M3.5 10V7.5A2 2 0 015.5 5.5h3.8l2 2h7.2a2 2 0 012 2V11"/><rect class="import-folder-paper" x="6.1" y="10.55" width="11.8" height="8.3" rx="1" clip-path="url(#folderPaperReveal)"/><path class="import-folder-front" d="M3.5 10.2h17v7.2a2 2 0 01-2 2h-13a2 2 0 01-2-2z"/></svg>添加文件夹
       </button>
+    </div>
+    <div class="collection-bar glass" id="collectionBar">
+      <span class="collection-name"></span>
+      <span class="collection-count"></span>
+      <button class="pill-btn ripple-target" id="collectionPlayBtn" type="button">播放全部</button>
     </div>
     <div class="library-panel glass">
       <div class="search-feedback" id="searchFeedback" aria-live="polite"></div>
@@ -220,6 +234,10 @@
           <p>还没有音乐<br>点击上方按钮导入，或直接把歌曲/文件夹拖进窗口<br>封面会自动从 MP3/FLAC/M4A 中识别</p>
         </div>
       </div>
+    </div>
+    <div class="sort-pop glass gp-motion-popover" id="rowPlaylistPop">
+      <div class="row-playlist-empty">还没有自建歌单，先去歌单里新建一个吧</div>
+      <button class="ripple-target" id="rowPlaylistNew" type="button">新建歌单…</button>
     </div>
    </div>
   </section>
@@ -270,31 +288,19 @@
     </div>
     <div class="history-pane" id="historyFavoritesPane"><div class="favorites-grid" id="favoritesGrid"></div></div>
     <div class="history-pane" id="historyDataPane"><div class="data-dashboard" id="dataDashboard"></div></div>
-   </div>
-  </section>
-
-  <!-- ---------------- MUSIC GALAXY VIEW ---------------- -->
-  <section class="view galaxy-view" data-view="galaxy">
-    <div class="galaxy-surface">
-      <header class="galaxy-header">
-        <p class="galaxy-kicker">探索音乐关系</p>
-        <h2 class="galaxy-title">音乐银河</h2>
-        <p class="galaxy-subtitle">每颗星代表一首歌，相近的星共享音乐特征</p>
-      </header>
-      <div class="galaxy-stage">
-        <div class="galaxy-canvas-shell">
-          <canvas id="galaxyCanvas" tabindex="0" aria-label="音乐银河歌曲分布图"></canvas>
-          <div id="galaxyTooltip" class="galaxy-tooltip" role="status" aria-live="polite" hidden></div>
-          <div id="galaxyStatus" class="galaxy-status" role="status" aria-live="polite">导入歌曲后即可探索音乐银河</div>
+    <button class="pill-btn annual-report-btn ripple-target" id="annualReportBtn" type="button">年度报告</button>
+    <div class="rescan-modal-backdrop annual-modal-backdrop" id="annualReportModal" role="dialog" aria-modal="true" aria-labelledby="annualReportTitle">
+      <div class="rescan-dialog annual-report-dialog">
+        <h3 id="annualReportTitle">年度报告</h3>
+        <div class="segmented annual-year-tabs" id="annualYearTabs"></div>
+        <div class="annual-report-body" id="annualReportBody"></div>
+        <div class="rescan-dialog-actions">
+          <button class="ripple-target" id="annualDownloadBtn" type="button">下载报告</button>
+          <button class="primary ripple-target" id="annualCloseBtn" type="button">关闭</button>
         </div>
       </div>
-      <div class="galaxy-legend" aria-label="音乐银河图例">
-        <span>星点代表歌曲</span>
-        <span>星团代表音乐风格</span>
-        <span>悬停查看歌曲</span>
-        <span>点击固定信息</span>
-      </div>
     </div>
+   </div>
   </section>
 
   <!-- ---------------- SETTINGS VIEW ---------------- -->
@@ -540,7 +546,7 @@
           </section>
           <section class="settings-pane" data-settings-pane="about">
             <div class="settings-section-title">关于</div>
-            <div class="build-card"><svg class="build-logo" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="var(--accent)"/><rect x="9" y="13" width="3" height="7" rx="1.5" fill="var(--accent-contrast)"/><rect x="14.5" y="8" width="3" height="16" rx="1.5" fill="var(--accent-contrast)"/><rect x="20" y="11" width="3" height="10" rx="1.5" fill="var(--accent-contrast)"/></svg><div class="build-copy"><strong>Glass Player Gen 7</strong><span id="buildVersionText">版本 7.3.1</span><span>Peregrine Lake · GP Core 4.1 · GP Fusion 4.0</span><span>Motion 4.1 · Spatial 1.1 · Spectrum 2.3 · Neural 2.2</span></div><button class="build-badge ripple-target" id="buildBadgeBtn">GALAXY UPDATE</button></div>
+            <div class="build-card"><svg class="build-logo" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="var(--accent)"/><rect x="9" y="13" width="3" height="7" rx="1.5" fill="var(--accent-contrast)"/><rect x="14.5" y="8" width="3" height="16" rx="1.5" fill="var(--accent-contrast)"/><rect x="20" y="11" width="3" height="10" rx="1.5" fill="var(--accent-contrast)"/></svg><div class="build-copy"><strong>Glass Player Gen 7</strong><span id="buildVersionText">版本 7.4.0</span><span>Peregrine Lake · GP Core 4.2 · GP Fusion 4.1</span><span>Motion 4.1 · Spatial 1.1 · Spectrum 2.3 · Neural 2.2</span></div><button class="build-badge ripple-target" id="buildBadgeBtn">COLLECTION UPDATE</button></div>
           </section>
         </div>
       </div>
@@ -560,7 +566,7 @@
       </div>
       <div class="changelog-header-actions">
         <button class="pill-btn export-log-btn ripple-target" id="exportChangelogBtn">导出日志</button>
-        <button class="release-tag ripple-target" id="currentVersionBtn" type="button">当前版本 7.3.1</button>
+        <button class="release-tag ripple-target" id="currentVersionBtn" type="button">当前版本 7.4.0</button>
       </div>
     </div>
     <div class="changelog-layout">
@@ -614,6 +620,6 @@
   </div>
 </div>
 
-<script src="./build/app.js?v=7.3.1-r1"></script>
+<script src="./build/app.js?v=7.4.0-r1"></script>
 </body>
 </html>

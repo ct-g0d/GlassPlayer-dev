@@ -6,6 +6,8 @@ Peregrine Lake keeps one runtime owner for every mutable value. The Store contai
 |---|---|---|---|---|---|
 | `library.tracks`, `currentTrackId`, import/sort state | Library Service / App Store | Store snapshot backed by the single `playlist` runtime array | Yes, without `File`/URL objects | Library Service | Selectors, Views, Playback Service |
 | Queue, manual priority, resume target | Queue Service | Store snapshot backed by the single `playQueue` runtime array | Yes | Queue Service | Playback Service, Queue View |
+| User playlists (names, stable track keys) | Queue Service | One `userPlaylists` record in the existing `recommendations` store; no schema change | Yes | Queue Service | Library View |
+| Liked songs | Queue Service derived from `behaviorEvents` like records; Neural Service consumes the signal | Latest-wins over existing `like` events plus `+3.0` preference weight (`unlike` persists with signal 0) | Yes | Queue Service (state), History/Neural (signal) | Library View, Neural Service |
 | Shuffle timeline and cursor | Queue Service | Store snapshot backed by the single timeline | Yes | Queue Service | Playback Service |
 | Playback status, intent, position, volume and mode | Playback Service / App Store | Store state | Yes | Playback Service | Selectors, Views, PiP Service |
 | AudioContext, Deck A/B, AudioNodes, crossfade/normalization gains and analyser | Audio Engine | Engine-private runtime | No | Audio Engine only | Audio Engine snapshots only |

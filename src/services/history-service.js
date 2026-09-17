@@ -350,12 +350,147 @@
     const insights=buildListeningInsights(store);
     setBatchedScrollHTML($("#dataDashboard"),`<section class="data-card wide"><h3>${tr("过去十天听歌时间","Listening Time · Last Ten Days")}</h3><div class="data-sub">${tr("悬停数据点查看日期与详细时长","Hover a point for the date and listening time")}</div>${svg}</section><section class="data-card"><h3>${tr("过去十二周最爱艺人","Favorite Artists · Twelve Weeks")}</h3><div class="data-sub">${tr("每周以听歌时长计算","Calculated from weekly listening time")}</div>${periodBars(weeks)}</section><section class="data-card"><h3>${tr("过去十二个月最爱艺人","Favorite Artists · Twelve Months")}</h3><div class="data-sub">${tr("悬停条形查看月份、艺人和时长","Hover a bar for month, artist and time")}</div>${periodBars(months)}</section><section class="data-card wide"><div class="neural-insights">${insights.map(text=>`<div class="neural-insight">${text}</div>`).join("")}</div></section>`);
   }
+  /* ============ annual report (7.4.0 典藏更新) ============
+     History Service owns yearly aggregation; History View renders it.
+     The report year rolls forward automatically: Dec 31 (year Y) through
+     Jan 14 (year Y+1) opens year Y and presents it once per session.
+     Completed years stay viewable and downloadable all year. Downloads are
+     standalone interactive HTML (inline style plus <details> expanders and
+     title tooltips; blob: covers are omitted by design). */
+  const ANNUAL_WINDOW_END_DAY=14;
+  function annualReportWindow(now=new Date()){
+    const month=now.getMonth(),date=now.getDate(),year=now.getFullYear();
+    if(month===11&&date===31)return {open:true,year};
+    if(month===0&&date<=ANNUAL_WINDOW_END_DAY)return {open:true,year:year-1};
+    return {open:false,year:year-1};
+  }
+  function annualAvailableYears(store){
+    const years=new Set(),collect=key=>{const year=Number(String(key||"").slice(0,4));if(Number.isInteger(year)&&year>=2000&&year<=9999)years.add(year);};
+    Object.keys(store.daily||{}).forEach(collect);
+    Object.values(store.songs||{}).forEach(entry=>Object.keys(entry?.daily||{}).forEach(collect));
+    return [...years].sort((a,b)=>b-a);
+  }
+  function buildAnnualReport(store,year){
+    const range={start:new Date(year,0,1),end:new Date(year+1,0,1)};
+    const total=sumDailyRange(store.daily,range);
+    const songs=Object.entries(store.songs||{}).map(([key,entry])=>({key,entry,track:currentTrackForHistory(key,entry),seconds:sumSongRange(entry,range),plays:sumPlayCountRange(entry,range,Number(entry.duration)||0)})).filter(item=>item.seconds>0).sort((a,b)=>b.seconds-a.seconds||b.plays-a.plays);
+    const totalPlays=songs.reduce((sum,item)=>sum+item.plays,0);
+    const artists=new Map(),albums=new Map(),genres=new Map();
+    songs.forEach(item=>{
+      const artist=item.track?.artist||item.entry.artist,album=item.track?.album||item.entry.album,genre=item.track?.genre||item.entry.genre;
+      if(artist)artists.set(artist,(artists.get(artist)||0)+item.seconds);
+      if(album)albums.set(album,(albums.get(album)||0)+item.seconds);
+      if(genre)genres.set(genre,(genres.get(genre)||0)+item.seconds);
+    });
+    const topRows=list=>[...list.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const monthly=Array.from({length:12},(_,month)=>{
+      const seconds=sumDailyRange(store.daily,{start:new Date(year,month,1),end:new Date(year,month+1,1)});
+      const [name]=artistTopForMonth(store,new Date(year,month,1));
+      return {label:new Date(year,month,1).toLocaleDateString(uiLanguage==="zh"?"zh-CN":"en-US",{month:"short"}),name:seconds>0?name:tr("—","—"),value:seconds};
+    });
+    const activeDays=Object.entries(store.daily||{}).filter(([key,value])=>String(key).startsWith(`${year}-`)&&(Number(value)||0)>0).length;
+    let bestDay=null;
+    Object.entries(store.daily||{}).forEach(([key,value])=>{if(String(key).startsWith(`${year}-`)&&(Number(value)||0)>0&&(!bestDay||Number(value)>bestDay.value))bestDay={key,value:Number(value)};});
+    const hourTotals=Array.from({length:24},()=>0);
+    Object.entries(store.hourly||{}).forEach(([day,hours])=>{if(!String(day).startsWith(`${year}-`))return;Object.entries(hours||{}).forEach(([hour,seconds])=>{const slot=Number(hour);if(slot>=0&&slot<24)hourTotals[slot]+=Number(seconds)||0;});});
+    const peakHour=hourTotals.indexOf(Math.max(...hourTotals,0));
+    return {year,total,totalPlays,activeDays,bestDay,songs:songs.slice(0,10),topSong:songs[0]||null,artists:topRows(artists),albums:topRows(albums),genres:topRows(genres),monthly,peakHour:hourTotals[peakHour]>0?peakHour:null};
+  }
+  let annualReportYear=null,annualAutoOpenedFor=0;
+  function renderAnnualTabs(years,target,win){
+    const host=$("#annualYearTabs");if(!host)return;
+    host.innerHTML=years.map(year=>`<button type="button" class="${year===target?"active":""}" data-annual-year="${year}">${year}${win.open&&year===win.year?` · ${tr("新","New")}`:""}</button>`).join("");
+  }
+  function renderAnnualBody(store,year){
+    const host=$("#annualReportBody");if(!host)return;
+    const report=buildAnnualReport(store,year);
+    $("#annualReportTitle").textContent=tr(`${year} 年度报告`,`${year} Annual Report`);
+    if(report.total<=0){setBatchedScrollHTML(host,`<div class="empty-state"><p>${tr(`${year} 年还没有听歌记录`,`No listening history for ${year}`)}</p></div>`);return;}
+    const card=(label,value)=>`<article class="favorite-card annual-stat"><div class="favorite-label">${label}</div><div class="favorite-answer"><strong>${value}</strong></div></article>`;
+    const top=report.topSong;
+    const topSongValue=top?`${escapeHtml(top.track?.title||top.entry.title)} · ${escapeHtml(top.track?.artist||top.entry.artist)}<span>${fmtDuration(top.seconds)}</span>`:"—";
+    const bestDayValue=report.bestDay?`${escapeHtml(report.bestDay.key)} · ${fmtDuration(report.bestDay.value)}`:"—";
+    const peakValue=report.peakHour===null?tr("—","—"):tr(`${report.peakHour}:00 最活跃`,`Most active at ${report.peakHour}:00`);
+    const rankRows=report.songs.map((item,rank)=>{
+      const cover=item.track?.thumbUrl||item.track?.coverUrl;
+      const thumb=cover?`<img src="${cover}" class="track-thumb" loading="lazy" decoding="async">`:`<div class="track-thumb"><span>${escapeHtml((item.track?.title||item.entry.title||"?").trim().slice(0,1))}</span></div>`;
+      return `<div class="top-row"><div class="top-rank">${rank+1}</div><div class="top-row-main">${thumb}<div class="top-info"><div class="t-title">${escapeHtml(item.track?.title||item.entry.title)}</div><div class="t-artist">${escapeHtml(item.track?.artist||item.entry.artist)}</div></div></div><div class="top-row-metrics"><div class="top-bar-wrap"><div class="top-bar-fill" style="width:${(item.seconds/Math.max(1,report.songs[0].seconds)*100).toFixed(0)}%"></div></div><div class="top-meta"><span>${fmtDuration(item.seconds)} · ${item.plays}${tr("次"," plays")}</span></div></div></div>`;
+    }).join("");
+    const dimCard=(label,rows)=>`<section class="data-card"><h3>${label}</h3>${periodBars(rows.map(([name,value])=>({label:"",name,value})))}</section>`;
+    host.innerHTML=`<div class="annual-summary">${card(tr("年度听歌","Listening Time"),fmtDuration(report.total))}${card(tr("年度播放","Plays"),`${report.totalPlays}${tr("次","")}`)}${card(tr("活跃天数","Active Days"),`${report.activeDays}${tr("天","")}`)}${card(tr("年度之歌","Top Song"),topSongValue)}</div>`
+      +`<section class="data-card wide"><h3>${tr("月度听歌时间","Monthly Listening")}</h3><div class="data-sub">${tr("条形为当月时长，悬停查看当月最爱艺人","Bars show monthly time; hover for the monthly top artist")}</div>${periodBars(report.monthly)}</section>`
+      +`<section class="data-card wide"><h3>${tr("年度 Top 10","Yearly Top 10")}</h3>${rankRows}</section>`
+      +`<div class="annual-dims">${dimCard(tr("最爱艺人","Favorite Artists"),report.artists)}${dimCard(tr("最爱专辑","Favorite Albums"),report.albums)}${dimCard(tr("最爱风格","Favorite Genres"),report.genres)}</div>`
+      +`<section class="data-card wide"><div class="neural-insights"><div class="neural-insight">${tr(`单日最高 <strong>${escapeHtml(bestDayValue)}</strong>。`,`Peak day: <strong>${escapeHtml(bestDayValue)}</strong>.`)}${report.peakHour===null?"":tr(`你通常在 <strong>${report.peakHour}:00</strong> 进入听歌状态。`,`You usually settle in around <strong>${report.peakHour}:00</strong>.`)}</div></div></section>`;
+  }
+  function openAnnualReport(year){
+    const store=loadHistoryStore(),win=annualReportWindow();
+    const years=annualAvailableYears(store);
+    if(win.open&&!years.includes(win.year))years.unshift(win.year);
+    const target=years.includes(year)?year:(win.open?win.year:years[0]);
+    if(target===undefined){showToast(tr("还没有听歌记录","No listening history yet"));return;}
+    annualReportYear=target;
+    renderAnnualTabs(years,target,win);
+    renderAnnualBody(store,target);
+    $("#annualReportModal").classList.add("show");
+    setTimeout(()=>{try{scheduleScrollEdgeUpdate($("#annualReportBody"));}catch(error){}},260);
+  }
+  function closeAnnualReport(){$("#annualReportModal").classList.remove("show");}
+  function maybeAutoOpenAnnualReport(){
+    const win=annualReportWindow();
+    if(!win.open||annualAutoOpenedFor===win.year)return;
+    if(!$(".view[data-view=\"history\"]")?.classList.contains("active"))return;
+    annualAutoOpenedFor=win.year;openAnnualReport(win.year);
+  }
+  function syncAnnualButton(){
+    const button=$("#annualReportBtn");if(!button)return;
+    const win=annualReportWindow();
+    button.textContent=tr("年度报告","Annual Report");
+    button.classList.toggle("fresh",win.open);
+    button.title=win.open?tr(`${win.year} 年度报告已开放，1 月 14 日截止`,`${win.year} report is open until January 14`):tr("查看往年报告","Browse past yearly reports");
+  }
+  function buildAnnualReportHTML(report){
+    const esc=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    const style=`*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 50% -8%,#2a2417 0%,#141318 46%,#0e0d12 100%);color:#f2ecdf;font-family:system-ui,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;min-height:100vh}header.cover{max-width:880px;margin:0 auto;padding:64px 40px 10px;text-align:center}.kicker{letter-spacing:.42em;font-size:12px;color:#c9a45c;font-weight:600}.year{font-family:Georgia,"Songti SC","SimSun",serif;font-size:120px;line-height:1;margin:10px 0 4px;background:linear-gradient(180deg,#f6e7c4 20%,#d9ab55 62%,#9a7430 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.rule{width:120px;height:2px;margin:18px auto;background:linear-gradient(90deg,transparent,#c9a45c,transparent)}.gen{color:#8f8a7c;font-size:13px}.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:880px;margin:26px auto 0;padding:0 40px}.hero .cell{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:20px 10px;text-align:center;box-shadow:0 18px 44px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}.hero .k{font-size:12px;letter-spacing:.2em;color:#a49d8b}.hero .v{font-family:Georgia,"Songti SC",serif;font-size:34px;margin-top:8px;color:#f6e7c4}main{max-width:880px;margin:0 auto;padding:26px 40px 10px}section.card{background:rgba(255,255,255,.038);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:26px 28px;margin:0 0 18px;box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.07)}h2{margin:0 0 4px;font-size:15px;letter-spacing:.28em;color:#c9a45c;font-weight:600}h2 small{display:block;letter-spacing:.06em;color:#6f6a5c;font-size:12px;margin-top:6px;font-weight:400}.topsong{display:flex;align-items:baseline;gap:18px;margin-top:14px}.topsong .no{font-family:Georgia,serif;font-size:54px;color:#c9a45c;line-height:1}.topsong .t{font-size:24px;font-weight:700}.topsong .a{color:#a49d8b;margin-top:4px}.topsong .m{margin-left:auto;text-align:right;color:#a49d8b;font-size:13px;white-space:nowrap}.row{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:11px 2px;border-top:1px solid rgba(255,255,255,.07)}.row:first-of-type{border-top:0}.row .no{font-family:Georgia,serif;font-size:26px;color:#8f8a7c}.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no{color:#e3bd72}.row .t{font-weight:600}.row .a{color:#8f8a7c;font-size:13px;margin-top:2px}.row .m{color:#a49d8b;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.bar{display:grid;grid-template-columns:70px 1fr 96px;gap:12px;align-items:center;margin:9px 0;font-size:13px}.bar .track{height:8px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar .fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8a6a2e,#e3bd72)}.bar .num{text-align:right;color:#a49d8b;font-variant-numeric:tabular-nums}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}h4{margin:2px 0 8px;font-size:13px;letter-spacing:.2em;color:#c9a45c}details{margin-top:14px}summary{cursor:pointer;color:#a49d8b;font-size:13px}svg.chart{display:block;width:100%;height:auto;margin-top:10px}.dot{fill:#e3bd72;stroke:#141318;stroke-width:2}.axis{fill:#8f8a7c;font-size:12px}.rhythm{margin-top:6px;color:#cfc8b4;font-size:14px;line-height:2}footer{max-width:880px;margin:0 auto;padding:14px 40px 56px;color:#6f6a5c;font-size:12px;text-align:center}@media(prefers-color-scheme:light){body{background:radial-gradient(1200px 500px at 50% -8%,#f7ecd4 0%,#f3efe6 46%,#ece7d9 100%);color:#2b2620}header .gen{color:#8a7a52}section.card,.hero .cell{background:rgba(255,255,255,.72);border-color:rgba(120,90,30,.16);box-shadow:0 14px 34px rgba(120,90,30,.12)}.hero .v,.topsong .t{color:#4a3a17}.kicker,h2,h4,.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no,.topsong .no{color:#8a6a2e}.row{border-color:rgba(120,90,30,.14)}.row .a,.row .m,.bar .num,.topsong .m,.topsong .a,.rhythm{color:#6f6553}.bar .track{background:rgba(120,90,30,.14)}footer{color:#8a7a52}}`;
+    const W=760,H=230,padX=10,padB=32,padT=18;
+    const maxMonth=Math.max(1,...report.monthly.map(row=>row.value));
+    const pts=report.monthly.map((row,i)=>({x:padX+i*(W-padX*2)/11,y:H-padB-(row.value/maxMonth)*(H-padT-padB),...row}));
+    const linePath="M"+pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L");
+    const areaPath=`${linePath} L${(W-padX).toFixed(1)},${H-padB} L${padX.toFixed(1)},${H-padB} Z`;
+    const chart=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="annualGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3bd72" stop-opacity=".85"/><stop offset="1" stop-color="#e3bd72" stop-opacity=".04"/></linearGradient></defs><path d="${areaPath}" fill="url(#annualGold)"/><path d="${linePath}" fill="none" stroke="#e3bd72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${pts.map(p=>`<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"><title>${esc(p.label)} · ${esc(p.name)} · ${esc(fmtDuration(p.value))}</title></circle><text class="axis" x="${p.x.toFixed(1)}" y="${H-10}" text-anchor="middle">${esc(p.label)}</text>`).join("")}</svg>`;
+    const topRows=report.songs.map((item,rank)=>`<div class="row"><span class="no">${String(rank+1).padStart(2,"0")}</span><span><span class="t">${esc(item.track?.title||item.entry.title)}</span><div class="a">${esc(item.track?.artist||item.entry.artist)}</div></span><span class="m">${esc(fmtDuration(item.seconds))} · ${item.plays} 次</span></div>`).join("");
+    const dim=(title,list)=>`<div><h4>${title}</h4>${list.map(([name,value])=>`<div class="bar" title="${esc(fmtDuration(value))}"><span></span><span>${esc(name)}</span><span class="num">${esc(fmtDuration(value))}</span></div>`).join("")||'<div class="a">—</div>'}</div>`;
+    const top=report.topSong;
+    return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glass Player ${report.year} 年度报告</title><style>${style}</style></head><body>`
+      +`<header class="cover"><div class="kicker">GLASS PLAYER · ANNUAL REPORT</div><div class="year">${report.year}</div><div class="rule"></div><div class="gen">本地生成 · ${esc(new Date().toLocaleDateString())}</div></header>`
+      +`<div class="hero"><div class="cell"><div class="k">年度听歌</div><div class="v">${esc(fmtDuration(report.total))}</div></div><div class="cell"><div class="k">年度播放</div><div class="v">${report.totalPlays}</div></div><div class="cell"><div class="k">活跃天数</div><div class="v">${report.activeDays}</div></div></div>`
+      +`<main><section class="card"><h2>年度之歌<small>TOP SONG OF THE YEAR</small></h2><div class="topsong"><span class="no">01</span><span><span class="t">${esc(top?.track?.title||top?.entry.title||"—")}</span><div class="a">${esc(top?.track?.artist||top?.entry.artist||"")}</div></span><span class="m">${top?esc(fmtDuration(top.seconds))+" · "+top.plays+" 次":""}</span></div></section>`
+      +`<section class="card"><h2>月度曲线<small>MONTHLY LISTENING</small></h2>${chart}</section>`
+      +`<section class="card"><h2>年度 TOP 10<small>YEARLY TOP SONGS</small></h2><details open><summary>展开 / 收起</summary>${topRows}</details></section>`
+      +`<section class="card"><h2>最爱版图<small>FAVORITES</small></h2><div class="cols">${dim("艺人 ARTISTS",report.artists)}${dim("专辑 ALBUMS",report.albums)}${dim("风格 GENRES",report.genres)}</div><div class="rhythm">单日最高 ${esc(report.bestDay?`${report.bestDay.key} · ${fmtDuration(report.bestDay.value)}`:"—")}。${report.peakHour===null?"":`你通常在 ${report.peakHour}:00 进入听歌状态。`}</div></section></main>`
+      +`<footer>由 Glass Player 在本地生成，未上传任何数据 · Generated locally, nothing uploaded.</footer></body></html>`;
+  }
+  function downloadAnnualReport(year){
+    const store=loadHistoryStore(),report=buildAnnualReport(store,year);
+    if(report.total<=0){showToast(tr("这一年还没有听歌记录","No listening history for this year"));return;}
+    const blob=new Blob(["﻿",buildAnnualReportHTML(report)],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download=`Glass Player Annual Report ${year}.html`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    showToast(tr("年度报告已导出","Annual report exported"));
+  }
+  $("#annualReportBtn").addEventListener("click",()=>openAnnualReport());
+  $("#annualCloseBtn").addEventListener("click",closeAnnualReport);
+  $("#annualDownloadBtn").addEventListener("click",()=>{if(annualReportYear!==null&&annualReportYear!==undefined)downloadAnnualReport(annualReportYear);});
+  $("#annualReportModal").addEventListener("click",event=>{if(event.target===$("#annualReportModal"))closeAnnualReport();});
+  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("#annualReportModal")?.classList.contains("show"))closeAnnualReport();});
+  $("#annualYearTabs").addEventListener("click",event=>{const button=event.target.closest("[data-annual-year]");if(button)openAnnualReport(Number(button.dataset.annualYear));});
   const historyRenderedSignatures=new Map();
   function renderHistory(){
     /* Metadata migration already runs after import and manual rescan. Repeating
        the full identity reconciliation on every tab click blocked first paint. */
     const store=loadHistoryStore(),mode=$("#historyModeSeg button.active")?.dataset.historyMode||"time";
     lastVisibleHistoryRefreshAt=Date.now();
+    syncAnnualButton();
     $$(".history-pane").forEach(p=>p.classList.toggle("active",p.id===({time:"historyTimePane",favorites:"historyFavoritesPane",data:"historyDataPane"}[mode])));
     const activeRange=$("#rangeSeg button.active")?.dataset.r||"day";
     const signature=`${historyStoreRevision}|${uiLanguage}|${playlist.length}|${activeRange}`;

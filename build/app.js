@@ -14,7 +14,7 @@ window.GPModules.register = function register(name,factory){
   const GP_TRACK_CACHE_SCHEMA_VERSION = 7;
   const GP_RECOGNITION_SCHEMA_VERSION = 2;
   const GP_SPECTRUM_ALGORITHM_VERSION = "2.1.0";
-  const GP_FUSION_ENGINE_VERSION = "4.0";
+  const GP_FUSION_ENGINE_VERSION = "4.1";
   const GP_SPECTRUM_ENGINE_VERSION = "2.3";
   const GP_NEURAL_ENGINE_VERSION = "2.2";
   const GP_MOTION_TARGET_FPS = 120;
@@ -435,7 +435,7 @@ window.GPModules.register = function register(name,factory){
     next(){return this.runtime&&this.runtime.next?this.runtime.next():undefined;},
     previous(){return this.runtime&&this.runtime.previous?this.runtime.previous():undefined;}
   };
-  /* /src/ui/galaxy.js and /src/ui/timeline.js — module boundaries only, no Beta UI mutation. */
+  /* Module boundaries only, no Beta UI mutation. */
   const GPUIModules={
     galaxy:{status:"reserved",mount:null},
     timeline:{status:"reserved",mount:null}
@@ -445,10 +445,10 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.3.1",
+    version:"7.4.0",
     architecture:"Peregrine Lake",
-    engines:{core:"GP Core 4.1",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`},
-    paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["galaxy.js","timeline.js"],storage:["indexeddb.js"]},
+    engines:{core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`},
+    paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
     core:{audio:GPAudioCore,database:GPDatabase,analyzer:GPAnalyzer},
     ui:GPUIModules,
     storage:{adapter:gpIndexedDB,indexeddb:GPIndexedDBAdapter},
@@ -568,7 +568,7 @@ window.GPModules.register = function register(name,factory){
     "可变字体会获得最平滑的粗细变化；普通字体会自动匹配最接近的字重。":"Variable fonts provide the smoothest weight changes; standard fonts use the closest available weight.",
     "还没有音乐":"No music yet","点击上方按钮导入，或直接把歌曲/文件夹拖进窗口":"Import above, or drop songs and folders into the window","封面会自动从 MP3/FLAC/M4A 中识别":"Artwork is read automatically from MP3, FLAC and M4A files",
     "歌曲文件不会保存到磁盘外，刷新页面需要重新导入；听歌记录会保留。":"Audio files never leave your device. Reimport after refresh; listening history is retained.",
-    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","音乐银河":"Music Galaxy","当前版本 7.3.1":"Current Version 7.3.1","版本 7.3.1":"Ver. 7.3.1","GALAXY UPDATE":"GALAXY UPDATE","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
+    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.4.0":"Current Version 7.4.0","版本 7.4.0":"Ver. 7.4.0","COLLECTION UPDATE":"COLLECTION UPDATE","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
     "音乐库数据":"Library Data","重新扫描歌曲库":"Rescan Music Library","重新读取当前导入歌曲的 Genre、文件名信息、时长与封面；保留 Spectrum ID、MFCC、Energy、BPM 和收听历史。":"Reread Genre, filename metadata, duration and artwork from imported songs while preserving Spectrum ID, MFCC, Energy, BPM and listening history.",
     "重新扫描歌曲库？":"Rescan Music Library?","将从当前导入的音频文件重新读取 Genre、文件名信息、时长和封面，并覆盖缓存中的旧 metadata。Spectrum ID、MFCC、Energy、BPM 与收听历史不会改变。":"The current audio files will be reread for Genre, filename metadata, duration and artwork, replacing stale cached metadata. Spectrum ID, MFCC, Energy, BPM and listening history will remain unchanged.","取消":"Cancel","开始扫描":"Start Scan",
     "精选字体":"Curated Fonts","未知艺人":"Unknown Artist","未知":"Unknown","计算中…":"Calculating…","解码中…":"Decoding…","单声道":"Mono","立体声":"Stereo","版本列表":"Version List",
@@ -601,19 +601,17 @@ window.GPModules.register = function register(name,factory){
     "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
     "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
     "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","音乐银河":"Музыкальная галактика","当前版本 7.3.1":"Текущая версия 7.3.1","版本 7.3.1":"Версия 7.3.1","GALAXY UPDATE":"ОБНОВЛЕНИЕ ГАЛАКТИКИ","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
+    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.4.0":"Текущая версия 7.4.0","版本 7.4.0":"Версия 7.4.0","COLLECTION UPDATE":"ОБНОВЛЕНИЕ КОЛЛЕКЦИИ","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
     "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
     "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
   };
-  Object.assign(UI_EN,{
-    "探索音乐关系":"Explore musical relationships","每颗星代表一首歌，相近的星共享音乐特征":"Each star represents a song; nearby stars share musical traits.","星点代表歌曲":"Stars represent songs","星团代表音乐风格":"Clusters represent musical genres","悬停查看歌曲":"Hover to identify","点击固定信息":"Click to pin details","导入歌曲后即可探索音乐银河":"Import music to explore your Music Galaxy","已展示 {shown} / {total} 首可分析歌曲":"Showing {shown} of {total} analyzable songs","已展示 {count} 个歌曲点":"Showing {count} song points","歌曲名称":"Song Title","歌手":"Artist","风格":"Genre","节奏 {tempo}":"Tempo {tempo}","音乐银河歌曲分布图":"Music Galaxy song map"
-  });
-  Object.assign(UI_RU,{
-    "探索音乐关系":"Исследуйте музыкальные связи","每颗星代表一首歌，相近的星共享音乐特征":"Каждая звезда — это песня; близкие звёзды имеют общие музыкальные черты.","星点代表歌曲":"Звёзды обозначают песни","星团代表音乐风格":"Скопления обозначают музыкальные жанры","悬停查看歌曲":"Наведите курсор, чтобы узнать песню","点击固定信息":"Нажмите, чтобы закрепить сведения","导入歌曲后即可探索音乐银河":"Импортируйте музыку, чтобы исследовать музыкальную галактику","已展示 {shown} / {total} 首可分析歌曲":"Показано {shown} из {total} анализируемых песен","已展示 {count} 个歌曲点":"Показано {count} точек-песен","歌曲名称":"Название песни","歌手":"Исполнитель","风格":"Жанр","节奏 {tempo}":"Темп {tempo}","音乐银河歌曲分布图":"Карта песен музыкальной галактики"
-  });
-  Object.assign(UI_EN,{"音乐银河图例":"Music Galaxy legend"});
-  Object.assign(UI_RU,{"音乐银河图例":"Легенда музыкальной галактики"});
+  
+  
+
+
   Object.assign(UI_RU,{"常规":"Обычный","中等":"Средний","半粗":"Полужирный","特粗":"Тяжёлый","运行身份":"Идентичность среды","架构":"Архитектура","引擎":"Движки","数据安全":"Безопасность кэша","本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。":"Один локальный runtime; настройки не добавляют состояние, а анализ и история прослушивания сохраняют прежние границы кэша.","默认音乐文件夹":"Папка музыки по умолчанию","选择文件夹":"Выбрать папку","选择后，打开 HTML 时会自动导入这个文件夹中的音乐；浏览器可能要求重新授权。":"После выбора музыка из этой папки будет импортироваться при открытии HTML; браузер может запросить разрешение снова.","已保存默认文件夹，下次打开会自动导入音乐。":"Папка по умолчанию сохранена. Музыка импортируется при следующем открытии.","默认文件夹已选择；本次找到 {count} 个音频文件。":"Папка выбрана; найдено аудиофайлов: {count}.","默认文件夹中没有找到音频文件。":"В папке по умолчанию аудиофайлы не найдены.","当前浏览器不支持自动记住文件夹；请每次使用添加文件夹。":"Этот браузер не поддерживает запоминание папки; каждый раз используйте «Добавить папку»."});
+  Object.assign(UI_EN,{"年度报告":"Annual Report","无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report"});
+  Object.assign(UI_RU,{"年度报告":"Годовой отчёт","无损":"Лосслесс","播放全部":"Играть всё","新建歌单":"Новый плейлист","新建歌单…":"Новый плейлист…","新建歌单名称":"Название нового плейлиста","重命名":"Переименовать","删除歌单":"Удалить плейлист","未命名歌单":"Плейлист без названия","歌单：全部歌曲":"Плейлисты: вся музыка","还没有自建歌单，先去歌单里新建一个吧":"Пока нет своих плейлистов — создайте его в разделе «Плейлисты»","下载报告":"Скачать отчёт"});
   const i18nTextOriginal=new WeakMap();
   const i18nAttrOriginal=new WeakMap();
   function translatedValue(key){if(uiLanguage==="zh")return key;const dictionary=uiLanguage==="ru"?UI_RU:UI_EN;return dictionary[key]||UI_EN[key]||key;}
@@ -661,16 +659,45 @@ window.GPModules.register = function register(name,factory){
       version:"Unreleased", date:"待定", kind:"ideas",
       summary:"GP Gen 8–9+ 产品路线：继续完善基于缓存声学特征的推荐体验；Electron Lake 与 EXE 迁移正式顺延至 Gen 9+。",
       sections:[
-        {title:"Gen 8 — Galaxy-Aware Recommendation",items:[
-          "使用音乐银河缓存的 MFCC + BPM 距离重度优化随机播放与每日推荐，使单个推荐歌单在风格、音色和 tempo 上保持合理连贯。",
-          "算法仍需保留新鲜度、多样性与随机性，不能因为声学距离接近而无限重复同一艺人或同一小型星系。",
-          "MFCC、BPM、二维坐标和聚类结果继续写入 IndexedDB，歌曲未变化时不重复分析。"
+        {title:"Gen 8 — Recommendation Quality",items:[
+          "继续用缓存的 MFCC、BPM 与离线风格关系优化每日推荐与随机播放的连贯性，同时保留新鲜度、多样性与随机性。",
+          "MFCC、BPM 与分析结果继续写入 IndexedDB，歌曲未变化时不重复分析。"
         ]},
         {title:"Gen 9+ — Electron Lake",items:[
           "Electron Lake、SQLite和从单文件HTML迁移为桌面EXE的计划由原Gen 5+正式推迟至Gen 9及以后。",
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.4.0", date:"2026-09-18", kind:"minor",
+      summary:"典藏更新：自建歌单与我喜欢收藏上线，听歌记录右下角加入年度报告，播放界面为无损格式加上标识，并修复字体切换问题。",
+      sections:[
+        {title:"歌单与喜欢",items:["曲库工具栏新增歌单切换，可以新建、重命名、删除自建歌单，把歌曲加入歌单或从歌单移除，并在歌单内按顺序连续播放。","每首歌新增爱心按钮，喜欢会同时教会 Resonance Boost 你的偏好；喜欢的歌曲自动收进我喜欢。"]},
+        {title:"年度报告",items:["听歌记录右下角新增年度报告按钮，每年 12 月 31 日至次年 1 月 14 日自动弹出当年报告。","往年报告随时可以查看，并能下载为可交互的独立 HTML 文件；年份会自动往前迭代。"]},
+        {title:"播放与字体",items:["播放界面在 FLAC 歌曲标题同行显示无损小徽标，其他格式保持原样。","字体选择器会标出系统未安装的字体，切换到缺失字体时会有回退提示，不再静默没有变化。"]},
+        {title:"引擎版本",items:["GP Core 4.2、GP Fusion Engine 4.1、GP Motion Engine 4.1、GP Spatial Engine 1.1、GP Spectrum Engine 2.3 与 GP Neural Engine 2.2 保持不变。"]}
+      ],english:{summary:"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge on the Player and font-switch feedback.",sections:[
+        {title:"Playlists and Likes",items:["The Library toolbar gains a playlist switcher: create, rename and delete custom playlists, add songs or remove them, and play straight through a playlist in order.","Every song gains a like button; likes also teach Resonance Boost your taste, and liked songs collect under Liked automatically."]},
+        {title:"Annual Report",items:["Listening History gains an annual-report button at the bottom right; each year's report opens automatically from December 31 through January 14.","Past yearly reports stay viewable any time and download as an interactive standalone HTML file; years roll forward automatically."]},
+        {title:"Playback and Typography",items:["The Player shows a small inline lossless badge on the FLAC song title row and stays unchanged for other formats.","The font picker marks families your system has not installed, and switching to a missing font shows a fallback notice instead of silently changing nothing."]},
+        {title:"Engine Versions",items:["GP Core 4.2, GP Fusion Engine 4.1, GP Motion Engine 4.1, GP Spatial Engine 1.1, GP Spectrum Engine 2.3 and GP Neural Engine 2.2 remain unchanged."]}
+      ]}
+    },
+    {
+      version:"7.3.2", date:"2026-09-17", kind:"patch",
+      summary:"STABILITY UPDATE：移除音乐银河产品线，修复播完自动暂停与导入后切歌问题，并让大批量导入先关闭对话框、后台继续补齐音频特征。",
+      sections:[
+        {title:"音乐银河移除",items:["导航与主界面不再提供音乐银河入口；已导入歌曲、听歌记录、用户偏好与缓存分析不受影响。","每日推荐改用本地缓存特征与离线风格关系计算相似度，不再依赖银河服务。"]},
+        {title:"播放稳定性",items:["修复歌曲自然播完被误判为手动暂停导致停住的问题，播完会自动进入下一首。","播放结束状态下的播放/暂停切换只需要一次操作；跨淡入与空歌单的越界保护补齐，切歌失败不再静默卡住。"]},
+        {title:"导入速度",items:["导入对话框在歌曲入库、列表渲染与推荐生成完成后即关闭，音频特征分析转入后台继续补齐并自动刷新相关界面。","同一歌曲的时长、封面与信息读取改为并行，数据物化并发提升，导入等待中的空转让步减少，固定收尾等待改为绘制提交确认。"]},
+        {title:"引擎版本",items:["GP Core 更新至 4.2，GP Fusion Engine 更新至 4.1；GP Motion Engine 4.1、GP Spatial Engine 1.1、GP Spectrum Engine 2.3 与 GP Neural Engine 2.2 保持不变。"]}
+      ],english:{summary:"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import track switching, and lets large imports close the dialog first while audio analysis continues in the background.",sections:[
+        {title:"Music Galaxy Removal",items:["The navigation and main area no longer offer a Music Galaxy entry; imported songs, listening history, user preference and cached analysis are unaffected.","Daily Mix now computes similarity from local cached features and offline genre relations without the Galaxy service."]},
+        {title:"Playback Stability",items:["Fixed tracks stalling at the end because a natural finish was mistaken for a manual pause; playback now advances automatically.","Toggling play after a track ends takes one action; crossfade and empty-library guards are completed so failed switches no longer stall silently."]},
+        {title:"Import Speed",items:["The import dialog closes once songs are stored, lists rendered and recommendations generated, while audio feature analysis continues in the background and refreshes the affected views automatically.","Duration, artwork and metadata reads for the same song now run in parallel with higher materialization concurrency, fewer idle yields while importing, and paint-confirmed completion instead of a fixed wait."]},
+        {title:"Engine Versions",items:["GP Core advances to 4.2 and GP Fusion Engine to 4.1; GP Motion Engine 4.1, GP Spatial Engine 1.1, GP Spectrum Engine 2.3 and GP Neural Engine 2.2 remain unchanged."]}
+      ]}
     },
     {
       version:"7.3.1", date:"2026-08-25", kind:"patch",
@@ -3092,6 +3119,8 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
+    "7.3.2":"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import switching, and moves audio analysis behind the import dialog.",
     "7.3.1":"GALAXY UPDATE adds Music Galaxy for exploring acoustic and tempo relationships, with Daily Mix reusing the same similarity model.",
     "7.3.0":"HOTFIX BUILD improves spatial clarity, recommendation variety, scroll intent, EQ control, ambient transitions and Library artwork.",
     "7.2.2":"HOTFIX BUILD keeps imports moving after minimize, reduces Daily Mix spinner jank, and continues 7.2.2 with a shared 1360px canvas, Russian UI, no Library filter, fixed font-picker rows, stronger distinct ambient modes and independent History scrolling.",
@@ -4530,14 +4559,14 @@ window.GPModules.register = function register(name,factory){
       const minors=generations.get(generation);if(!minors.has(minor))minors.set(minor,[]);minors.get(minor).push({release,i});
     });
     const releaseButton=({release,i})=>`<button class="release-button ripple-target" data-release-index="${i}"><strong>${escapeHTML(release.version)}</strong></button>`;
-    const tree=[...generations.entries()].map(([generation,minors])=>`<details class="release-generation" ${generation==="7"?"open":""}><summary>Gen ${generation}</summary><div class="release-generation-body">${[...minors.entries()].map(([minor,items])=>`<details class="release-minor" ${minor==="7.3"?"open":""}><summary>${escapeHTML(minor)}</summary><div class="release-minor-body">${items.map(releaseButton).join("")}</div></details>`).join("")}</div></details>`).join("");
+    const tree=[...generations.entries()].map(([generation,minors])=>`<details class="release-generation" ${generation==="7"?"open":""}><summary>Gen ${generation}</summary><div class="release-generation-body">${[...minors.entries()].map(([minor,items])=>`<details class="release-minor" ${minor==="7.4"?"open":""}><summary>${escapeHTML(minor)}</summary><div class="release-minor-body">${items.map(releaseButton).join("")}</div></details>`).join("")}</div></details>`).join("");
     index.innerHTML = `<div class="release-index-label">${tr("选择版本","Select Version")}</div>${direct.map(releaseButton).join("")}${tree}`;
     if(!index.dataset.wired){index.addEventListener("click", e => {const summary=e.target.closest("summary");if(summary&&index.contains(summary)){e.preventDefault();toggleReleaseBranch(summary.parentElement);return;}const button = e.target.closest(".release-button");if(button)selectRelease(Number(button.dataset.releaseIndex),true);});index.dataset.wired="1";}
     selectRelease(1,false);
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.3.1 — GALAXY UPDATE`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.0 — COLLECTION UPDATE`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4552,7 +4581,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.3.1 GALAXY UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.4.0 COLLECTION UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -4792,8 +4821,7 @@ window.GPModules.register = function register(name,factory){
   function refreshPrimaryViewLayout(viewName){
     requestAnimationFrame(()=>{
       fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();
-      if(viewName==="galaxy"&&typeof window.refreshMusicGalaxy==="function")window.refreshMusicGalaxy();
-      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();});
+      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
       if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);drawWaveform();drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();});
     });
   }
@@ -5032,8 +5060,8 @@ window.GPModules.register = function register(name,factory){
 
   /* GP Core 2.1: the panel shell is stationary; only its viewport moves.
      GP Motion Engine 2.0: complete moving sectors dissolve into that shell. */
-  const GP_SCROLL_EDGE_SELECTORS=["#queueBody","#recommendBody","#trackList","#historyRankingLeft","#historyRanks11to50","#settingsPanel","#releaseIndex","#releaseDetail","#favoritesGrid","#dataDashboard"];
-  const GP_SCROLLBAR_SELECTOR=".panel-body,.track-list,.history-ranking-left,.history-ranks-list,.settings-panel,.font-picker-pop,.release-index,.release-detail,.favorites-grid,.data-dashboard";
+  const GP_SCROLL_EDGE_SELECTORS=["#queueBody","#recommendBody","#trackList","#historyRankingLeft","#historyRanks11to50","#settingsPanel","#releaseIndex","#releaseDetail","#favoritesGrid","#dataDashboard","#annualReportBody"];
+  const GP_SCROLLBAR_SELECTOR=".panel-body,.track-list,.history-ranking-left,.history-ranks-list,.settings-panel,.font-picker-pop,.release-index,.release-detail,.favorites-grid,.data-dashboard,.annual-report-body";
   const GP_SCROLL_INTENT_WINDOW_MS=900;
   const gpScrollbarTimers=new WeakMap();
   const gpScrollIntentUntil=new WeakMap();
@@ -5058,7 +5086,7 @@ window.GPModules.register = function register(name,factory){
   },true);
   document.addEventListener("scroll",event=>revealLiquidScrollbar(scrollSurfaceFromTarget(event.target)),{capture:true,passive:true});
   const GP_OWN_SURFACE_IDS=new Set(["topList","settingsPanel","releaseIndex","releaseDetail"]);
-  const GP_SHARED_SHELLS={queueBody:".side-panel",recommendBody:".side-panel",trackList:".library-panel",historyRankingLeft:".top-list",historyRanks11to50:".top-list",favoritesGrid:"#historyFavoritesPane",dataDashboard:"#historyDataPane"};
+  const GP_SHARED_SHELLS={queueBody:".side-panel",recommendBody:".side-panel",trackList:".library-panel",historyRankingLeft:".top-list",historyRanks11to50:".top-list",favoritesGrid:"#historyFavoritesPane",dataDashboard:"#historyDataPane",annualReportBody:".annual-report-dialog"};
   const gpEdgeUpdateFrames=new WeakMap();
   function prepareScrollSurface(el){
     if(!el)return null;
@@ -5605,260 +5633,6 @@ window.GPModules.register = function register(name,factory){
   }
   async function extractGenre(file){return (await extractFileMetadata(file)).genre||null;}
   GP.core.metadata=Object.freeze({extractFileMetadata,extractGenre});
-/* ================= Music Galaxy Service =================
-   Pure, deterministic feature comparison and layout helpers. This service
-   deliberately consumes cached track snapshots only. */
-GPModules.register("createGalaxyService", function createGalaxyService() {
-  const DIMENSIONS = 13;
-  const POWER_ITERATIONS = 12;
-  const SAFE_SCALES = [18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18];
-  const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, Number.isFinite(value) ? value : min));
-  const finite = (value, fallback = null) => Number.isFinite(Number(value)) ? Number(value) : fallback;
-  const text = value => String(value == null ? "" : value).trim();
-
-  function hash(value) {
-    let result = 2166136261;
-    for (const character of text(value)) {
-      result ^= character.charCodeAt(0);
-      result = Math.imul(result, 16777619);
-    }
-    return result >>> 0;
-  }
-
-  function stableFallback(track) {
-    const mfcc = Array.isArray(track?.mfcc?.mean) ? track.mfcc.mean : Array.isArray(track?.mfcc) ? track.mfcc : [];
-    const sourceFields = [
-      track?.filePath, track?.path, track?.locator, track?.fileLocator,
-      track?.sourcePath, track?.sourceLocator, track?.size, track?.fileSize,
-      track?.byteLength, track?.duration, track?.lastModified, track?.fileLastModified
-    ].filter(value => value !== undefined && value !== null && value !== "");
-    if (sourceFields.length) return JSON.stringify(["source", sourceFields]);
-    return JSON.stringify([
-      finite(track?.bpm),
-      finite(track?.bpmConfidence),
-      finite(track?.energy),
-      finite(track?.loudness),
-      finite(track?.duration),
-      finite(track?.size),
-      mfcc.slice(0, DIMENSIONS).map(value => finite(value))
-    ]);
-  }
-
-  function stableIdentity(track) {
-    const identity = track?.spectrumId || track?.audioEssenceKey || track?.contentKey || track?.id;
-    return text(identity) || `fallback-${hash(stableFallback(track)).toString(16)}`;
-  }
-
-  function cleanMfcc(track) {
-    const source = Array.isArray(track?.mfcc?.mean) ? track.mfcc.mean : Array.isArray(track?.mfcc) ? track.mfcc : [];
-    const complete = source.length >= DIMENSIONS && source.slice(0, DIMENSIONS).every(value => Number.isFinite(Number(value)));
-    return { values: Array.from({ length: DIMENSIONS }, (_, index) => finite(source[index], 0)), complete };
-  }
-
-  function featureVector(track = {}) {
-    const mfcc = cleanMfcc(track);
-    const bpm = finite(track.bpm);
-    const bpmConfidence = clamp(finite(track.bpmConfidence, bpm === null ? 0 : 1) / (finite(track.bpmConfidence, 1) > 1 ? 100 : 1));
-    const genre = text(track.genre || track.inferredGenre) || "Unknown";
-    const genreSecondary = text(track.genreSecondary) || null;
-    const acousticCoverage = mfcc.complete ? 1 : mfcc.values.some(value => value !== 0) ? .5 : 0;
-    const coverage = clamp(acousticCoverage * .6 + (bpm === null ? 0 : .25) + (genre === "Unknown" ? 0 : .15));
-    return Object.freeze({
-      mfcc: Object.freeze(mfcc.values),
-      mfccComplete: mfcc.complete,
-      bpm,
-      bpmConfidence,
-      confidence: clamp(coverage * (.65 + bpmConfidence * .35)),
-      coverage,
-      featureCoverage: coverage,
-      stableKey: `spectrum:${stableIdentity(track)}`,
-      genre,
-      genreSecondary,
-      genres: Object.freeze([genre, genreSecondary].filter(Boolean))
-    });
-  }
-
-  function lexicalSimilarity(left, right) {
-    const a = text(left).toLocaleLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "");
-    const b = text(right).toLocaleLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "");
-    if (!a || !b) return .12;
-    if (a === b) return 1;
-    if (a.length < 2 || b.length < 2) return 0;
-    const pairs = new Map();
-    for (let index = 0; index < a.length - 1; index++) {
-      const pair = a.slice(index, index + 2);
-      pairs.set(pair, (pairs.get(pair) || 0) + 1);
-    }
-    let matches = 0;
-    for (let index = 0; index < b.length - 1; index++) {
-      const pair = b.slice(index, index + 2);
-      const count = pairs.get(pair) || 0;
-      if (count) { matches++; pairs.set(pair, count - 1); }
-    }
-    return clamp(2 * matches / (a.length + b.length - 2));
-  }
-
-  function offlineGenreSimilarity(left, right) {
-    const relations = typeof globalThis !== "undefined" ? globalThis.GP?.genreRelations : null;
-    const leftGenres = left.genres || [left.genre].filter(Boolean);
-    const rightGenres = right.genres || [right.genre].filter(Boolean);
-    let best = 0;
-    for (const a of leftGenres) for (const b of rightGenres) {
-      let score = null;
-      if (relations && typeof relations.similarity === "function") {
-        try { score = relations.similarity(a, b); } catch (_) { score = null; }
-      }
-      best = Math.max(best, clamp(Number.isFinite(score) ? score : lexicalSimilarity(a, b)));
-    }
-    return best || .12;
-  }
-
-  function asVector(track) {
-    return track && Array.isArray(track.mfcc) && Object.prototype.hasOwnProperty.call(track, "stableKey") ? track : featureVector(track);
-  }
-
-  function compareTracks(leftTrack, rightTrack) {
-    const left = asVector(leftTrack), right = asVector(rightTrack);
-    let mfccDistance = 0;
-    for (let index = 0; index < DIMENSIONS; index++) mfccDistance += Math.abs(left.mfcc[index] - right.mfcc[index]) / SAFE_SCALES[index];
-    const mfccScore = mfccDistance <= 0 ? 1 : Math.exp(-mfccDistance / DIMENSIONS);
-    const bothBpm = Number.isFinite(left.bpm) && Number.isFinite(right.bpm);
-    const tempoScore = bothBpm ? Math.exp(-Math.abs(left.bpm - right.bpm) / 24) : .28;
-    const genreScore = offlineGenreSimilarity(left, right);
-    const overall = clamp(mfccScore * .60 + tempoScore * .25 + genreScore * .15);
-    return Object.freeze({
-      mfcc: clamp(mfccScore),
-      tempo: clamp(tempoScore),
-      genre: clamp(genreScore),
-      overall,
-      coverage: clamp((left.coverage + right.coverage) / 2),
-      confidence: clamp((left.confidence + right.confidence) / 2)
-    });
-  }
-
-  function dot(left, right) {
-    let result = 0;
-    for (let index = 0; index < left.length; index++) result += left[index] * right[index];
-    return result;
-  }
-
-  function normalizeDirection(direction, fallbackIndex = 0) {
-    const length = Math.sqrt(dot(direction, direction));
-    if (!(length > 1e-9)) {
-      const fallback = Array(direction.length).fill(0);
-      fallback[fallbackIndex % direction.length] = 1;
-      return fallback;
-    }
-    const normalized = direction.map(value => value / length);
-    const pivot = normalized.reduce((best, value, index) => Math.abs(value) > Math.abs(normalized[best]) ? index : best, 0);
-    if (normalized[pivot] < 0) return normalized.map(value => -value);
-    return normalized;
-  }
-
-  function principalDirection(covariance, seed, against = null) {
-    const dimensions = covariance.length;
-    let direction = Array.from({ length: dimensions }, (_, index) => ((seed + index * 17) % 23) / 23 + .2);
-    for (let iteration = 0; iteration < POWER_ITERATIONS; iteration++) {
-      const next = covariance.map(row => dot(row, direction));
-      if (against) {
-        const projection = dot(next, against);
-        for (let index = 0; index < dimensions; index++) next[index] -= projection * against[index];
-      }
-      direction = normalizeDirection(next, iteration + seed);
-    }
-    return normalizeDirection(direction, seed);
-  }
-
-  function distance(left, right) {
-    let total = 0;
-    for (let index = 0; index < left.length; index++) total += (left[index] - right[index]) ** 2;
-    return total;
-  }
-
-  function buildLayout(tracks = [], options = {}) {
-    const width = Math.max(120, finite(options.width, 1200));
-    const height = Math.max(120, finite(options.height, 700));
-    const vectors = (Array.isArray(tracks) ? tracks : []).map(asVector).sort((left, right) => left.stableKey.localeCompare(right.stableKey));
-    if (!vectors.length) return Object.freeze({ width, height, points: Object.freeze([]), clusters: Object.freeze([]), labels: Object.freeze([]), coverage: 0, signature: "galaxy-empty" });
-
-    const usableVectors = vectors.filter(vector => vector.mfccComplete);
-    const means = Array(DIMENSIONS).fill(0);
-    usableVectors.forEach(vector => vector.mfcc.forEach((value, index) => { means[index] += value; }));
-    means.forEach((_, index) => { means[index] /= Math.max(1, usableVectors.length); });
-    const scales = means.map((mean, index) => Math.max(2, Math.sqrt(usableVectors.reduce((sum, vector) => sum + (vector.mfcc[index] - mean) ** 2, 0) / Math.max(1, usableVectors.length))));
-    const tempoVectors = usableVectors.filter(vector => Number.isFinite(vector.bpm));
-    const tempoMean = tempoVectors.length ? tempoVectors.reduce((sum, vector) => sum + vector.bpm, 0) / tempoVectors.length : 0;
-    const tempoScale = tempoVectors.length
-      ? Math.max(24, Math.sqrt(tempoVectors.reduce((sum, vector) => sum + (vector.bpm - tempoMean) ** 2, 0) / tempoVectors.length))
-      : 24;
-    const normalized = vectors.map(vector => {
-      const mfcc = vector.mfccComplete ? means.map((mean, index) => (vector.mfcc[index] - mean) / scales[index]) : Array(DIMENSIONS).fill(0);
-      const tempo = Number.isFinite(vector.bpm) ? ((vector.bpm - tempoMean) / tempoScale) * vector.bpmConfidence : 0;
-      return [...mfcc, tempo];
-    });
-    const layoutDimensions = DIMENSIONS + 1;
-    const covariance = Array.from({ length: layoutDimensions }, () => Array(layoutDimensions).fill(0));
-    normalized.filter((_, index) => vectors[index].mfccComplete).forEach(vector => vector.forEach((left, row) => vector.forEach((right, column) => { covariance[row][column] += left * right; })));
-    covariance.forEach(row => row.forEach((_, index) => { row[index] /= Math.max(1, vectors.length); }));
-    const axisX = principalDirection(covariance, hash(vectors[0].stableKey) % 19);
-    const axisY = principalDirection(covariance, (hash(vectors[vectors.length - 1].stableKey) % 19) + 3, axisX);
-    const projected = normalized.map(vector => [dot(vector, axisX), dot(vector, axisY)]);
-    const projectionScale = Math.max(1, ...projected.flat().map(value => Math.abs(value)));
-    const points2d = projected.map(point => point.map(value => value / projectionScale));
-
-    const k = Math.max(1, Math.min(8, Math.round(Math.sqrt(vectors.length / 2))));
-    const centers = [hash(vectors[0].stableKey) % vectors.length];
-    while (centers.length < k) {
-      let bestIndex = 0, bestDistance = -1;
-      vectors.forEach((vector, index) => {
-        if (centers.includes(index)) return;
-        const nearest = Math.min(...centers.map(center => distance(points2d[index], points2d[center])));
-        if (nearest > bestDistance || (nearest === bestDistance && vector.stableKey < vectors[bestIndex].stableKey)) { bestDistance = nearest; bestIndex = index; }
-      });
-      centers.push(bestIndex);
-    }
-    const assignments = Array(vectors.length).fill(0);
-    const centroidPoints = centers.map(center => points2d[center].slice());
-    for (let pass = 0; pass < POWER_ITERATIONS; pass++) {
-      const sums = centers.map(() => [0, 0, 0]);
-      points2d.forEach((point, index) => {
-        let cluster = 0, nearest = Infinity;
-        centroidPoints.forEach((centroid, candidate) => { const d = distance(point, centroid); if (d < nearest) { nearest = d; cluster = candidate; } });
-        assignments[index] = cluster; sums[cluster][0] += point[0]; sums[cluster][1] += point[1]; sums[cluster][2]++;
-      });
-      centroidPoints.forEach((_, index) => { if (sums[index][2]) centroidPoints[index] = [sums[index][0] / sums[index][2], sums[index][1] / sums[index][2]]; });
-    }
-
-    const marginX = Math.min(54, width * .12), marginY = Math.min(44, height * .12);
-    const usableWidth = Math.max(20, width - marginX * 2), usableHeight = Math.max(20, height - marginY * 2);
-    const clusterCenters = centers.map((_, index) => {
-      const arm = index % 2 ? -1 : 1, armStep = Math.floor(index / 2) + 1;
-      const angle = arm * (.55 + armStep * .82);
-      const radius = .11 * Math.exp(.30 * Math.abs(angle));
-      return [width / 2 + Math.cos(angle) * usableWidth * radius, height / 2 + Math.sin(angle) * usableHeight * radius];
-    });
-    const points = vectors.map((vector, index) => {
-      const cluster = assignments[index], jitter = hash(vector.stableKey);
-      const localX = points2d[index][0] * usableWidth * .28 + (((jitter & 255) / 255) - .5) * usableWidth * .018;
-      const localY = points2d[index][1] * usableHeight * .28 + ((((jitter >>> 8) & 255) / 255) - .5) * usableHeight * .018;
-      const x = Math.max(marginX, Math.min(width - marginX, clusterCenters[cluster][0] + localX));
-      const y = Math.max(marginY, Math.min(height - marginY, clusterCenters[cluster][1] + localY));
-      return { key: vector.stableKey, x, y, radius: Math.min(6, 2 + vector.coverage * 3), opacity: clamp(.58 + vector.confidence * .4, .35, 1), colorFamily: hash(vector.genre) % 12, cluster };
-    });
-    const clusters = clusterCenters.map((center, index) => {
-      const members = vectors.filter((_, vectorIndex) => assignments[vectorIndex] === index);
-      const genres = members.map(vector => vector.genre).filter(genre => genre !== "Unknown");
-      const genre = genres.sort()[0] || "Mixed";
-      return { id: index, x: center[0], y: center[1], count: members.length, label: genre };
-    });
-    const labels = clusters.map(cluster => cluster.label);
-    const coverage = clamp(vectors.reduce((sum, vector) => sum + vector.coverage, 0) / vectors.length);
-    const signature = `galaxy-${hash(points.map(point => `${point.key}:${point.x.toFixed(4)}:${point.y.toFixed(4)}`).join("|"))}`;
-    return Object.freeze({ width, height, points: Object.freeze(points), clusters: Object.freeze(clusters), labels: Object.freeze(labels), coverage, signature });
-  }
-
-  return Object.freeze({ featureVector, compareTracks, buildLayout, recommendationSimilarity: compareTracks });
-});
   /* ================= GP Neural Engine 2.2 — Resonance Boost =================
      Preference and recommendation are deliberately separate. Until the model
      passes its evidence/confidence gate, shuffle and Daily Mix remain uniform. */
@@ -5869,7 +5643,6 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
   const NEURAL_MIN_CONFIDENCE=.70;
   const GP_DAILY_MIX_COHERENCE_EXPONENT=3.4;
   const GP_DAILY_MIX_SHORTLIST_RATIO=.45;
-  let neuralGalaxyService=null;
   const neuralSessionId=`session-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
   let neuralModel=null,neuralBuildTimer=0,lastNeuralBuildAt=0,neuralRefreshPromise=null,pendingSelectionSource="automatic";
   let behaviorRuntime={trackId:null,startedAt:0,lastWallAt:0,lastMediaAt:0,listened:0,checkpoint:0,source:"automatic"};
@@ -5901,6 +5674,9 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     if(type==="manual_select")return 2.4;
     if(type==="queue_add")return 2.6;
     if(type==="replay")return 2.5;
+    // 7.4.0: an explicit like outweighs passive signals; unliking only flips
+    // stored state (signal 0 persists without touching the model).
+    if(type==="like")return context?.liked===false?0:3.0;
     if(type==="complete")return 1.35;
     if(type==="listen_duration")return clamp((finiteNumber(context.actualPlaybackSeconds,0)/180)*.65,0,.65);
     if(type==="skip"){
@@ -6038,9 +5814,11 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
   function dailyFeatureCompleteness(features){return (features?.spectrumId?1:0)+(features?.mfcc?.length>=8?2:0)+(dailyGenreTokens(features).length?1.5:0)+(Number.isFinite(features?.bpm)?.6:0)+(Number.isFinite(features?.energy)?.4:0);}
   function dailyFeatureSimilarity(anchor,candidate){
     if(!anchor||!candidate)return 0;
-    const shared=neuralGalaxyService?.recommendationSimilarity?.(anchor,candidate);
-    const sharedScore=Number.isFinite(shared?.overall)?shared.overall:.28;
-    return clamp(sharedScore,0,1);
+    // 7.3.2: pure local similarity from cached features only.
+    const timbre=mfccSimilarity(anchor.mfcc,candidate.mfcc);
+    const genre=genreSimilarity(anchor.genre,candidate.genre);
+    const tempo=(Number.isFinite(anchor.bpm)&&Number.isFinite(candidate.bpm))?Math.exp(-Math.abs(anchor.bpm-candidate.bpm)/35):.5;
+    return clamp(timbre*.55+genre*.25+tempo*.20,0,1);
   }
   function generateDailyMix(count){
     let remaining=playlist.map((track,index)=>{const features=trackFeatureSnapshot(track);return{index,features,completeness:dailyFeatureCompleteness(features)};}).filter(item=>item.index!==currentIndex),picked=[],pickedFeatures=[],artistCounts=new Map(),preferenceScores=new Map();
@@ -6312,7 +6090,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
   }
   function updateAdaptiveTextColors(palette=lastFavoriteBackdropPalette){
     const black=[12,12,14],white=[248,248,250];
-    $$(".view-header h2,.galaxy-title").forEach(title=>{const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
+    $$(".view-header h2").forEach(title=>{const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
   }
   function updateContextualControlColors(palette=lastFavoriteBackdropPalette){
     const selectors="#addFilesBtn,#addFolderBtn,#sortBtn,#playMixBtn,#eqPresetButton,.export-log-btn,.release-tag";
@@ -6618,7 +6396,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
   let currentNowTitleText="",titleMeasureTimer=0,titleResizeTimer=0,titleMarqueeRevision=0,titleMarqueeAnimation=null,lastTitleLayoutScale=0,nowPlayingMetaRevision=0,nowPlayingMetaAnimations=[];
   function syncTitleLanguage(){
     const language=document.documentElement.lang||(uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh-CN");
-    $$("#nowTitle,#nowArtist,.view-header h2,.galaxy-title").forEach(node=>node?.setAttribute("lang",language));
+    $$("#nowTitle,#nowArtist,.view-header h2").forEach(node=>node?.setAttribute("lang",language));
     if(typeof refreshNowTitleMarquee==="function")refreshNowTitleMarquee();
   }
   function stopNowTitleMarquee(){
@@ -6676,6 +6454,12 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     if(!lastTitleLayoutScale||Math.abs(scale-lastTitleLayoutScale)>.002)refreshNowTitleMarquee();
   }
   function setNowPlayingTitle(text){currentNowTitleText=text||"";refreshNowTitleMarquee();}
+  function syncNowFormatTag(track){
+    const tag=$("#nowFormatTag");if(!tag)return;
+    const lossless=String(track?.format||"").toUpperCase()==="FLAC";
+    tag.hidden=!lossless;
+    if(lossless)tag.textContent=tr("无损","Lossless");
+  }
   function transitionNowPlayingMeta(title,artist){
     const revision=++nowPlayingMetaRevision,nodes=[$("#nowTitle"),$("#nowArtist")].filter(Boolean);
     stopNowTitleMarquee();
@@ -6779,8 +6563,11 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
         <div class="track-plays">${playCount}</div>
         <div class="track-dur">${t.duration ? fmtTime(t.duration) : "--:--"}</div>
         <div class="track-actions">
+          <button class="track-action track-like ripple-target${isLikedTrack(playlist[idx])?" active":""}" data-idx="${idx}" aria-pressed="${isLikedTrack(playlist[idx])}" title="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}" aria-label="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
           <button class="track-action queue-next ripple-target" data-idx="${idx}" title="下一首播放" aria-label="下一首播放"><svg class="rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path class="list-next-triangle" d="M5.9 5.55c-.52-.36-.9-.12-.9.52v11.86c0 .64.38.88.9.52l8.45-5.93c.48-.34.48-.7 0-1.04z"/><path class="list-next-echo" d="M19 5.8v12.4"/><path class="list-next-bar" d="M19 5.8v12.4"/></svg></button>
           <button class="track-action queue-add ripple-target" data-idx="${idx}" title="加入播放队列" aria-label="加入播放队列"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="queue-bars"><path d="M4 6h9M4 12h7M4 18h7"/></g><path class="queue-plus-wave" d="M17 11v8M13 15h8"/><path class="queue-plus" d="M17 11v8M13 15h8"/></svg></button>
+          ${options.playlistRemove?"":`<button class="track-action playlist-add ripple-target" data-idx="${idx}" title="${tr("添加到歌单","Add to playlist")}" aria-label="${tr("添加到歌单","Add to playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h9M4 12h9M4 18h5"/><path d="M17.5 13v7M14 16.5h7"/></svg></button>`}
+          ${options.playlistRemove?`<button class="track-action playlist-remove ripple-target" data-idx="${idx}" title="${tr("从歌单移除","Remove from playlist")}" aria-label="${tr("从歌单移除","Remove from playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`:""}
         </div>
       </div>`;
   }
@@ -6793,6 +6580,9 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
         event.stopPropagation();const idx=+button.dataset.idx;
         if(button.classList.contains("queue-next"))enqueueTrack(idx,"next");
         else if(button.classList.contains("queue-add"))enqueueTrack(idx,"end");
+        else if(button.classList.contains("track-like"))toggleLike(idx,{source:container.id==="recommendList"?"recommendation":"library"});
+        else if(button.classList.contains("playlist-add"))openRowPlaylistPop(idx,button);
+        else if(button.classList.contains("playlist-remove"))removeTrackFromPlaylist(activePlaylistId(),idx);
         else if(button.classList.contains("track-remove"))removeTrack(idx);
         return;
       }
@@ -6802,6 +6592,237 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
       }
     });
   }
+  /* ============ user playlists + liked songs (7.4.0 典藏更新) ============
+     Queue Service owns the single manual queue AND user-defined playlists.
+     Playlists persist as one record in the existing recommendations store
+     (no schema/version change). Tracks are referenced by stable
+     neuralTrackId keys, never by playlist index or runtime id. Likes are
+     behavior events so Resonance Boost learns them; the liked set is
+     derived latest-wins from those events (unlike persists with signal 0). */
+  const USER_PLAYLISTS_RECORD_ID="userPlaylists";
+  let userPlaylistsCache=null,userPlaylistsLoaded=false;
+  let likedKeys=new Set(),likedKeysLoaded=false;
+  let libraryCollectionMode="all";
+  let collectionScopeActive=false;
+  function playlistTrackKey(track){try{return neuralTrackId(track);}catch(error){return track?.id||null;}}
+  async function loadUserPlaylists(){
+    try{
+      const record=await GPDatabase.getRecommendations(USER_PLAYLISTS_RECORD_ID);
+      const lists=Array.isArray(record?.lists)?record.lists.filter(item=>item&&typeof item.id==="string"&&Array.isArray(item.trackKeys)):[];
+      userPlaylistsCache={version:1,lists:lists.map(item=>({id:item.id,name:String(item.name||tr("未命名歌单","Untitled Playlist")).slice(0,30),createdAt:Number(item.createdAt)||Date.now(),updatedAt:Number(item.updatedAt)||Date.now(),trackKeys:item.trackKeys.filter(key=>key!==null&&key!==undefined)}))};
+    }catch(error){userPlaylistsCache={version:1,lists:[]};}
+    userPlaylistsLoaded=true;return userPlaylistsCache;
+  }
+  async function saveUserPlaylists(){
+    if(!userPlaylistsCache)return false;
+    try{await GPDatabase.saveRecommendations({id:USER_PLAYLISTS_RECORD_ID,version:1,updatedAt:Date.now(),lists:userPlaylistsCache.lists});return true;}
+    catch(error){console.warn("User playlists persistence failed",error);return false;}
+  }
+  function userPlaylists(){return userPlaylistsCache?.lists||[];}
+  function findUserPlaylist(id){return userPlaylists().find(item=>item.id===id)||null;}
+  function activePlaylistId(){return libraryCollectionMode.startsWith("pl:")?libraryCollectionMode.slice(3):null;}
+  function activePlaylist(){const id=activePlaylistId();return id?findUserPlaylist(id):null;}
+  async function loadUserPlaylistsIfNeeded(){if(!userPlaylistsLoaded)await loadUserPlaylists();return userPlaylistsCache;}
+  async function createUserPlaylist(name){
+    const clean=String(name||"").trim().slice(0,30);
+    if(!clean){showToast(tr("请输入歌单名称","Enter a playlist name"));return null;}
+    await loadUserPlaylistsIfNeeded();
+    const list={id:`pl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`,name:clean,createdAt:Date.now(),updatedAt:Date.now(),trackKeys:[]};
+    userPlaylistsCache.lists.push(list);
+    if(await saveUserPlaylists()){showToast(tr(`已创建歌单「${clean}」`,`Created playlist “${clean}”`));setLibraryCollectionMode(`pl:${list.id}`);return list;}
+    userPlaylistsCache.lists.pop();showToast(tr("歌单保存失败","Playlist save failed"));return null;
+  }
+  async function renameUserPlaylist(id,name){
+    const list=findUserPlaylist(id),clean=String(name||"").trim().slice(0,30);
+    if(!list||!clean)return false;
+    list.name=clean;list.updatedAt=Date.now();
+    if(await saveUserPlaylists()){syncPlaylistUI();return true;}
+    return false;
+  }
+  async function deleteUserPlaylist(id){
+    const list=findUserPlaylist(id);if(!list)return false;
+    userPlaylistsCache.lists=userPlaylistsCache.lists.filter(item=>item.id!==id);
+    if(await saveUserPlaylists()){
+      showToast(tr(`已删除歌单「${list.name}」`,`Deleted playlist “${list.name}”`));
+      if(activePlaylistId()===id)setLibraryCollectionMode("all");else syncPlaylistUI();
+      return true;
+    }
+    await loadUserPlaylists();syncPlaylistUI();return false;
+  }
+  async function addTrackToPlaylist(id,idx){
+    const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
+    const key=playlistTrackKey(track);if(key===null||key===undefined)return false;
+    if(list.trackKeys.includes(key)){showToast(tr(`「${track.title}」已在歌单「${list.name}」中`,`“${track.title}” is already in “${list.name}”`));return false;}
+    list.trackKeys.push(key);list.updatedAt=Date.now();
+    if(await saveUserPlaylists()){showToast(tr(`已将「${track.title}」加入「${list.name}」`,`Added “${track.title}” to “${list.name}”`));syncPlaylistUI(true);return true;}
+    list.trackKeys=list.trackKeys.filter(item=>item!==key);return false;
+  }
+  async function removeTrackFromPlaylist(id,idx){
+    const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
+    const key=playlistTrackKey(track),before=list.trackKeys.length;
+    list.trackKeys=list.trackKeys.filter(item=>item!==key);
+    if(list.trackKeys.length===before)return false;
+    list.updatedAt=Date.now();
+    if(await saveUserPlaylists()){render(searchInputSafe());return true;}
+    await loadUserPlaylists();render(searchInputSafe());return false;
+  }
+  function collectionTrackIndices(){
+    if(libraryCollectionMode==="liked")return playlist.map((track,idx)=>idx).filter(idx=>{const key=playlistTrackKey(playlist[idx]);return key!==null&&likedKeys.has(key);});
+    const list=activePlaylist();
+    if(list){
+      const position=new Map();list.trackKeys.forEach((key,order)=>{if(!position.has(key))position.set(key,order);});
+      return playlist.map((track,idx)=>[position.get(playlistTrackKey(track)),idx]).filter(([order])=>order!==undefined).sort((a,b)=>a[0]-b[0]).map(([,idx])=>idx);
+    }
+    return playlist.map((_,idx)=>idx);
+  }
+  function collectionTrackIndicesForMode(mode){
+    const keep=libraryCollectionMode;libraryCollectionMode=mode;
+    const out=collectionTrackIndices();libraryCollectionMode=keep;return out;
+  }
+  function syncCollectionScope(){
+    // Collection-scoped sequential playback reuses the existing overrideQueue
+    // consumer chain (next/previous/ended/crossfade). It has no other producer.
+    if(libraryCollectionMode==="all"){if(collectionScopeActive){overrideQueue=null;collectionScopeActive=false;}return;}
+    overrideQueue=collectionTrackIndices();collectionScopeActive=true;
+  }
+  function isLikedTrack(track){if(!track)return false;try{const key=playlistTrackKey(track);return key!==null&&likedKeys.has(key);}catch(error){return false;}}
+  function syncLikeButtons(){
+    document.querySelectorAll("#trackList .track-like").forEach(button=>{
+      const track=playlist[+button.dataset.idx];if(!track)return;
+      const liked=isLikedTrack(track);
+      button.classList.toggle("active",liked);button.setAttribute("aria-pressed",String(liked));
+      const label=liked?tr("取消喜欢","Unlike"):tr("喜欢","Like");button.title=label;button.setAttribute("aria-label",label);
+    });
+  }
+  async function refreshLikedKeys(){
+    try{
+      const events=await GPDatabase.getBehaviorEvents()||[],latest=new Map();
+      events.forEach(event=>{if(event?.type!=="like"||event.spectrumId===null||event.spectrumId===undefined)return;latest.set(event.spectrumId,event);});
+      likedKeys=new Set([...latest.entries()].filter(([,event])=>event?.context?.liked!==false).map(([key])=>key));
+    }catch(error){likedKeys=new Set();}
+    likedKeysLoaded=true;syncLikeButtons();
+    if(libraryCollectionMode==="liked")render(searchInputSafe());
+  }
+  async function toggleLike(idx,options={}){
+    const track=playlist[idx];if(!track)return;
+    const key=playlistTrackKey(track);if(key===null||key===undefined)return;
+    const liked=!likedKeys.has(key);
+    await recordBehaviorEvent("like",track,{liked,source:options.source||"library"});
+    if(liked)likedKeys.add(key);else likedKeys.delete(key);
+    syncLikeButtons();
+    if(libraryCollectionMode==="liked")render(searchInputSafe());else syncPlaylistUI(true);
+    showToast(liked?tr(`已喜欢「${track.title}」`,`Liked “${track.title}”`):tr(`已取消喜欢「${track.title}」`,`Unliked “${track.title}”`));
+  }
+  function collectionDisplayName(){
+    if(libraryCollectionMode==="liked")return tr("我喜欢","Liked");
+    const list=activePlaylist();if(list)return list.name;
+    return tr("全部歌曲","All Songs");
+  }
+  function playCollectionNow(){
+    const members=collectionTrackIndices();
+    if(!members.length){showToast(tr("这个歌单还没有可播放的歌曲","No playable songs in this collection"));return;}
+    members.forEach(idx=>{const id=playlist[idx]?.id;if(id&&!playQueue.includes(id))playQueue.push(id);});
+    manualQueueActive=true;beginQueuedPlayback();pendingSelectionSource="playlist";
+    loadTrack(members[0],true);renderMiniQueue();
+    showToast(tr(`正在播放${collectionDisplayName()}（${members.length} 首）`,`Playing ${collectionDisplayName()} (${members.length} songs)`));
+  }
+  function setLibraryCollectionMode(mode){
+    libraryCollectionMode=mode==="liked"||mode.startsWith("pl:")?mode:"all";
+    syncCollectionScope();syncPlaylistUI();
+  }
+  function syncPlaylistUI(skipRender=false){
+    const label=$("#playlistBtnText"),pop=$("#playlistPop"),bar=$("#collectionBar");
+    if(label)label.textContent=`${tr("歌单","Playlists")}：${collectionDisplayName()}`;
+    if(pop){
+      const rows=[{mode:"all",name:tr("全部歌曲","All Songs"),count:playlist.length},{mode:"liked",name:`♥ ${tr("我喜欢","Liked")}`,count:collectionTrackIndicesForMode("liked").length}].concat(userPlaylists().map(list=>({mode:`pl:${list.id}`,name:list.name,count:list.trackKeys.length,id:list.id})));
+      pop.querySelectorAll("[data-collection]").forEach(node=>node.remove());
+      const anchor=pop.querySelector(".playlist-pop-divider");
+      rows.forEach(row=>{
+        const item=document.createElement("div");item.className="playlist-pop-row";item.dataset.collection=row.mode;
+        const pick=document.createElement("button");pick.type="button";pick.className="ripple-target";pick.dataset.collection=row.mode;
+        const name=document.createElement("span");name.textContent=row.name;
+        const count=document.createElement("em");count.textContent=row.count;
+        pick.append(name,count);pick.classList.toggle("active",libraryCollectionMode===row.mode);
+        item.appendChild(pick);
+        if(row.id){
+          const del=document.createElement("button");del.type="button";del.className="playlist-pop-del ripple-target";del.dataset.deletePlaylist=row.id;
+          del.title=tr("删除歌单","Delete playlist");del.setAttribute("aria-label",tr("删除歌单","Delete playlist"));del.textContent="×";
+          item.appendChild(del);
+        }
+        if(anchor)anchor.before(item);else pop.appendChild(item);
+      });
+      const input=$("#playlistNameInput"),confirm=$("#playlistConfirmBtn"),active=activePlaylist();
+      if(input&&document.activeElement!==input)input.value=active?active.name:"";
+      if(confirm)confirm.textContent=active?tr("重命名","Rename"):tr("新建歌单","New Playlist");
+    }
+    if(bar){
+      const active=libraryCollectionMode!=="all";
+      bar.classList.toggle("show",active);
+      if(active){
+        const members=collectionTrackIndices();
+        bar.querySelector(".collection-name").textContent=collectionDisplayName();
+        bar.querySelector(".collection-count").textContent=tr(`${members.length} 首`,`${members.length} songs`);
+      }
+    }
+    if(!skipRender)render(searchInputSafe());
+  }
+  $("#playlistBtn").addEventListener("click",event=>{event.stopPropagation();syncPlaylistUI(true);const pop=$("#playlistPop"),show=!pop.classList.contains("show");setMotionPopover(pop,show);if(show)requestAnimationFrame(()=>{try{$("#playlistNameInput")?.focus({preventScroll:true});}catch(error){}});});
+  $("#playlistPop").addEventListener("click",async event=>{
+    const del=event.target.closest("[data-delete-playlist]");
+    if(del){event.stopPropagation();await deleteUserPlaylist(del.dataset.deletePlaylist);return;}
+    if(event.target.closest("#playlistCreateRow"))return;
+    const row=event.target.closest("[data-collection]");
+    if(!row||!row.dataset.collection)return;
+    event.stopPropagation();setLibraryCollectionMode(row.dataset.collection);setMotionPopover($("#playlistPop"),false);
+  });
+  $("#playlistConfirmBtn").addEventListener("click",async event=>{
+    event.stopPropagation();
+    const input=$("#playlistNameInput"),active=activePlaylist();
+    if(active)await renameUserPlaylist(active.id,input.value);
+    else await createUserPlaylist(input.value);
+  });
+  $("#playlistNameInput").addEventListener("keydown",event=>{
+    if(event.key==="Enter"){event.preventDefault();$("#playlistConfirmBtn").click();}
+    event.stopPropagation();
+  });
+  $("#collectionPlayBtn").addEventListener("click",event=>{event.stopPropagation();playCollectionNow();});
+  document.addEventListener("click",event=>{if(!event.target.closest("#playlistWrap"))setMotionPopover($("#playlistPop"),false);});
+  let pendingRowPlaylistIdx=-1;
+  function openRowPlaylistPop(idx,anchor){
+    pendingRowPlaylistIdx=idx;
+    const pop=$("#rowPlaylistPop");if(!pop)return;
+    pop.querySelectorAll("[data-row-playlist]").forEach(node=>node.remove());
+    const lists=userPlaylists();
+    if(!lists.length)pop.querySelector(".row-playlist-empty").style.display="block";
+    else{
+      pop.querySelector(".row-playlist-empty").style.display="none";
+      lists.forEach(list=>{
+        const button=document.createElement("button");button.type="button";button.className="ripple-target";button.dataset.rowPlaylist=list.id;
+        const name=document.createElement("span");name.textContent=list.name;
+        const count=document.createElement("em");count.textContent=list.trackKeys.length;
+        button.append(name,count);pop.appendChild(button);
+      });
+    }
+    if(pop.parentElement!==document.body)document.body.appendChild(pop);
+    pop.style.position="fixed";pop.style.zIndex="320";
+    const rect=anchor.getBoundingClientRect(),width=200;
+    pop.style.width=`${width}px`;
+    pop.style.left=`${Math.max(10,Math.min(window.innerWidth-width-10,rect.right-width))}px`;
+    const below=rect.bottom+8,popHeight=Math.min(320,48+lists.length*44);
+    pop.style.top=`${Math.max(10,(below+popHeight>window.innerHeight-10)?rect.top-popHeight-8:below)}px`;
+    setMotionPopover(pop,true);
+  }
+  $("#rowPlaylistPop").addEventListener("click",async event=>{
+    if(event.target.closest("#rowPlaylistNew")){event.stopPropagation();setMotionPopover($("#rowPlaylistPop"),false);syncPlaylistUI(true);setMotionPopover($("#playlistPop"),true);return;}
+    const button=event.target.closest("[data-row-playlist]");
+    if(!button)return;event.stopPropagation();
+    setMotionPopover($("#rowPlaylistPop"),false);
+    if(pendingRowPlaylistIdx>=0)await addTrackToPlaylist(button.dataset.rowPlaylist,pendingRowPlaylistIdx);
+    pendingRowPlaylistIdx=-1;
+  });
+  document.addEventListener("click",event=>{if(!event.target.closest("#rowPlaylistPop")&&!event.target.closest(".playlist-add"))setMotionPopover($("#rowPlaylistPop"),false);});
+  loadUserPlaylists().then(()=>syncPlaylistUI(true));
+  refreshLikedKeys();
   function normalizeSearchText(value){
     return String(value||"").normalize("NFKD").replace(/\p{M}+/gu,"").toLocaleLowerCase().replace(/[\s\p{P}\p{S}]+/gu,"");
   }
@@ -6898,14 +6919,15 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(n => n.remove());
     emptyState.style.display = playlist.length === 0 ? "block" : "none";
-    const visibleIndices=playlist.map((_,idx)=>idx);
+    const visibleIndices=collectionTrackIndices();
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
-    const result=rankedLibrarySearch(visibleIndices,q),rows=result.indices.map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:rank+1,playCount:playCounts.get(playlist[idx].id)||0}));
+    const result=rankedLibrarySearch(visibleIndices,q),rows=result.indices.map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:rank+1,playCount:playCounts.get(playlist[idx].id)||0,playlistRemove:activePlaylistId()!==null}));
     updateSearchFeedback(result.similar,q,result.empty);
     if(rows.length)listEl.insertAdjacentHTML("beforeend",rows.join(""));
     wireRows(listEl);
+    syncPlaylistUI(true);
     renderMiniQueue();
   }
   async function renderLibraryIncrementally(filterText,chunkSize=12){
@@ -6914,17 +6936,18 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(node=>node.remove());
     emptyState.style.display=playlist.length===0?"block":"none";
-    const visibleIndices=playlist.map((_,idx)=>idx);
+    const visibleIndices=collectionTrackIndices();
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
     const result=rankedLibrarySearch(visibleIndices,q),filtered=result.indices;updateSearchFeedback(result.similar,q,result.empty);
     for(let offset=0;offset<filtered.length;offset+=chunkSize){
-      const rows=filtered.slice(offset,offset+chunkSize).map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:offset+rank+1,playCount:playCounts.get(playlist[idx].id)||0}));
+      const rows=filtered.slice(offset,offset+chunkSize).map((idx,rank)=>trackRowHTML(playlist[idx],idx,{rank:offset+rank+1,playCount:playCounts.get(playlist[idx].id)||0,playlistRemove:activePlaylistId()!==null}));
       if(rows.length)listEl.insertAdjacentHTML("beforeend",rows.join(""));
       await new Promise(resolve=>requestAnimationFrame(resolve));
     }
     wireRows(listEl);
+    syncPlaylistUI(true);
   }
   let lastPlaybackIndicatorIndex=-1;
   function syncCurrentTrackPlaybackIndicator(){
@@ -7243,12 +7266,19 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
       playbackIntentToken++;pendingPlayToken=0;wantsPlayback=false;decks.forEach(deck=>deck.pause());audio.src="";isPlaying=false;currentIndex=-1;
       $("#discRotor").classList.remove("spinning","paused");resetDiscRotationTimeline();$("#diskReader").classList.remove("engaged");
       setNowPlayingTitle(tr("未选择歌曲","No Song Selected")); $("#nowArtist").textContent = tr("拖入或导入音乐开始播放","Drop or import music to begin");
+      syncNowFormatTag(null);
       seekProgress = 0; drawWaveform();
       updatePlayIcon(); updateArtDisplay(); updateAmbient();
     } else if(idx < currentIndex){ currentIndex--; }
     if(overrideQueue){ overrideQueue = overrideQueue.filter(i => i !== idx).map(i => i > idx ? i-1 : i); if(!overrideQueue.length) overrideQueue = null; }
     for(let i=playQueue.length-1;i>=0;i--){ if(playQueue[i] === removedTrack.id) playQueue.splice(i,1); }
     if(playQueue.length===0){manualQueueActive=false;releaseQueuePlaybackContext();}
+    const removedKey=playlistTrackKey(removedTrack);
+    if(userPlaylistsCache&&removedKey!==null&&removedKey!==undefined){
+      let touched=false;
+      userPlaylistsCache.lists.forEach(list=>{const before=list.trackKeys.length;list.trackKeys=list.trackKeys.filter(key=>key!==removedKey);if(list.trackKeys.length!==before){touched=true;list.updatedAt=Date.now();}});
+      if(touched){saveUserPlaylists();if(libraryCollectionMode!=="all")render(searchInputSafe());}
+    }
     reservedSongIdentities.delete(songIdentity(removedTrack.artist,removedTrack.title));
     if(removedTrack.contentKey)reservedAudioFingerprints.delete(removedTrack.contentKey);
     if(removedTrack.coverUrl) URL.revokeObjectURL(removedTrack.coverUrl);
@@ -7482,9 +7512,11 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     const runners=Array.from({length:Math.min(Math.max(1,limit),items.length)},async()=>{
       while(true){
         const index=cursor++;if(index>=items.length)return;
-        if(navigator.scheduling?.isInputPending?.())await yieldToInputPriority();
         results[index]=await worker(items[index],index);
-        await yieldToInputPriority();
+        // 7.3.2: yield only when input is actually pending; unconditional
+        // per-item yields added hundreds of idle waits on large imports.
+        if(navigator.scheduling?.isInputPending?.())await yieldToInputPriority();
+        else if(index%16===15)await yieldToInputPriority();
       }
     });
     await Promise.all(runners);return results;
@@ -7966,10 +7998,12 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
       }
       stats.cacheMisses++;
       const parsed=parseName(file.name);
-      const duration=await probeTrackDuration(url);
-      const coverTempUrl=await extractEmbeddedCover(file);
+      // 7.3.2: duration probe, cover read and metadata parse are independent —
+      // run them concurrently instead of serially (rescan already does this).
+      const [duration,coverTempUrl,embeddedMetadata]=await Promise.all([
+        probeTrackDuration(url),extractEmbeddedCover(file),extractFileMetadata(file)
+      ]);
       const coverBlob=await coverURLToBlob(coverTempUrl);
-      const embeddedMetadata=await extractFileMetadata(file);
       const title=embeddedMetadata.title||parsed.title,artist=embeddedMetadata.artist||parsed.artist,genre=embeddedMetadata.genre||null;
       const thumbBlob=await createCoverThumbnailBlob(coverBlob);
       const record={
@@ -8072,7 +8106,11 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     $("#rescanModalMessage").textContent=error
       ?tr("正在保留已完成的导入结果…","Preserving completed import results…")
       :tr("所有初始化已经完成…","All initialization is complete…");
-    await yieldToInputPriority();await new Promise(resolve=>setTimeout(resolve,document.hidden?0:240));
+    await yieldToInputPriority();await new Promise(resolve=>{
+      // 7.3.2: close on paint commit instead of a fixed 240 ms wait.
+      if(!document.hidden&&typeof requestAnimationFrame==="function")requestAnimationFrame(()=>requestAnimationFrame(resolve));
+      else resolve();
+    });
     finishImportProgress(stats,error);
   }
   const libraryOrderCollator=new Intl.Collator(["zh-CN","en"],{numeric:true,sensitivity:"base"});
@@ -8135,7 +8173,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     if(uniqueFiles.length===0){updateImportCommitProgress(99,"organize");await yieldImportFrame();await settleImportProgress(stats);return;}
 
     let dataCompleted=0;
-    const tracks=await mapWithConcurrency(uniqueFiles,3,async ({file,contentKey,cachedRecord,recognition})=>{
+    const tracks=await mapWithConcurrency(uniqueFiles,6,async ({file,contentKey,cachedRecord,recognition})=>{
       const track=await buildAndCacheTrack(file,contentKey,stats,cachedRecord,recognition);
       dataCompleted++;updateImportProgress(35+dataCompleted/uniqueFiles.length*55,dataCompleted,uniqueFiles.length,"data");
       return track;
@@ -8153,27 +8191,23 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
       loadTrack(startIndex,false);
     }
     await renderMiniQueue({instantPosition:true,incremental:true});
-    updateImportCommitProgress(98,"analysis");await yieldImportFrame();
-    await queueSpectrumAnalysis(tracks,{foreground:true,onProgress:(completed,total)=>{
-      const ratio=total?completed/total:1;
-      updateImportCommitProgress(98+ratio*1.2,"analysis");
-    }});
-    updateImportCommitProgress(99.3,"organize");await yieldImportFrame();
+    updateImportCommitProgress(98,"organize");await yieldImportFrame();
     syncHistoryMetadataForPlaylist();persistHistoryStoreNow();
-    updateImportCommitProgress(99.5,"neural");await yieldImportFrame();
+    updateImportCommitProgress(99,"neural");await yieldImportFrame();
     await refreshUserModel();
-    updateImportCommitProgress(99.7,"recommendation");await yieldImportFrame();
+    updateImportCommitProgress(99.5,"recommendation");await yieldImportFrame();
     await finalizeDailyMixForImport();
-    updateImportCommitProgress(99.85,"organize");await yieldImportFrame();
     await Promise.all([updateAmbient(),applyAdaptiveAccent()]);
     if(playlist[currentIndex])updateTrackInfoCard(playlist[currentIndex]);
-    await yieldImportFrame();await yieldImportFrame();
     stats.renderCommits=libraryRenderCommits-renderStart;
     stats.durationMs=Math.round(performance.now()-startedAt);
     GP.performance.lastImport=Object.freeze({...stats});
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
-    if(typeof window.refreshMusicGalaxy==="function")window.refreshMusicGalaxy();
     await settleImportProgress(stats);
+    // 7.3.2 aggressive: the dialog is already closed here; heavy spectrum
+    // decoding continues in the background slot and refreshes Daily Mix when
+    // done, so large imports no longer block the modal.
+    queueSpectrumAnalysis(tracks,{foreground:false});
   }
 
   let metadataRescanRunning=false;
@@ -8263,6 +8297,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
 
   function updateNowPlayingUI(t){
     transitionNowPlayingMeta(t.title,t.artist);
+    syncNowFormatTag(t);
     seekProgress = 0; drawWaveform();
     $("#curTime").textContent = "0:00"; $("#durTime").textContent = t.duration ? fmtTime(t.duration) : "0:00";
     updateArtDisplay();syncCurrentTrackPlaybackIndicator();
@@ -8286,7 +8321,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
   }
 
   function loadTrack(idx, autoplay){
-    if(idx<0 || idx>=playlist.length) return;
+    if(!Number.isInteger(idx)||idx<0 || idx>=playlist.length) return;
     const doCrossfade = crossfadeEnabled && currentIndex !== -1 && autoplay !== false && isPlaying;
     if(doCrossfade){ crossfadeTo(idx); return; }
     const doClickSafeSwap=currentIndex!==-1&&autoplay!==false&&isPlaying;
@@ -8311,6 +8346,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
   }
 
   function crossfadeTo(idx,durationOverride=null){
+    if(!Number.isInteger(idx)||idx<0||idx>=playlist.length)return;
     ensureAudioCtx();
     flushHistory();
     if(crossfadeSwapTimer){ clearTimeout(crossfadeSwapTimer); crossfadeSwapTimer=null; }
@@ -8358,6 +8394,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
 
   function maybeTriggerAutoCrossfade(){
     if(!wantsPlayback||!isPlaying||!crossfadeEnabled || crossfading || !audio.duration || sleepTimerMode === "end" || playMode === "repeatOne" || (playingQueuedTrack&&playQueue.length===0)) return;
+    if(!playlist.length)return;
     const remaining = audio.duration - audio.currentTime;
     if(remaining <= crossfadeSeconds && audio.duration > crossfadeSeconds*1.5){
       let nextIdx = takeNextQueuedIndex();
@@ -8472,7 +8509,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     setPlaybackVisualState(false);
     if(!manualQueueActive)positionCurrentQueueRow(false);
   }
-  function togglePlay(){ (wantsPlayback||(!audio.paused&&!audio.ended)) ? pauseAudio() : playAudio(); }
+  function togglePlay(){ if(audio.ended){playAudio();return;} (wantsPlayback||!audio.paused) ? pauseAudio() : playAudio(); }
   function updatePlayIcon(){
     $("#playIcon").innerHTML = isPlaying ? '<rect x="7" y="5" width="4" height="14" rx="1.4"/><rect x="13" y="5" width="4" height="14" rx="1.4"/>' : '<path d="M9.25 5.7C8.5 5.25 8 5.62 8 6.5v11c0 .88.5 1.25 1.25.8l9.1-5.5c.78-.47.78-1.13 0-1.6z"/>';
     $("#miniEq").classList.toggle("playing", isPlaying);
@@ -8533,6 +8570,7 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
   function onEnded(){
     if(!wantsPlayback||!isPlaying)return;
     if(crossfading) return; // already advanced proactively
+    if(!playlist.length){pauseAudio();return;}
     recordComplete(playlist[currentIndex]);
     if(sleepTimerMode === "end"){ pauseAudio(); clearSleepTimer(); return; }
     if(playMode === "repeatOne"){recordBehaviorEvent("replay",playlist[currentIndex],{automaticLoop:true,duration:audio.duration});audio.currentTime=0;beginBehaviorTrack(playlist[currentIndex],"repeat");resetBehaviorMediaClock();playAudio();return;}
@@ -8949,12 +8987,147 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     const insights=buildListeningInsights(store);
     setBatchedScrollHTML($("#dataDashboard"),`<section class="data-card wide"><h3>${tr("过去十天听歌时间","Listening Time · Last Ten Days")}</h3><div class="data-sub">${tr("悬停数据点查看日期与详细时长","Hover a point for the date and listening time")}</div>${svg}</section><section class="data-card"><h3>${tr("过去十二周最爱艺人","Favorite Artists · Twelve Weeks")}</h3><div class="data-sub">${tr("每周以听歌时长计算","Calculated from weekly listening time")}</div>${periodBars(weeks)}</section><section class="data-card"><h3>${tr("过去十二个月最爱艺人","Favorite Artists · Twelve Months")}</h3><div class="data-sub">${tr("悬停条形查看月份、艺人和时长","Hover a bar for month, artist and time")}</div>${periodBars(months)}</section><section class="data-card wide"><div class="neural-insights">${insights.map(text=>`<div class="neural-insight">${text}</div>`).join("")}</div></section>`);
   }
+  /* ============ annual report (7.4.0 典藏更新) ============
+     History Service owns yearly aggregation; History View renders it.
+     The report year rolls forward automatically: Dec 31 (year Y) through
+     Jan 14 (year Y+1) opens year Y and presents it once per session.
+     Completed years stay viewable and downloadable all year. Downloads are
+     standalone interactive HTML (inline style plus <details> expanders and
+     title tooltips; blob: covers are omitted by design). */
+  const ANNUAL_WINDOW_END_DAY=14;
+  function annualReportWindow(now=new Date()){
+    const month=now.getMonth(),date=now.getDate(),year=now.getFullYear();
+    if(month===11&&date===31)return {open:true,year};
+    if(month===0&&date<=ANNUAL_WINDOW_END_DAY)return {open:true,year:year-1};
+    return {open:false,year:year-1};
+  }
+  function annualAvailableYears(store){
+    const years=new Set(),collect=key=>{const year=Number(String(key||"").slice(0,4));if(Number.isInteger(year)&&year>=2000&&year<=9999)years.add(year);};
+    Object.keys(store.daily||{}).forEach(collect);
+    Object.values(store.songs||{}).forEach(entry=>Object.keys(entry?.daily||{}).forEach(collect));
+    return [...years].sort((a,b)=>b-a);
+  }
+  function buildAnnualReport(store,year){
+    const range={start:new Date(year,0,1),end:new Date(year+1,0,1)};
+    const total=sumDailyRange(store.daily,range);
+    const songs=Object.entries(store.songs||{}).map(([key,entry])=>({key,entry,track:currentTrackForHistory(key,entry),seconds:sumSongRange(entry,range),plays:sumPlayCountRange(entry,range,Number(entry.duration)||0)})).filter(item=>item.seconds>0).sort((a,b)=>b.seconds-a.seconds||b.plays-a.plays);
+    const totalPlays=songs.reduce((sum,item)=>sum+item.plays,0);
+    const artists=new Map(),albums=new Map(),genres=new Map();
+    songs.forEach(item=>{
+      const artist=item.track?.artist||item.entry.artist,album=item.track?.album||item.entry.album,genre=item.track?.genre||item.entry.genre;
+      if(artist)artists.set(artist,(artists.get(artist)||0)+item.seconds);
+      if(album)albums.set(album,(albums.get(album)||0)+item.seconds);
+      if(genre)genres.set(genre,(genres.get(genre)||0)+item.seconds);
+    });
+    const topRows=list=>[...list.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const monthly=Array.from({length:12},(_,month)=>{
+      const seconds=sumDailyRange(store.daily,{start:new Date(year,month,1),end:new Date(year,month+1,1)});
+      const [name]=artistTopForMonth(store,new Date(year,month,1));
+      return {label:new Date(year,month,1).toLocaleDateString(uiLanguage==="zh"?"zh-CN":"en-US",{month:"short"}),name:seconds>0?name:tr("—","—"),value:seconds};
+    });
+    const activeDays=Object.entries(store.daily||{}).filter(([key,value])=>String(key).startsWith(`${year}-`)&&(Number(value)||0)>0).length;
+    let bestDay=null;
+    Object.entries(store.daily||{}).forEach(([key,value])=>{if(String(key).startsWith(`${year}-`)&&(Number(value)||0)>0&&(!bestDay||Number(value)>bestDay.value))bestDay={key,value:Number(value)};});
+    const hourTotals=Array.from({length:24},()=>0);
+    Object.entries(store.hourly||{}).forEach(([day,hours])=>{if(!String(day).startsWith(`${year}-`))return;Object.entries(hours||{}).forEach(([hour,seconds])=>{const slot=Number(hour);if(slot>=0&&slot<24)hourTotals[slot]+=Number(seconds)||0;});});
+    const peakHour=hourTotals.indexOf(Math.max(...hourTotals,0));
+    return {year,total,totalPlays,activeDays,bestDay,songs:songs.slice(0,10),topSong:songs[0]||null,artists:topRows(artists),albums:topRows(albums),genres:topRows(genres),monthly,peakHour:hourTotals[peakHour]>0?peakHour:null};
+  }
+  let annualReportYear=null,annualAutoOpenedFor=0;
+  function renderAnnualTabs(years,target,win){
+    const host=$("#annualYearTabs");if(!host)return;
+    host.innerHTML=years.map(year=>`<button type="button" class="${year===target?"active":""}" data-annual-year="${year}">${year}${win.open&&year===win.year?` · ${tr("新","New")}`:""}</button>`).join("");
+  }
+  function renderAnnualBody(store,year){
+    const host=$("#annualReportBody");if(!host)return;
+    const report=buildAnnualReport(store,year);
+    $("#annualReportTitle").textContent=tr(`${year} 年度报告`,`${year} Annual Report`);
+    if(report.total<=0){setBatchedScrollHTML(host,`<div class="empty-state"><p>${tr(`${year} 年还没有听歌记录`,`No listening history for ${year}`)}</p></div>`);return;}
+    const card=(label,value)=>`<article class="favorite-card annual-stat"><div class="favorite-label">${label}</div><div class="favorite-answer"><strong>${value}</strong></div></article>`;
+    const top=report.topSong;
+    const topSongValue=top?`${escapeHtml(top.track?.title||top.entry.title)} · ${escapeHtml(top.track?.artist||top.entry.artist)}<span>${fmtDuration(top.seconds)}</span>`:"—";
+    const bestDayValue=report.bestDay?`${escapeHtml(report.bestDay.key)} · ${fmtDuration(report.bestDay.value)}`:"—";
+    const peakValue=report.peakHour===null?tr("—","—"):tr(`${report.peakHour}:00 最活跃`,`Most active at ${report.peakHour}:00`);
+    const rankRows=report.songs.map((item,rank)=>{
+      const cover=item.track?.thumbUrl||item.track?.coverUrl;
+      const thumb=cover?`<img src="${cover}" class="track-thumb" loading="lazy" decoding="async">`:`<div class="track-thumb"><span>${escapeHtml((item.track?.title||item.entry.title||"?").trim().slice(0,1))}</span></div>`;
+      return `<div class="top-row"><div class="top-rank">${rank+1}</div><div class="top-row-main">${thumb}<div class="top-info"><div class="t-title">${escapeHtml(item.track?.title||item.entry.title)}</div><div class="t-artist">${escapeHtml(item.track?.artist||item.entry.artist)}</div></div></div><div class="top-row-metrics"><div class="top-bar-wrap"><div class="top-bar-fill" style="width:${(item.seconds/Math.max(1,report.songs[0].seconds)*100).toFixed(0)}%"></div></div><div class="top-meta"><span>${fmtDuration(item.seconds)} · ${item.plays}${tr("次"," plays")}</span></div></div></div>`;
+    }).join("");
+    const dimCard=(label,rows)=>`<section class="data-card"><h3>${label}</h3>${periodBars(rows.map(([name,value])=>({label:"",name,value})))}</section>`;
+    host.innerHTML=`<div class="annual-summary">${card(tr("年度听歌","Listening Time"),fmtDuration(report.total))}${card(tr("年度播放","Plays"),`${report.totalPlays}${tr("次","")}`)}${card(tr("活跃天数","Active Days"),`${report.activeDays}${tr("天","")}`)}${card(tr("年度之歌","Top Song"),topSongValue)}</div>`
+      +`<section class="data-card wide"><h3>${tr("月度听歌时间","Monthly Listening")}</h3><div class="data-sub">${tr("条形为当月时长，悬停查看当月最爱艺人","Bars show monthly time; hover for the monthly top artist")}</div>${periodBars(report.monthly)}</section>`
+      +`<section class="data-card wide"><h3>${tr("年度 Top 10","Yearly Top 10")}</h3>${rankRows}</section>`
+      +`<div class="annual-dims">${dimCard(tr("最爱艺人","Favorite Artists"),report.artists)}${dimCard(tr("最爱专辑","Favorite Albums"),report.albums)}${dimCard(tr("最爱风格","Favorite Genres"),report.genres)}</div>`
+      +`<section class="data-card wide"><div class="neural-insights"><div class="neural-insight">${tr(`单日最高 <strong>${escapeHtml(bestDayValue)}</strong>。`,`Peak day: <strong>${escapeHtml(bestDayValue)}</strong>.`)}${report.peakHour===null?"":tr(`你通常在 <strong>${report.peakHour}:00</strong> 进入听歌状态。`,`You usually settle in around <strong>${report.peakHour}:00</strong>.`)}</div></div></section>`;
+  }
+  function openAnnualReport(year){
+    const store=loadHistoryStore(),win=annualReportWindow();
+    const years=annualAvailableYears(store);
+    if(win.open&&!years.includes(win.year))years.unshift(win.year);
+    const target=years.includes(year)?year:(win.open?win.year:years[0]);
+    if(target===undefined){showToast(tr("还没有听歌记录","No listening history yet"));return;}
+    annualReportYear=target;
+    renderAnnualTabs(years,target,win);
+    renderAnnualBody(store,target);
+    $("#annualReportModal").classList.add("show");
+    setTimeout(()=>{try{scheduleScrollEdgeUpdate($("#annualReportBody"));}catch(error){}},260);
+  }
+  function closeAnnualReport(){$("#annualReportModal").classList.remove("show");}
+  function maybeAutoOpenAnnualReport(){
+    const win=annualReportWindow();
+    if(!win.open||annualAutoOpenedFor===win.year)return;
+    if(!$(".view[data-view=\"history\"]")?.classList.contains("active"))return;
+    annualAutoOpenedFor=win.year;openAnnualReport(win.year);
+  }
+  function syncAnnualButton(){
+    const button=$("#annualReportBtn");if(!button)return;
+    const win=annualReportWindow();
+    button.textContent=tr("年度报告","Annual Report");
+    button.classList.toggle("fresh",win.open);
+    button.title=win.open?tr(`${win.year} 年度报告已开放，1 月 14 日截止`,`${win.year} report is open until January 14`):tr("查看往年报告","Browse past yearly reports");
+  }
+  function buildAnnualReportHTML(report){
+    const esc=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    const style=`*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 50% -8%,#2a2417 0%,#141318 46%,#0e0d12 100%);color:#f2ecdf;font-family:system-ui,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;min-height:100vh}header.cover{max-width:880px;margin:0 auto;padding:64px 40px 10px;text-align:center}.kicker{letter-spacing:.42em;font-size:12px;color:#c9a45c;font-weight:600}.year{font-family:Georgia,"Songti SC","SimSun",serif;font-size:120px;line-height:1;margin:10px 0 4px;background:linear-gradient(180deg,#f6e7c4 20%,#d9ab55 62%,#9a7430 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.rule{width:120px;height:2px;margin:18px auto;background:linear-gradient(90deg,transparent,#c9a45c,transparent)}.gen{color:#8f8a7c;font-size:13px}.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:880px;margin:26px auto 0;padding:0 40px}.hero .cell{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:20px 10px;text-align:center;box-shadow:0 18px 44px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}.hero .k{font-size:12px;letter-spacing:.2em;color:#a49d8b}.hero .v{font-family:Georgia,"Songti SC",serif;font-size:34px;margin-top:8px;color:#f6e7c4}main{max-width:880px;margin:0 auto;padding:26px 40px 10px}section.card{background:rgba(255,255,255,.038);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:26px 28px;margin:0 0 18px;box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.07)}h2{margin:0 0 4px;font-size:15px;letter-spacing:.28em;color:#c9a45c;font-weight:600}h2 small{display:block;letter-spacing:.06em;color:#6f6a5c;font-size:12px;margin-top:6px;font-weight:400}.topsong{display:flex;align-items:baseline;gap:18px;margin-top:14px}.topsong .no{font-family:Georgia,serif;font-size:54px;color:#c9a45c;line-height:1}.topsong .t{font-size:24px;font-weight:700}.topsong .a{color:#a49d8b;margin-top:4px}.topsong .m{margin-left:auto;text-align:right;color:#a49d8b;font-size:13px;white-space:nowrap}.row{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:11px 2px;border-top:1px solid rgba(255,255,255,.07)}.row:first-of-type{border-top:0}.row .no{font-family:Georgia,serif;font-size:26px;color:#8f8a7c}.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no{color:#e3bd72}.row .t{font-weight:600}.row .a{color:#8f8a7c;font-size:13px;margin-top:2px}.row .m{color:#a49d8b;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.bar{display:grid;grid-template-columns:70px 1fr 96px;gap:12px;align-items:center;margin:9px 0;font-size:13px}.bar .track{height:8px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar .fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8a6a2e,#e3bd72)}.bar .num{text-align:right;color:#a49d8b;font-variant-numeric:tabular-nums}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}h4{margin:2px 0 8px;font-size:13px;letter-spacing:.2em;color:#c9a45c}details{margin-top:14px}summary{cursor:pointer;color:#a49d8b;font-size:13px}svg.chart{display:block;width:100%;height:auto;margin-top:10px}.dot{fill:#e3bd72;stroke:#141318;stroke-width:2}.axis{fill:#8f8a7c;font-size:12px}.rhythm{margin-top:6px;color:#cfc8b4;font-size:14px;line-height:2}footer{max-width:880px;margin:0 auto;padding:14px 40px 56px;color:#6f6a5c;font-size:12px;text-align:center}@media(prefers-color-scheme:light){body{background:radial-gradient(1200px 500px at 50% -8%,#f7ecd4 0%,#f3efe6 46%,#ece7d9 100%);color:#2b2620}header .gen{color:#8a7a52}section.card,.hero .cell{background:rgba(255,255,255,.72);border-color:rgba(120,90,30,.16);box-shadow:0 14px 34px rgba(120,90,30,.12)}.hero .v,.topsong .t{color:#4a3a17}.kicker,h2,h4,.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no,.topsong .no{color:#8a6a2e}.row{border-color:rgba(120,90,30,.14)}.row .a,.row .m,.bar .num,.topsong .m,.topsong .a,.rhythm{color:#6f6553}.bar .track{background:rgba(120,90,30,.14)}footer{color:#8a7a52}}`;
+    const W=760,H=230,padX=10,padB=32,padT=18;
+    const maxMonth=Math.max(1,...report.monthly.map(row=>row.value));
+    const pts=report.monthly.map((row,i)=>({x:padX+i*(W-padX*2)/11,y:H-padB-(row.value/maxMonth)*(H-padT-padB),...row}));
+    const linePath="M"+pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L");
+    const areaPath=`${linePath} L${(W-padX).toFixed(1)},${H-padB} L${padX.toFixed(1)},${H-padB} Z`;
+    const chart=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="annualGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3bd72" stop-opacity=".85"/><stop offset="1" stop-color="#e3bd72" stop-opacity=".04"/></linearGradient></defs><path d="${areaPath}" fill="url(#annualGold)"/><path d="${linePath}" fill="none" stroke="#e3bd72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${pts.map(p=>`<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"><title>${esc(p.label)} · ${esc(p.name)} · ${esc(fmtDuration(p.value))}</title></circle><text class="axis" x="${p.x.toFixed(1)}" y="${H-10}" text-anchor="middle">${esc(p.label)}</text>`).join("")}</svg>`;
+    const topRows=report.songs.map((item,rank)=>`<div class="row"><span class="no">${String(rank+1).padStart(2,"0")}</span><span><span class="t">${esc(item.track?.title||item.entry.title)}</span><div class="a">${esc(item.track?.artist||item.entry.artist)}</div></span><span class="m">${esc(fmtDuration(item.seconds))} · ${item.plays} 次</span></div>`).join("");
+    const dim=(title,list)=>`<div><h4>${title}</h4>${list.map(([name,value])=>`<div class="bar" title="${esc(fmtDuration(value))}"><span></span><span>${esc(name)}</span><span class="num">${esc(fmtDuration(value))}</span></div>`).join("")||'<div class="a">—</div>'}</div>`;
+    const top=report.topSong;
+    return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glass Player ${report.year} 年度报告</title><style>${style}</style></head><body>`
+      +`<header class="cover"><div class="kicker">GLASS PLAYER · ANNUAL REPORT</div><div class="year">${report.year}</div><div class="rule"></div><div class="gen">本地生成 · ${esc(new Date().toLocaleDateString())}</div></header>`
+      +`<div class="hero"><div class="cell"><div class="k">年度听歌</div><div class="v">${esc(fmtDuration(report.total))}</div></div><div class="cell"><div class="k">年度播放</div><div class="v">${report.totalPlays}</div></div><div class="cell"><div class="k">活跃天数</div><div class="v">${report.activeDays}</div></div></div>`
+      +`<main><section class="card"><h2>年度之歌<small>TOP SONG OF THE YEAR</small></h2><div class="topsong"><span class="no">01</span><span><span class="t">${esc(top?.track?.title||top?.entry.title||"—")}</span><div class="a">${esc(top?.track?.artist||top?.entry.artist||"")}</div></span><span class="m">${top?esc(fmtDuration(top.seconds))+" · "+top.plays+" 次":""}</span></div></section>`
+      +`<section class="card"><h2>月度曲线<small>MONTHLY LISTENING</small></h2>${chart}</section>`
+      +`<section class="card"><h2>年度 TOP 10<small>YEARLY TOP SONGS</small></h2><details open><summary>展开 / 收起</summary>${topRows}</details></section>`
+      +`<section class="card"><h2>最爱版图<small>FAVORITES</small></h2><div class="cols">${dim("艺人 ARTISTS",report.artists)}${dim("专辑 ALBUMS",report.albums)}${dim("风格 GENRES",report.genres)}</div><div class="rhythm">单日最高 ${esc(report.bestDay?`${report.bestDay.key} · ${fmtDuration(report.bestDay.value)}`:"—")}。${report.peakHour===null?"":`你通常在 ${report.peakHour}:00 进入听歌状态。`}</div></section></main>`
+      +`<footer>由 Glass Player 在本地生成，未上传任何数据 · Generated locally, nothing uploaded.</footer></body></html>`;
+  }
+  function downloadAnnualReport(year){
+    const store=loadHistoryStore(),report=buildAnnualReport(store,year);
+    if(report.total<=0){showToast(tr("这一年还没有听歌记录","No listening history for this year"));return;}
+    const blob=new Blob(["﻿",buildAnnualReportHTML(report)],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download=`Glass Player Annual Report ${year}.html`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    showToast(tr("年度报告已导出","Annual report exported"));
+  }
+  $("#annualReportBtn").addEventListener("click",()=>openAnnualReport());
+  $("#annualCloseBtn").addEventListener("click",closeAnnualReport);
+  $("#annualDownloadBtn").addEventListener("click",()=>{if(annualReportYear!==null&&annualReportYear!==undefined)downloadAnnualReport(annualReportYear);});
+  $("#annualReportModal").addEventListener("click",event=>{if(event.target===$("#annualReportModal"))closeAnnualReport();});
+  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("#annualReportModal")?.classList.contains("show"))closeAnnualReport();});
+  $("#annualYearTabs").addEventListener("click",event=>{const button=event.target.closest("[data-annual-year]");if(button)openAnnualReport(Number(button.dataset.annualYear));});
   const historyRenderedSignatures=new Map();
   function renderHistory(){
     /* Metadata migration already runs after import and manual rescan. Repeating
        the full identity reconciliation on every tab click blocked first paint. */
     const store=loadHistoryStore(),mode=$("#historyModeSeg button.active")?.dataset.historyMode||"time";
     lastVisibleHistoryRefreshAt=Date.now();
+    syncAnnualButton();
     $$(".history-pane").forEach(p=>p.classList.toggle("active",p.id===({time:"historyTimePane",favorites:"historyFavoritesPane",data:"historyDataPane"}[mode])));
     const activeRange=$("#rangeSeg button.active")?.dataset.r||"day";
     const signature=`${historyStoreRevision}|${uiLanguage}|${playlist.length}|${activeRange}`;
@@ -9553,12 +9726,16 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     d.addEventListener("playing",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);}});
     d.addEventListener("pause",()=>{
       if(d!==audio)return;
+      // 7.3.2: a native pause arriving with ended/crossfading set is the track
+      // finishing or handing over, not a user pause — keep the intent so the
+      // following ended event can advance instead of stalling.
+      if(d.ended||crossfading){setPlaybackVisualState(false);return;}
       emitListeningCheckpoint("pause");
       setPlaybackVisualState(false);
       if(!pendingPlayToken)wantsPlayback=false;
     });
     d.addEventListener("error",()=>{
-      if(d!==audio)return;
+      if(d!==audio||d.ended)return;
       pendingPlayToken=0;wantsPlayback=false;setPlaybackVisualState(false);
     });
     d.addEventListener("timeupdate", () => {
@@ -9675,474 +9852,6 @@ GPModules.register("createGalaxyService", function createGalaxyService() {
     if(e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files).catch(error=>finishImportProgress(null,error));
   });
 
-/* ================= Music Galaxy Canvas View =================
-   One view-owned Canvas lifecycle consumes frozen track snapshots and the
-   pure Galaxy service. Layout, persistence, playback and routing stay with
-   their existing owners. */
-GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTracks}) {
-  const GALAXY_HOVER_SPEED_LIMIT = 900; // CSS px/s
-  const GALAXY_HOVER_DWELL_MS = 90;
-  const GALAXY_SPATIAL_CELL = 32;
-  const GALAXY_POINTER_SETTLE_MS = 48;
-  const GALAXY_LAYOUT_DURATION_MS = 360;
-  const GALAXY_MIN_SCALE = .82;
-  const GALAXY_MAX_SCALE = 3.4;
-  const GALAXY_ZOOM_SENSITIVITY = .0012;
-  const GALAXY_LABEL_GRID_CELL = 96;
-  const GALAXY_DENSE_POINT_START = 48;
-  const GALAXY_DENSE_POINT_RANGE = 160;
-
-  let mounted=false,view=null,shell=null,canvas=null,tooltip=null,status=null,context=null;
-  let resizeObserver=null,themeObserver=null,frameHandle=0;
-  let cssWidth=0,cssHeight=0,pixelRatio=1;
-  let atmosphereLayer=null,atmosphereSignature="",pointSprites=null,pointSpriteSignature="";
-  let lastTrackSignature="",lastViewportSignature="",lastTracks=[],lastVectors=[],layout=null;
-  let targetPoints=[],visiblePoints=[],clusters=[],animationFrom=new Map(),animationStart=null;
-  let pointByKey=new Map(),trackByKey=new Map(),spatialHash=new Map();
-  let hoverKey=null,pinnedKey=null,dwellKey=null,dwellStart=0,tooltipKey=null;
-  let clickPending=false,escapePending=false;
-  let viewportScale=1,viewportOffsetX=0,viewportOffsetY=0;
-  let dragPointerId=null,dragStartX=0,dragStartY=0,dragOriginOffsetX=0,dragOriginOffsetY=0,dragMoved=false,suppressClick=false;
-  const pointer={inside:false,x:0,y:0,time:0,speed:0};
-
-  function hashText(value){
-    let hash=2166136261;
-    for(const character of String(value||"")){hash^=character.charCodeAt(0);hash=Math.imul(hash,16777619);}
-    return hash>>>0;
-  }
-
-  function seededRandom(seed){
-    let state=seed>>>0;
-    return ()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
-  }
-
-  function parseRgb(style,name,fallback){
-    const value=style.getPropertyValue(name).trim(),hex=value.match(/^#([\da-f]{3}|[\da-f]{6})$/i);
-    if(hex){
-      const expanded=hex[1].length===3?[...hex[1]].map(character=>character+character).join(""):hex[1];
-      return [0,2,4].map(offset=>parseInt(expanded.slice(offset,offset+2),16));
-    }
-    const values=value.match(/[\d.]+/g)?.slice(0,3).map(Number);
-    return values?.length===3&&values.every(Number.isFinite)?values:fallback;
-  }
-
-  function rgba(rgb,alpha){return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;}
-  function reducedMotion(){return matchMedia("(prefers-reduced-motion: reduce)").matches;}
-
-  function clampViewportTransform(){
-    viewportScale=Math.max(GALAXY_MIN_SCALE,Math.min(GALAXY_MAX_SCALE,Number.isFinite(viewportScale)?viewportScale:1));
-    const maxOffsetX=Math.max(0,(viewportScale-1)*cssWidth*.5),maxOffsetY=Math.max(0,(viewportScale-1)*cssHeight*.5);
-    viewportOffsetX=Math.max(-maxOffsetX,Math.min(maxOffsetX,Number.isFinite(viewportOffsetX)?viewportOffsetX:0));
-    viewportOffsetY=Math.max(-maxOffsetY,Math.min(maxOffsetY,Number.isFinite(viewportOffsetY)?viewportOffsetY:0));
-  }
-
-  function viewportPoint(point){
-    const centerX=cssWidth*.5,centerY=cssHeight*.5;
-    return {...point,x:centerX+(point.x-centerX)*viewportScale+viewportOffsetX,y:centerY+(point.y-centerY)*viewportScale+viewportOffsetY};
-  }
-
-  function measureCanvas(){
-    if(!shell||!canvas||!context)return false;
-    const bounds=shell.getBoundingClientRect();
-    const width=bounds.width||shell.clientWidth||0,height=bounds.height||shell.clientHeight||0;
-    if(width<2||height<2)return false;
-    const nextRatio=Math.min(Number(window.devicePixelRatio)||1,2);
-    const backingWidth=Math.max(1,Math.round(width*nextRatio));
-    const backingHeight=Math.max(1,Math.round(height*nextRatio));
-    const changed=Math.abs(width-cssWidth)>.25||Math.abs(height-cssHeight)>.25||nextRatio!==pixelRatio||canvas.width!==backingWidth||canvas.height!==backingHeight;
-    cssWidth=width;cssHeight=height;pixelRatio=nextRatio;
-    if(changed){
-      canvas.width=backingWidth;canvas.height=backingHeight;
-      context.setTransform(backingWidth/width,0,0,backingHeight/height,0,0);
-      atmosphereSignature="";pointSpriteSignature="";
-    }
-    clampViewportTransform();
-    rebuildSpatialHash();
-    return true;
-  }
-
-  function releaseLayers(){
-    if(atmosphereLayer){atmosphereLayer.width=0;atmosphereLayer.height=0;}
-    pointSprites?.forEach(sprite=>{sprite.canvas.width=0;sprite.canvas.height=0;});
-    atmosphereLayer=null;pointSprites=null;atmosphereSignature="";pointSpriteSignature="";
-  }
-
-  function createPointSprite(size,innerAlpha,outerAlpha,rgb){
-    const sprite=document.createElement("canvas"),backing=Math.max(2,Math.round(size*pixelRatio));
-    sprite.width=backing;sprite.height=backing;
-    const spriteContext=sprite.getContext("2d"),scale=backing/size,center=size/2;
-    spriteContext.setTransform(scale,0,0,scale,0,0);
-    const gradient=spriteContext.createRadialGradient(center,center,0,center,center,center);
-    gradient.addColorStop(0,rgba([255,255,255],innerAlpha));
-    gradient.addColorStop(.16,rgba(rgb,Math.min(1,innerAlpha*.92)));
-    gradient.addColorStop(.48,rgba(rgb,outerAlpha));
-    gradient.addColorStop(1,rgba(rgb,0));
-    spriteContext.fillStyle=gradient;spriteContext.fillRect(0,0,size,size);
-    return {canvas:sprite,size};
-  }
-
-  function ensurePointSprites(style){
-    const accent=parseRgb(style,"--accent-rgb",[92,150,220]);
-    const signature=`${pixelRatio}|${accent.join(",")}`;
-    if(pointSprites&&signature===pointSpriteSignature)return;
-    pointSprites?.forEach(sprite=>{sprite.canvas.width=0;sprite.canvas.height=0;});
-    pointSprites=[
-      createPointSprite(18,.72,.12,accent),
-      createPointSprite(28,.94,.18,accent),
-      createPointSprite(40,1,.26,accent)
-    ];
-    pointSpriteSignature=signature;
-  }
-
-  function ensureAtmosphere(style){
-    const accent=parseRgb(style,"--accent-rgb",[80,132,190]);
-    const textColor=parseRgb(style,"--text-primary",[238,244,252]);
-    const dark=document.body.getAttribute("data-theme")==="dark";
-    const layoutKey=layout?.signature||"galaxy-empty";
-    const signature=`${cssWidth.toFixed(2)}|${cssHeight.toFixed(2)}|${pixelRatio}|${dark}|${accent.join(",")}|${textColor.join(",")}|${layoutKey}`;
-    if(atmosphereLayer&&signature===atmosphereSignature)return;
-
-    const layer=document.createElement("canvas"),backingWidth=Math.max(1,Math.round(cssWidth*pixelRatio)),backingHeight=Math.max(1,Math.round(cssHeight*pixelRatio));
-    layer.width=backingWidth;layer.height=backingHeight;
-    const layerContext=layer.getContext("2d"),scaleX=backingWidth/cssWidth,scaleY=backingHeight/cssHeight;
-    layerContext.setTransform(scaleX,0,0,scaleY,0,0);
-    const random=seededRandom(hashText(signature));
-
-    const vignette=layerContext.createRadialGradient(cssWidth*.52,cssHeight*.48,0,cssWidth*.52,cssHeight*.48,Math.max(cssWidth,cssHeight)*.72);
-    vignette.addColorStop(0,rgba(accent,dark?.075:.05));
-    vignette.addColorStop(.55,rgba([15,28,52],dark?.055:.035));
-    vignette.addColorStop(1,rgba([2,8,20],0));
-    layerContext.fillStyle=vignette;layerContext.fillRect(0,0,cssWidth,cssHeight);
-
-    const band=layerContext.createLinearGradient(0,cssHeight,cssWidth,0);
-    band.addColorStop(0,rgba(accent,0));band.addColorStop(.28,rgba(accent,dark?.055:.035));band.addColorStop(.62,rgba([176,205,236],dark?.07:.045));band.addColorStop(1,rgba(accent,0));
-    layerContext.lineCap="round";layerContext.strokeStyle=band;
-    for(let pass=0;pass<3;pass++){
-      layerContext.globalAlpha=.72-pass*.17;
-      layerContext.lineWidth=Math.min(cssWidth,cssHeight)*(.30-pass*.065);
-      layerContext.beginPath();
-      layerContext.moveTo(-cssWidth*.08,cssHeight*(.78-pass*.025));
-      layerContext.bezierCurveTo(cssWidth*.26,cssHeight*(.56+pass*.018),cssWidth*.68,cssHeight*(.43-pass*.025),cssWidth*1.08,cssHeight*.20);
-      layerContext.stroke();
-    }
-
-    layerContext.globalAlpha=1;
-    const hazeCount=Math.max(4,Math.min(9,Math.round((layout?.clusters?.length||4)*1.2)));
-    for(let index=0;index<hazeCount;index++){
-      const x=cssWidth*(.12+random()*.76),y=cssHeight*(.16+random()*.68),radius=Math.min(cssWidth,cssHeight)*(.08+random()*.12);
-      const haze=layerContext.createRadialGradient(x,y,0,x,y,radius);
-      haze.addColorStop(0,rgba(accent,dark?.052:.032));haze.addColorStop(.45,rgba(accent,dark?.022:.014));haze.addColorStop(1,rgba(accent,0));
-      layerContext.fillStyle=haze;layerContext.fillRect(x-radius,y-radius,radius*2,radius*2);
-    }
-
-    const starCount=Math.max(220,Math.min(1600,Math.round(cssWidth*cssHeight/1050)));
-    for(let index=0;index<starCount;index++){
-      const x=random()*cssWidth,y=random()*cssHeight,radius=.28+random()*.72,alpha=(dark?.08:.06)+random()*(dark?.22:.14);
-      layerContext.fillStyle=rgba(index%7===0?accent:textColor,alpha);
-      layerContext.fillRect(x,y,radius,radius);
-    }
-
-    if(atmosphereLayer){atmosphereLayer.width=0;atmosphereLayer.height=0;}
-    atmosphereLayer=layer;atmosphereSignature=signature;
-  }
-
-  function rebuildSpatialHash(){
-    spatialHash=new Map();pointByKey=new Map();
-    visiblePoints.forEach(point=>{
-      const screenPoint={...viewportPoint(point),radius:point.radius*viewportScale};
-      pointByKey.set(point.key,screenPoint);
-      const cellX=Math.floor(screenPoint.x/GALAXY_SPATIAL_CELL),cellY=Math.floor(screenPoint.y/GALAXY_SPATIAL_CELL),cellKey=`${cellX}:${cellY}`;
-      const bucket=spatialHash.get(cellKey)||[];bucket.push(screenPoint);spatialHash.set(cellKey,bucket);
-    });
-  }
-
-  function querySpatialPoint(x,y){
-    const cellX=Math.floor(x/GALAXY_SPATIAL_CELL),cellY=Math.floor(y/GALAXY_SPATIAL_CELL);
-    let nearest=null,nearestDistance=Infinity;
-    for(let offsetY=-1;offsetY<=1;offsetY++)for(let offsetX=-1;offsetX<=1;offsetX++){
-      const bucket=spatialHash.get(`${cellX+offsetX}:${cellY+offsetY}`)||[];
-      bucket.forEach(point=>{
-        const distance=Math.hypot(point.x-x,point.y-y),hitRadius=Math.max(10,point.radius+6);
-        if(distance<=hitRadius&&distance<nearestDistance){nearest=point;nearestDistance=distance;}
-      });
-    }
-    return nearest;
-  }
-
-  function truncateCanvasLabel(value,maxWidth){
-    const label=String(value||"").replace(/\s*·.*$/," ").replace(/\s+/g," ").trim()||tr("混合","Mixed");
-    if(!context||context.measureText(label).width<=maxWidth)return label;
-    const ellipsis="…";
-    let output="";
-    for(const character of Array.from(label)){
-      if(context.measureText(`${output}${character}${ellipsis}`).width>maxWidth)break;
-      output+=character;
-    }
-    return output?`${output}${ellipsis}`:ellipsis;
-  }
-
-  function buildLabelAnchors(maxWidth){
-    if(!context||!clusters.length)return [];
-    const candidates=clusters.map(cluster=>{
-      const point=viewportPoint(cluster),label=truncateCanvasLabel(cluster.label,maxWidth),width=Math.min(maxWidth,Math.max(32,context.measureText(label).width));
-      return {id:cluster.id,count:cluster.count,x:Math.max(8,Math.min(cssWidth-8,point.x)),y:Math.max(18,Math.min(cssHeight-10,point.y-22)),width,label};
-    }).sort((left,right)=>right.count-left.count||left.id-right.id);
-    const occupied=new Set(),anchors=[];
-    candidates.forEach(candidate=>{
-      const minColumn=Math.floor((candidate.x-candidate.width*.5-10)/GALAXY_LABEL_GRID_CELL),maxColumn=Math.floor((candidate.x+candidate.width*.5+10)/GALAXY_LABEL_GRID_CELL);
-      const minRow=Math.floor((candidate.y-12)/GALAXY_LABEL_GRID_CELL),maxRow=Math.floor((candidate.y+6)/GALAXY_LABEL_GRID_CELL);
-      let blocked=false;
-      for(let row=minRow;row<=maxRow&&!blocked;row++)for(let column=minColumn;column<=maxColumn;column++)if(occupied.has(`${column}:${row}`)){blocked=true;break;}
-      if(blocked)return;
-      for(let row=minRow;row<=maxRow;row++)for(let column=minColumn;column<=maxColumn;column++)occupied.add(`${column}:${row}`);
-      anchors.push(candidate);
-    });
-    return anchors;
-  }
-
-  function resetViewport(){
-    viewportScale=1;viewportOffsetX=0;viewportOffsetY=0;clampViewportTransform();rebuildSpatialHash();tooltipKey=null;updateTooltip();scheduleFrame();
-  }
-
-  function localizedTemplate(zh,en,replacements){
-    let value=tr(zh,en);
-    Object.entries(replacements).forEach(([key,replacement])=>{value=value.replace(`{${key}}`,String(replacement));});
-    return value;
-  }
-
-  function updateStatus(){
-    if(!status)return;
-    if(!lastTracks.length){
-      status.textContent=tr("导入歌曲后即可探索音乐银河","Import music to explore your Music Galaxy");
-      status.style.removeProperty("inset");status.style.removeProperty("transform");status.style.removeProperty("text-align");
-      return;
-    }
-    const countText=localizedTemplate("已展示 {count} 个歌曲点","Showing {count} song points",{count:visiblePoints.length});
-    const covered=lastVectors.filter(vector=>vector.mfccComplete||Number.isFinite(vector.bpm)||vector.genre!=="Unknown").length;
-    const coverageText=localizedTemplate("已展示 {shown} / {total} 首可分析歌曲","Showing {shown} of {total} analyzable songs",{shown:covered,total:lastTracks.length});
-    status.textContent=layout?.coverage<.995?`${countText} · ${coverageText}`:countText;
-    status.style.inset="auto 14px 12px auto";status.style.transform="none";status.style.textAlign="right";
-  }
-
-  function clearTooltip(){
-    if(!tooltip)return;
-    tooltip.hidden=true;tooltip.textContent="";tooltip.style.removeProperty("left");tooltip.style.removeProperty("top");tooltipKey=null;
-  }
-
-  function updateTooltip(){
-    if(!tooltip||!shell)return;
-    const key=pinnedKey||hoverKey,point=key?pointByKey.get(key):null,track=key?trackByKey.get(key):null;
-    if(!point||!track){clearTooltip();return;}
-    const content=String(track.title||tr("未知","Unknown"));
-    if(tooltipKey!==key||tooltip.textContent!==content){
-      tooltip.textContent=content;
-      tooltip.hidden=false;tooltipKey=key;
-    }
-    tooltip.hidden=false;
-    const maxLeft=Math.max(8,cssWidth-(tooltip.offsetWidth||260)-8),maxTop=Math.max(8,cssHeight-(tooltip.offsetHeight||48)-8);
-    tooltip.style.left=`${Math.max(8,Math.min(maxLeft,point.x+12))}px`;
-    tooltip.style.top=`${Math.max(8,Math.min(maxTop,point.y+12))}px`;
-  }
-
-  function updateAnimatedPoints(now){
-    if(animationStart===null)return false;
-    const progress=Math.min(1,Math.max(0,(now-animationStart)/GALAXY_LAYOUT_DURATION_MS));
-    const eased=1-Math.pow(1-progress,3);
-    visiblePoints=targetPoints.map(point=>{
-      const origin=animationFrom.get(point.key)||point;
-      return {...point,x:origin.x+(point.x-origin.x)*eased,y:origin.y+(point.y-origin.y)*eased};
-    });
-    rebuildSpatialHash();
-    if(progress>=1){animationStart=null;animationFrom=new Map();return false;}
-    return true;
-  }
-
-  function processInteraction(now){
-    if(escapePending){escapePending=false;pinnedKey=null;hoverKey=null;dwellKey=null;dwellStart=0;clickPending=false;updateTooltip();return false;}
-    if(!pointer.inside){hoverKey=null;dwellKey=null;dwellStart=0;clickPending=false;updateTooltip();return false;}
-    const pointerAge=Math.max(0,now-pointer.time),speed=pointerAge>GALAXY_POINTER_SETTLE_MS?0:pointer.speed;
-    const candidate=querySpatialPoint(pointer.x,pointer.y);
-    if(clickPending){
-      clickPending=false;
-      if(!candidate)pinnedKey=null;
-      else if(speed<=GALAXY_HOVER_SPEED_LIMIT)pinnedKey=candidate.key;
-    }
-    if(speed>GALAXY_HOVER_SPEED_LIMIT){
-      hoverKey=null;dwellKey=null;dwellStart=0;updateTooltip();
-      return pointerAge<=GALAXY_POINTER_SETTLE_MS;
-    }
-    if(!candidate){hoverKey=null;dwellKey=null;dwellStart=0;updateTooltip();return false;}
-    if(dwellKey!==candidate.key){dwellKey=candidate.key;dwellStart=now;hoverKey=null;updateTooltip();return true;}
-    if(now-dwellStart<GALAXY_HOVER_DWELL_MS){updateTooltip();return true;}
-    hoverKey=candidate.key;updateTooltip();return false;
-  }
-
-  function draw(){
-    if(!context||!cssWidth||!cssHeight)return;
-    const style=getComputedStyle(view);
-    ensureAtmosphere(style);ensurePointSprites(style);
-    context.clearRect(0,0,cssWidth,cssHeight);
-    if(atmosphereLayer)context.drawImage(atmosphereLayer,0,0,atmosphereLayer.width,atmosphereLayer.height,0,0,cssWidth,cssHeight);
-
-    const pointCount=visiblePoints.length,density=Math.max(0,Math.min(1,(pointCount-GALAXY_DENSE_POINT_START)/GALAXY_DENSE_POINT_RANGE));
-    const unselectedScale=.86-density*.20,unselectedAlpha=.66-density*.34,renderScale=Math.pow(viewportScale,.72);
-    context.save();context.globalCompositeOperation=pointCount>GALAXY_DENSE_POINT_START?"source-over":"lighter";
-    visiblePoints.forEach(point=>{
-      const screenPoint=viewportPoint(point);
-      const selected=point.key===pinnedKey||point.key===hoverKey;
-      const sprite=pointSprites[selected?2:point.opacity<.7?0:1];
-      const size=sprite.size*(.58+point.radius/10+(selected?.16:0))*renderScale*(selected?1:unselectedScale);
-      context.globalAlpha=selected?Math.max(.55,Math.min(1,point.opacity)):Math.max(.18,Math.min(.72,point.opacity*unselectedAlpha));
-      context.drawImage(sprite.canvas,screenPoint.x-size/2,screenPoint.y-size/2,size,size);
-      context.fillStyle=`hsla(${(205+point.colorFamily*29)%360},72%,${selected?78:68}%,${selected?.92:.64})`;
-      context.beginPath();context.arc(screenPoint.x,screenPoint.y,Math.max(.55,point.radius*viewportScale*(selected?.48:.28)),0,Math.PI*2);context.fill();
-    });
-    context.restore();context.globalCompositeOperation="source-over";
-
-    if(clusters.length){
-      const fontFamily=style.fontFamily||"system-ui";
-      const labelColor=parseRgb(style,"--text-primary",[224,236,250]),labelGlow=parseRgb(style,"--accent-rgb",[120,170,230]);
-      context.save();context.textAlign="center";context.textBaseline="bottom";context.font=`600 11px ${fontFamily}`;
-      const labelAnchors=buildLabelAnchors(Math.min(180,Math.max(88,cssWidth*.18)));
-      labelAnchors.forEach(anchor=>{
-        context.shadowColor=rgba(labelGlow,.20);context.shadowBlur=5;context.fillStyle=rgba(labelColor,.18);context.fillText(anchor.label,anchor.x,anchor.y);
-        context.shadowBlur=0;context.fillStyle=rgba(labelColor,.62);context.fillText(anchor.label,anchor.x,anchor.y);
-      });
-      context.restore();
-    }
-  }
-
-  function renderFrame(now){
-    frameHandle=0;
-    const animating=updateAnimatedPoints(now),interacting=processInteraction(now);
-    draw();updateTooltip();
-    if(animating||interacting)scheduleFrame();
-  }
-
-  function scheduleFrame(){
-    if(!mounted||frameHandle)return;
-    frameHandle=requestAnimationFrame(renderFrame);
-  }
-
-  function stableTrackData(){
-    const sourceTracks=getTracks?.(),tracks=Array.isArray(sourceTracks)?sourceTracks:[];
-    const entries=tracks.map(track=>({track,vector:galaxy.featureVector(track)})).sort((left,right)=>left.vector.stableKey.localeCompare(right.vector.stableKey));
-    trackByKey=new Map(entries.map(entry=>[entry.vector.stableKey,entry.track]));
-    const signature=hashText(entries.map(entry=>`${entry.vector.stableKey}|${entry.vector.bpm}|${entry.vector.bpmConfidence}|${entry.vector.genre}|${entry.vector.genreSecondary||""}|${entry.vector.mfccComplete?1:0}|${entry.vector.coverage}|${entry.vector.confidence}|${entry.vector.mfcc.join(",")}`).join("\u001f")).toString(16);
-    return {tracks:entries.map(entry=>entry.track),vectors:entries.map(entry=>entry.vector),signature};
-  }
-
-  function refresh(){
-    if(!mounted||!measureCanvas())return false;
-    if(animationStart!==null)updateAnimatedPoints(performance.now());
-    const snapshot=stableTrackData(),viewportSignature=`${cssWidth.toFixed(2)}x${cssHeight.toFixed(2)}`;
-    lastTracks=snapshot.tracks;lastVectors=snapshot.vectors;
-    if(snapshot.signature===lastTrackSignature&&viewportSignature===lastViewportSignature){updateStatus();updateTooltip();scheduleFrame();return false;}
-
-    const previous=new Map(visiblePoints.map(point=>[point.key,point]));
-    layout=galaxy.buildLayout(lastTracks,{width:cssWidth,height:cssHeight});
-    targetPoints=layout.points.map(point=>({...point}));clusters=layout.clusters.map(cluster=>({...cluster}));
-    animationFrom=new Map(targetPoints.map(point=>[point.key,previous.get(point.key)||point]));
-    const changed=targetPoints.some(point=>{const origin=animationFrom.get(point.key);return Math.abs(origin.x-point.x)>.25||Math.abs(origin.y-point.y)>.25;});
-    visiblePoints=targetPoints.map(point=>{const origin=animationFrom.get(point.key);return {...point,x:origin.x,y:origin.y};});
-    animationStart=changed&&!reducedMotion()?performance.now():null;
-    if(animationStart===null){visiblePoints=targetPoints.map(point=>({...point}));animationFrom=new Map();}
-    if(pinnedKey&&!targetPoints.some(point=>point.key===pinnedKey))pinnedKey=null;
-    if(hoverKey&&!targetPoints.some(point=>point.key===hoverKey))hoverKey=null;
-    lastTrackSignature=snapshot.signature;lastViewportSignature=viewportSignature;
-    rebuildSpatialHash();updateStatus();updateTooltip();scheduleFrame();return true;
-  }
-
-  function setPointerFromEvent(event){
-    const bounds=canvas.getBoundingClientRect(),x=event.clientX-bounds.left,y=event.clientY-bounds.top,time=performance.now();
-    const elapsed=Math.max(1,time-pointer.time),distance=Math.hypot(x-pointer.x,y-pointer.y);
-    pointer.speed=pointer.time?distance/elapsed*1000:0;pointer.x=x;pointer.y=y;pointer.time=time;pointer.inside=true;
-  }
-
-  function onPointerDown(event){
-    if(event.button!==0)return;
-    setPointerFromEvent(event);canvas.focus?.({preventScroll:true});dragPointerId=event.pointerId;dragStartX=pointer.x;dragStartY=pointer.y;dragOriginOffsetX=viewportOffsetX;dragOriginOffsetY=viewportOffsetY;dragMoved=false;canvas.setPointerCapture?.(event.pointerId);scheduleFrame();
-  }
-  function onPointerMove(event){
-    setPointerFromEvent(event);
-    if(dragPointerId===event.pointerId){
-      const deltaX=pointer.x-dragStartX,deltaY=pointer.y-dragStartY;
-      if(!dragMoved&&Math.hypot(deltaX,deltaY)>4){dragMoved=true;suppressClick=true;}
-      if(dragMoved){viewportOffsetX=dragOriginOffsetX+deltaX;viewportOffsetY=dragOriginOffsetY+deltaY;clampViewportTransform();rebuildSpatialHash();updateTooltip();}
-    }
-    scheduleFrame();
-  }
-  function onPointerUp(event){
-    if(dragPointerId!==event.pointerId)return;
-    if(canvas.hasPointerCapture?.(event.pointerId))canvas.releasePointerCapture?.(event.pointerId);
-    dragPointerId=null;pointer.speed=0;pointer.time=performance.now();scheduleFrame();
-  }
-  function onPointerCancel(event){onPointerUp(event);suppressClick=false;}
-  function onPointerLeave(){
-    if(dragPointerId!==null)return;
-    pointer.inside=false;pointer.speed=0;pointer.time=performance.now();scheduleFrame();
-  }
-  function onClick(event){
-    if(suppressClick){suppressClick=false;clickPending=false;return;}
-    setPointerFromEvent(event);clickPending=true;scheduleFrame();
-  }
-  function onDoubleClick(event){event.preventDefault();resetViewport();}
-  function onWheel(event){
-    const bounds=canvas.getBoundingClientRect(),x=event.clientX-bounds.left,y=event.clientY-bounds.top;
-    const delta=event.deltaMode===1?event.deltaY*16:event.deltaMode===2?event.deltaY*cssHeight:event.deltaY;
-    const nextScale=Math.max(GALAXY_MIN_SCALE,Math.min(GALAXY_MAX_SCALE,viewportScale*Math.exp(-delta*GALAXY_ZOOM_SENSITIVITY)));
-    pointer.inside=true;pointer.x=x;pointer.y=y;pointer.speed=0;pointer.time=performance.now();
-    if(nextScale!==viewportScale){
-      const centerX=cssWidth*.5,centerY=cssHeight*.5,worldX=(x-centerX-viewportOffsetX)/viewportScale+centerX,worldY=(y-centerY-viewportOffsetY)/viewportScale+centerY;
-      viewportScale=nextScale;viewportOffsetX=x-centerX-(worldX-centerX)*viewportScale;viewportOffsetY=y-centerY-(worldY-centerY)*viewportScale;clampViewportTransform();rebuildSpatialHash();updateTooltip();scheduleFrame();
-    }
-    event.preventDefault();
-  }
-  function onKeyDown(event){
-    const key=String(event.key||"").toLowerCase();
-    if(key==="0"||key==="r"||event.key==="Home"){event.preventDefault();resetViewport();return;}
-    if(event.key!=="Escape")return;escapePending=true;scheduleFrame();
-  }
-  function onResize(){refresh();}
-  function onThemeMutation(){tooltipKey=null;updateStatus();updateTooltip();scheduleFrame();}
-
-  function mount(root=document){
-    if(mounted)return controller;
-    const resolvedView=root?.matches?.(".galaxy-view")?root:root?.querySelector?.(".galaxy-view");
-    const resolvedCanvas=resolvedView?.querySelector("#galaxyCanvas"),resolvedTooltip=resolvedView?.querySelector("#galaxyTooltip"),resolvedStatus=resolvedView?.querySelector("#galaxyStatus");
-    if(!resolvedView||!resolvedCanvas||!resolvedTooltip||!resolvedStatus)return controller;
-    const resolvedContext=resolvedCanvas.getContext("2d",{alpha:true});if(!resolvedContext)return controller;
-    view=resolvedView;canvas=resolvedCanvas;tooltip=resolvedTooltip;status=resolvedStatus;shell=canvas.closest(".galaxy-canvas-shell");context=resolvedContext;mounted=true;
-    canvas.style.touchAction="none";
-    window.addEventListener("resize",onResize,{passive:true});
-    canvas.addEventListener("pointerdown",onPointerDown);canvas.addEventListener("pointermove",onPointerMove,{passive:true});canvas.addEventListener("pointerup",onPointerUp,{passive:true});canvas.addEventListener("pointercancel",onPointerCancel,{passive:true});canvas.addEventListener("pointerleave",onPointerLeave,{passive:true});canvas.addEventListener("wheel",onWheel,{passive:false});canvas.addEventListener("dblclick",onDoubleClick);canvas.addEventListener("click",onClick);canvas.addEventListener("keydown",onKeyDown);
-    if(typeof ResizeObserver==="function"){resizeObserver=new ResizeObserver(onResize);resizeObserver.observe(shell);}
-    if(typeof MutationObserver==="function"){
-      themeObserver=new MutationObserver(onThemeMutation);
-      themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:["lang","style"]});
-      themeObserver.observe(document.body,{attributes:true,attributeFilter:["data-theme"]});
-    }
-    refresh();return controller;
-  }
-
-  function destroy(){
-    if(!mounted)return;
-    window.removeEventListener("resize",onResize);
-    if(dragPointerId!==null&&canvas.hasPointerCapture?.(dragPointerId))canvas.releasePointerCapture?.(dragPointerId);
-    canvas.removeEventListener("pointerdown",onPointerDown);canvas.removeEventListener("pointermove",onPointerMove);canvas.removeEventListener("pointerup",onPointerUp);canvas.removeEventListener("pointercancel",onPointerCancel);canvas.removeEventListener("pointerleave",onPointerLeave);canvas.removeEventListener("wheel",onWheel);canvas.removeEventListener("dblclick",onDoubleClick);canvas.removeEventListener("click",onClick);canvas.removeEventListener("keydown",onKeyDown);canvas.style.removeProperty("touch-action");
-    resizeObserver?.disconnect();themeObserver?.disconnect();resizeObserver=null;themeObserver=null;
-    if(frameHandle)cancelAnimationFrame(frameHandle);frameHandle=0;clearTooltip();releaseLayers();
-    status.style.removeProperty("inset");status.style.removeProperty("transform");status.style.removeProperty("text-align");
-    mounted=false;view=null;shell=null;canvas=null;tooltip=null;status=null;context=null;
-    cssWidth=0;cssHeight=0;lastTrackSignature="";lastViewportSignature="";lastTracks=[];lastVectors=[];layout=null;targetPoints=[];visiblePoints=[];clusters=[];animationFrom=new Map();animationStart=null;
-    pointByKey=new Map();trackByKey=new Map();spatialHash=new Map();hoverKey=null;pinnedKey=null;dwellKey=null;dwellStart=0;tooltipKey=null;clickPending=false;escapePending=false;viewportScale=1;viewportOffsetX=0;viewportOffsetY=0;dragPointerId=null;dragStartX=0;dragStartY=0;dragOriginOffsetX=0;dragOriginOffsetY=0;dragMoved=false;suppressClick=false;
-    pointer.inside=false;pointer.x=0;pointer.y=0;pointer.time=0;pointer.speed=0;
-  }
-
-  function isMounted(){return mounted;}
-  const controller=Object.freeze({mount,refresh,destroy,isMounted});
-  return controller;
-});
   /* ================= settings ================= */
   let settingsCategory="appearance";
   function activateSettingsCategory(category){
@@ -10462,6 +10171,19 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
     if(typeof realignTypographyGliders==="function")realignTypographyGliders();
   }
   function applyFontFamily(){syncTypographyLanguage();}
+  function primaryStackFamily(stack){
+    const match=String(stack||"").match(/^\s*(?:"([^"]+)"|'([^']+)'|([^,]+))/);
+    return (match?.[1]||match?.[2]||match?.[3]||"").trim();
+  }
+  function verifyFontAvailable(stack){
+    // 7.4.0: a missing family used to fail silently (CJK kept PingFang while
+    // the Apple profile fell back to Segoe UI). Tell the user instead.
+    try{
+      const family=primaryStackFamily(stack),generic=family.toLowerCase();
+      if(!family||generic==="sans-serif"||generic==="serif"||generic==="monospace")return;
+      if(document.fonts?.check&&!document.fonts.check(`16px "${family.replace(/"/g,"")}"`))showToast(tr(`系统未安装「${family}」，已使用回退字体`,`“${family}” is not installed; using a fallback font`));
+    }catch(error){}
+  }
   function syncFontPicker(){
     const select = $("#fontSelect");
     const selected = select.options[select.selectedIndex];
@@ -10487,9 +10209,9 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.3.1"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.0"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
-      [tr("引擎","Engines"),engineList||"GP Core 4.1 · GP Fusion Engine 4.0 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
+      [tr("引擎","Engines"),engineList||"GP Core 4.2 · GP Fusion Engine 4.1 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
     ];
     aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>`<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div><div class="setting-hint">${escapeHTML(value)}</div></div></div>`).join("");
@@ -10510,6 +10232,20 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
     if(top<margin)top=Math.min(window.innerHeight-popHeight-margin,rect.bottom+gap);
     const left=Math.max(margin,Math.min(window.innerWidth-rect.width-margin,rect.left));
     pop.style.left=`${left}px`;pop.style.top=`${Math.max(margin,top)}px`;
+  }
+  function refreshFontAvailability(){
+    // 7.4.0: mark options whose first family is not installed so a silent
+    // fallback is never mistaken for a broken switch.
+    $$("#fontPickerPop .font-picker-option").forEach(button=>{
+      let available=true;
+      try{
+        const family=primaryStackFamily(button.dataset.fontValue);
+        if(family&&document.fonts?.check)available=document.fonts.check(`16px "${family.replace(/"/g,"")}"`);
+      }catch(error){available=true;}
+      button.dataset.available=available?"1":"0";
+      if(available)button.removeAttribute("title");
+      else button.title=tr("系统未安装此字体，会使用回退字体","This font is not installed; a fallback will be used");
+    });
   }
   function buildFontPicker(){
     const select = $("#fontSelect");
@@ -10551,7 +10287,8 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
     });
     document.addEventListener("click", e => { if(!e.target.closest("#fontPicker")&&!e.target.closest("#fontPickerPop")) closeFontPicker(); });
     window.addEventListener("resize",()=>{if(pop.classList.contains("show"))requestAnimationFrame(positionFontPickerPortal);},{passive:true});
-    syncFontPicker();
+    syncFontPicker();refreshFontAvailability();
+    if(document.fonts?.ready)document.fonts.ready.then(()=>refreshFontAvailability());
   }
   let typographyGliderFrame=0;
   function realignTypographyGliders(){
@@ -10560,6 +10297,7 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
   }
   $("#fontSelect").addEventListener("change", () => {
     applyFontFamily();
+    verifyFontAvailable(document.documentElement.style.getPropertyValue("--font-family"));
     syncFontPicker();
     savePrefs();
     scheduleViewportFit();
@@ -10741,8 +10479,7 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
   GPModules.register("createHistoryService",function createHistoryService(runtime){return Object.freeze({checkpoint:runtime.checkpoint,incrementPlayCount:runtime.incrementPlayCount,render:runtime.render,getSnapshot:runtime.getSnapshot,destroy:runtime.destroy});});
   GPModules.register("createSpectrumService",function createSpectrumService({analyzer,storage,bus,events}){async function analyze(track){try{const result=await analyzer.analyze(track);bus.emit(events.ANALYSIS_COMPLETED,{trackId:track?.id,result});return result;}catch(error){bus.emit(events.ANALYSIS_FAILED,{trackId:track?.id,error});throw error;}}return Object.freeze({analyze,readCached:analyzer.readCached,processPending:analyzer.processPending});});
   GPModules.register("createNeuralService",function createNeuralService(runtime){
-    // The legacy Daily Mix closure reads this injected singleton; it does not create or persist a Galaxy service.
-    neuralGalaxyService=runtime.galaxy||null;
+    // Daily Mix uses cached acoustic features plus the offline Genre Relations graph only.
     return Object.freeze({recordBehavior:runtime.recordBehavior,generateDailyMix:runtime.generateDailyMix,getUserModel:runtime.getUserModel});
   });
   GPModules.register("createSettingsService",function createSettingsService(runtime){return Object.freeze({load:runtime.load,save:runtime.save,setTheme:runtime.setTheme,setLanguage:runtime.setLanguage,setSpatialEnabled:runtime.setSpatialEnabled,setSpatialMode:runtime.setSpatialMode,getSnapshot:runtime.getSnapshot});});
@@ -10766,7 +10503,7 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
   setTimeout(scheduleViewportFit, 60); // re-measure once fonts/layout settle
   setTimeout(scheduleViewportFit, 300); // and once more after async layout settles fully
 
-  /* ================= GP Core 4.0 — Peregrine Lake bootstrap =================
+  /* ================= GP Core 4.2 — Peregrine Lake bootstrap =================
      The legacy runtime remains the single implementation while its public
      capabilities are exposed through explicit factories, ports and services.
      No second AudioContext, queue, playlist, persistence path or listener set
@@ -10820,24 +10557,12 @@ GPModules.register("createGalaxyView", function createGalaxyView({galaxy,getTrac
   }
   const spectrumService=GPModules.createSpectrumService({analyzer:spectrumAnalyzer,storage:adapters.storage,bus,events:contracts.events});
   const historyService=GPModules.createHistoryService({checkpoint:emitListeningCheckpoint,incrementPlayCount,render:renderHistory,getSnapshot:()=>Object.freeze(structuredClone(loadHistoryStore())),destroy:()=>{}});
-  const galaxyService=GPModules.createGalaxyService();
-  const neuralService=GPModules.createNeuralService({recordBehavior:recordBehaviorEvent,generateDailyMix,getUserModel:()=>GPDatabase.getUserModel("default"),galaxy:galaxyService});
-  const galaxyView=GPModules.createGalaxyView({galaxy:galaxyService,getTracks:()=>Object.freeze(playlist.map(track=>{
-    const mfccValues=Array.isArray(track.mfcc?.mean)?track.mfcc.mean.slice(0,13):Array.isArray(track.mfcc)?track.mfcc.slice(0,13):null;
-    return Object.freeze({
-      id:track.id,spectrumId:track.spectrumId||null,audioEssenceKey:track.audioEssenceKey||null,contentKey:track.contentKey||null,
-      title:track.title||"",artist:track.artist||"",album:track.album||"",genre:track.genre||null,inferredGenre:track.inferredGenre||null,genreSecondary:track.genreSecondary||null,
-      bpm:Number.isFinite(track.bpm)?track.bpm:null,bpmConfidence:Number.isFinite(track.bpmConfidence)?track.bpmConfidence:null,
-      mfcc:mfccValues?Object.freeze({mean:Object.freeze(mfccValues)}):null,energy:Number.isFinite(track.energy)?track.energy:null,
-      loudness:Number.isFinite(track.loudness)?track.loudness:(Number.isFinite(track.loudnessDb)?track.loudnessDb:null),duration:Number.isFinite(track.duration)?track.duration:null
-    });
-  }))});
-  galaxyView.mount(document);window.refreshMusicGalaxy=galaxyView.refresh;
+  const neuralService=GPModules.createNeuralService({recordBehavior:recordBehaviorEvent,generateDailyMix,getUserModel:()=>GPDatabase.getUserModel("default")});
   const settingsService=GPModules.createSettingsService({load:loadPrefs,save:savePrefs,setTheme:mode=>{themeMode=mode;applyTheme();savePrefs();},setLanguage:GP.i18n.setLanguage,setSpatialEnabled,setSpatialMode:mode=>selectSpatialMode(mode,true),getSnapshot:()=>Object.freeze({language:uiLanguage,theme:themeMode,backgroundMode:bgMode,coverMode:coverDisplayMode,adaptiveColor:adaptiveColorOn,spatialEnabled,spatialMode,loudnessNormalizationEnabled,eqPreset:eqPresetKey})});
   const pipService=GPModules.createPiPService({open:async()=>{if(!document.pictureInPictureElement)return toggleTraditionalPiP();},close:async()=>{if(document.pictureInPictureElement)return toggleTraditionalPiP();},sync:syncTraditionalPiP,destroy:cleanupTraditionalPiP,getSnapshot:()=>Object.freeze({open:document.pictureInPictureElement===gpVideoPipVideo})});
   const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
   const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.3.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.1",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.4.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
 })();

@@ -1,10 +1,10 @@
 # Glass Player — Current State
 
-Last documentation update: 2026-08-26 (Pacific/Auckland)
+Last documentation update: 2026-09-18 (Pacific/Auckland)
 
-The last full build/architecture checkpoint is 2026-08-26 for 7.3.1. The
-generated build, architecture, ordered-source syntax and 161 contract checks
-pass. Galaxy/import regression tests pass. Browser, audio, 4K and 120 Hz
+The last full build/architecture checkpoint is 2026-09-18 for 7.4.0. The
+generated build, architecture, ordered-source syntax and 260 contract checks
+pass. Import regression tests pass. Browser, audio, 4K and 120 Hz
 checks remain unrun.
 
 This file is the short operational snapshot. Read it after AGENTS.md at the
@@ -16,19 +16,19 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 |
-| Version | 7.3.1 |
-| Release name | GALAXY UPDATE |
+| Version | 7.4.0 |
+| Release name | 典藏更新 / COLLECTION UPDATE |
 | Architecture | Peregrine Lake |
-| GP Core | 4.1 |
-| GP Fusion Engine | 4.0 |
+| GP Core | 4.2 |
+| GP Fusion Engine | 4.1 |
 | GP Motion Engine | 4.1 |
 | GP Spatial Engine | 1.1 |
 | GP Spectrum Engine | 2.3 |
 | GP Neural Engine | 2.2 — Resonance Boost |
 | Runtime entry | index.html |
 | Generated JavaScript | build/app.js |
-| Source fragments | 57 |
-| Governance modules | 23 |
+| Source fragments | 55 |
+| Governance modules | 22 |
 
 Current identity must be confirmed in index.html and src/bootstrap/main.js
 before a release is described as current. The visible settings card,
@@ -85,28 +85,21 @@ There is one runtime implementation with one:
 - Spatial A/B bus pair;
 - IndexedDB access path;
 - Motion/SSE/shared-control system.
-- pure deterministic Music Galaxy feature/layout service.
 
-The current Music Galaxy View has a bounded Canvas viewport with wheel zoom,
-pointer panning and reset; dense cluster labels are truncated and separated,
-and its hover surface uses the shared popover material with title-only copy.
-Import cooperative work prefers scheduler/task yields over visible-frame waits.
-Resonance Boost and Daily Mix import work share in-flight batch promises and
-cache candidate feature/preference scores within a mix build.
+Import closes its dialog after library commit, render, history sync, model
+refresh and Daily Mix finalization; spectrum analysis continues in the
+background slot and refreshes Daily Mix when done. Resonance Boost and Daily
+Mix import work share in-flight batch promises and cache candidate
+feature/preference scores within a mix build.
 
 The public facade is exposed as window.GP. Services coordinate policy; engines
 own technical resources; adapters own browser capabilities; views render and
 dispatch commands.
 
-Music Galaxy Service owns `featureVector`, `compareTracks`, `buildLayout` and
-`recommendationSimilarity`. Bootstrap supplies frozen cached track snapshots
-to Galaxy View, and Galaxy View passes its frozen track snapshots through the
-service. Neural/Daily Mix may instead provide caller-owned feature projections
-to the same pure comparison API; those projections are inputs, not service
-state or a second cache. The service may read bundled offline Genre Relations
-only. Galaxy View and Neural/Daily Mix are its allowed consumers; DOM, storage,
-audio and network dependencies are forbidden, and the service never mutates
-caller inputs.
+Music Galaxy Service is removed in 7.3.2. Daily Mix computes similarity from
+local cached features (MFCC, genre, tempo) plus the bundled offline Genre
+Relations graph only; it owns no persistent or mutable product state beyond
+the existing recommendation records.
 
 ## 3A. Protected blocks
 
@@ -265,6 +258,16 @@ mapping. The full SSE contract is in AGENTS.md and the detailed handoff.
   English fallback for dynamic release or analysis copy, but must not fall back
   to Chinese explanatory copy.
 - Titles and controls derive readable text from the surface behind them.
+- 7.3.2 removes the Music Galaxy surface and its service/view; Daily Mix
+  keeps cached-feature similarity with offline genre relations, natural track
+  endings keep playback intent so playback advances, and import closes its
+  dialog before background spectrum analysis completes.
+- 7.4.0 adds Queue-owned user playlists plus per-row likes (Resonance Boost
+  learns `like` at +3.0, `unlike` persists without model impact), a History
+  yearly report with a Dec 31–Jan 14 auto-open window and standalone HTML
+  export, a Player lossless badge for FLAC, and missing-font fallback
+  feedback. Playlists reuse the existing recommendations record; no
+  IndexedDB schema change.
 
 ## 10. Known regression-sensitive areas
 
@@ -343,3 +346,42 @@ output. Do not treat a historical report as current runtime truth.
 - NOT RUN — Edge/file:// interaction with real local music, screen-size
   screenshots, audible-device verification, 4K/110% visual comparison and
   120 Hz hardware profiling.
+
+## 17. 7.3.2 stability checkpoint — 2026-09-17
+
+- PASS — `build.ps1` regenerated `build/app.js` from the authoritative source
+  order. Generated build SHA-256:
+  `BEE6A28970609FC0799388EB8174BD98C3372CDB6122D71900CE1858B606982E`.
+- PASS — `validate-architecture.ps1`: 55 sources / 22 modules.
+- PASS — `tests/contract-tests.ps1`: `PASS`, `Contracts checked: 255`.
+- PASS — `tests/import-performance.test.js`.
+- PASS — Generated `build/app.js` syntax with Node v24.21.0.
+- PASS — Music Galaxy Service/View removed from source order, bootstrap,
+  Neural, shared controls, DOM, CSS, i18n and governance; Daily Mix uses
+  local cached-feature similarity plus offline Genre Relations.
+- PASS — Natural `ended`/`pause` keeps playback intent so tracks advance;
+  non-integer/out-of-range track indexes are rejected; resuming after `ended`
+  takes one toggle.
+- PASS — Import dialog closes before background spectrum analysis; per-file
+  duration/cover/metadata reads run in parallel with higher concurrency,
+  fewer idle yields and paint-confirmed completion.
+- NOT RUN — Edge/file:// interaction with real local music, audible-device
+  verification, 4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 18. 7.4.0 collection checkpoint — 2026-09-18
+
+- PASS — `build.ps1` regenerated `build/app.js` from the authoritative source
+  order (branch test740 working tree).
+- PASS — `validate-architecture.ps1`: 55 sources / 22 modules.
+- PASS — `tests/contract-tests.ps1`: `PASS`, `Contracts checked: 261`.
+- PASS — `tests/import-performance.test.js` and Node syntax checks for the
+  changed fragments plus the generated build.
+- PASS — User playlists persist in one `userPlaylists` recommendations record
+  with stable track keys; likes persist as `like` behavior events and derive
+  latest-wins; no IndexedDB schema change.
+- PASS — Annual report aggregates existing history by calendar year with a
+  Dec 31–Jan 14 auto-open window, a shared-SSE annual scroll surface and a standalone interactive HTML export.
+- PASS — Player shows an inline Explicit-style lossless badge on the FLAC title row; font options mark missing families, and missing fonts produce
+  a fallback toast instead of silent no-ops.
+- NOT RUN — Edge/file:// interaction with real local music, audible-device
+  verification, 4K/110% visual comparison and 120 Hz hardware profiling.

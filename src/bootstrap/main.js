@@ -14,7 +14,7 @@
   setTimeout(scheduleViewportFit, 60); // re-measure once fonts/layout settle
   setTimeout(scheduleViewportFit, 300); // and once more after async layout settles fully
 
-  /* ================= GP Core 4.0 — Peregrine Lake bootstrap =================
+  /* ================= GP Core 4.2 — Peregrine Lake bootstrap =================
      The legacy runtime remains the single implementation while its public
      capabilities are exposed through explicit factories, ports and services.
      No second AudioContext, queue, playlist, persistence path or listener set
@@ -68,24 +68,12 @@
   }
   const spectrumService=GPModules.createSpectrumService({analyzer:spectrumAnalyzer,storage:adapters.storage,bus,events:contracts.events});
   const historyService=GPModules.createHistoryService({checkpoint:emitListeningCheckpoint,incrementPlayCount,render:renderHistory,getSnapshot:()=>Object.freeze(structuredClone(loadHistoryStore())),destroy:()=>{}});
-  const galaxyService=GPModules.createGalaxyService();
-  const neuralService=GPModules.createNeuralService({recordBehavior:recordBehaviorEvent,generateDailyMix,getUserModel:()=>GPDatabase.getUserModel("default"),galaxy:galaxyService});
-  const galaxyView=GPModules.createGalaxyView({galaxy:galaxyService,getTracks:()=>Object.freeze(playlist.map(track=>{
-    const mfccValues=Array.isArray(track.mfcc?.mean)?track.mfcc.mean.slice(0,13):Array.isArray(track.mfcc)?track.mfcc.slice(0,13):null;
-    return Object.freeze({
-      id:track.id,spectrumId:track.spectrumId||null,audioEssenceKey:track.audioEssenceKey||null,contentKey:track.contentKey||null,
-      title:track.title||"",artist:track.artist||"",album:track.album||"",genre:track.genre||null,inferredGenre:track.inferredGenre||null,genreSecondary:track.genreSecondary||null,
-      bpm:Number.isFinite(track.bpm)?track.bpm:null,bpmConfidence:Number.isFinite(track.bpmConfidence)?track.bpmConfidence:null,
-      mfcc:mfccValues?Object.freeze({mean:Object.freeze(mfccValues)}):null,energy:Number.isFinite(track.energy)?track.energy:null,
-      loudness:Number.isFinite(track.loudness)?track.loudness:(Number.isFinite(track.loudnessDb)?track.loudnessDb:null),duration:Number.isFinite(track.duration)?track.duration:null
-    });
-  }))});
-  galaxyView.mount(document);window.refreshMusicGalaxy=galaxyView.refresh;
+  const neuralService=GPModules.createNeuralService({recordBehavior:recordBehaviorEvent,generateDailyMix,getUserModel:()=>GPDatabase.getUserModel("default")});
   const settingsService=GPModules.createSettingsService({load:loadPrefs,save:savePrefs,setTheme:mode=>{themeMode=mode;applyTheme();savePrefs();},setLanguage:GP.i18n.setLanguage,setSpatialEnabled,setSpatialMode:mode=>selectSpatialMode(mode,true),getSnapshot:()=>Object.freeze({language:uiLanguage,theme:themeMode,backgroundMode:bgMode,coverMode:coverDisplayMode,adaptiveColor:adaptiveColorOn,spatialEnabled,spatialMode,loudnessNormalizationEnabled,eqPreset:eqPresetKey})});
   const pipService=GPModules.createPiPService({open:async()=>{if(!document.pictureInPictureElement)return toggleTraditionalPiP();},close:async()=>{if(document.pictureInPictureElement)return toggleTraditionalPiP();},sync:syncTraditionalPiP,destroy:cleanupTraditionalPiP,getSnapshot:()=>Object.freeze({open:document.pictureInPictureElement===gpVideoPipVideo})});
   const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
   const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.3.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.1",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.4.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
 })();

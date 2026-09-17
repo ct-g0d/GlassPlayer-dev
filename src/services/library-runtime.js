@@ -220,9 +220,11 @@
     const runners=Array.from({length:Math.min(Math.max(1,limit),items.length)},async()=>{
       while(true){
         const index=cursor++;if(index>=items.length)return;
-        if(navigator.scheduling?.isInputPending?.())await yieldToInputPriority();
         results[index]=await worker(items[index],index);
-        await yieldToInputPriority();
+        // 7.3.2: yield only when input is actually pending; unconditional
+        // per-item yields added hundreds of idle waits on large imports.
+        if(navigator.scheduling?.isInputPending?.())await yieldToInputPriority();
+        else if(index%16===15)await yieldToInputPriority();
       }
     });
     await Promise.all(runners);return results;
@@ -704,10 +706,12 @@
       }
       stats.cacheMisses++;
       const parsed=parseName(file.name);
-      const duration=await probeTrackDuration(url);
-      const coverTempUrl=await extractEmbeddedCover(file);
+      // 7.3.2: duration probe, cover read and metadata parse are independent —
+      // run them concurrently instead of serially (rescan already does this).
+      const [duration,coverTempUrl,embeddedMetadata]=await Promise.all([
+        probeTrackDuration(url),extractEmbeddedCover(file),extractFileMetadata(file)
+      ]);
       const coverBlob=await coverURLToBlob(coverTempUrl);
-      const embeddedMetadata=await extractFileMetadata(file);
       const title=embeddedMetadata.title||parsed.title,artist=embeddedMetadata.artist||parsed.artist,genre=embeddedMetadata.genre||null;
       const thumbBlob=await createCoverThumbnailBlob(coverBlob);
       const record={
@@ -810,7 +814,11 @@
     $("#rescanModalMessage").textContent=error
       ?tr("正在保留已完成的导入结果…","Preserving completed import results…")
       :tr("所有初始化已经完成…","All initialization is complete…");
-    await yieldToInputPriority();await new Promise(resolve=>setTimeout(resolve,document.hidden?0:240));
+    await yieldToInputPriority();await new Promise(resolve=>{
+      // 7.3.2: close on paint commit instead of a fixed 240 ms wait.
+      if(!document.hidden&&typeof requestAnimationFrame==="function")requestAnimationFrame(()=>requestAnimationFrame(resolve));
+      else resolve();
+    });
     finishImportProgress(stats,error);
   }
   const libraryOrderCollator=new Intl.Collator(["zh-CN","en"],{numeric:true,sensitivity:"base"});
@@ -873,7 +881,7 @@
     if(uniqueFiles.length===0){updateImportCommitProgress(99,"organize");await yieldImportFrame();await settleImportProgress(stats);return;}
 
     let dataCompleted=0;
-    const tracks=await mapWithConcurrency(uniqueFiles,3,async ({file,contentKey,cachedRecord,recognition})=>{
+    const tracks=await mapWithConcurrency(uniqueFiles,6,async ({file,contentKey,cachedRecord,recognition})=>{
       const track=await buildAndCacheTrack(file,contentKey,stats,cachedRecord,recognition);
       dataCompleted++;updateImportProgress(35+dataCompleted/uniqueFiles.length*55,dataCompleted,uniqueFiles.length,"data");
       return track;
@@ -891,27 +899,23 @@
       loadTrack(startIndex,false);
     }
     await renderMiniQueue({instantPosition:true,incremental:true});
-    updateImportCommitProgress(98,"analysis");await yieldImportFrame();
-    await queueSpectrumAnalysis(tracks,{foreground:true,onProgress:(completed,total)=>{
-      const ratio=total?completed/total:1;
-      updateImportCommitProgress(98+ratio*1.2,"analysis");
-    }});
-    updateImportCommitProgress(99.3,"organize");await yieldImportFrame();
+    updateImportCommitProgress(98,"organize");await yieldImportFrame();
     syncHistoryMetadataForPlaylist();persistHistoryStoreNow();
-    updateImportCommitProgress(99.5,"neural");await yieldImportFrame();
+    updateImportCommitProgress(99,"neural");await yieldImportFrame();
     await refreshUserModel();
-    updateImportCommitProgress(99.7,"recommendation");await yieldImportFrame();
+    updateImportCommitProgress(99.5,"recommendation");await yieldImportFrame();
     await finalizeDailyMixForImport();
-    updateImportCommitProgress(99.85,"organize");await yieldImportFrame();
     await Promise.all([updateAmbient(),applyAdaptiveAccent()]);
     if(playlist[currentIndex])updateTrackInfoCard(playlist[currentIndex]);
-    await yieldImportFrame();await yieldImportFrame();
     stats.renderCommits=libraryRenderCommits-renderStart;
     stats.durationMs=Math.round(performance.now()-startedAt);
     GP.performance.lastImport=Object.freeze({...stats});
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
-    if(typeof window.refreshMusicGalaxy==="function")window.refreshMusicGalaxy();
     await settleImportProgress(stats);
+    // 7.3.2 aggressive: the dialog is already closed here; heavy spectrum
+    // decoding continues in the background slot and refreshes Daily Mix when
+    // done, so large imports no longer block the modal.
+    queueSpectrumAnalysis(tracks,{foreground:false});
   }
 
   let metadataRescanRunning=false;

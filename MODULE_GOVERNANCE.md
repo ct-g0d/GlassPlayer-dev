@@ -231,19 +231,19 @@ Notes: compatibility `currentIndex` remains lexical, not global.
 ## Module: queue-service
 Layer: Service
 Status: Active
-Purpose: Owns manual Queue priority, reorder and bounded Shuffle navigation.
+Purpose: Owns manual Queue priority, reorder, bounded Shuffle navigation, user playlists and the liked-songs set.
 Owned files:
 - src/services/queue-runtime.js
 - src/services/queue-service.js
-Owned responsibilities: add/play-next/remove/clear/reorder/resolution and restoration.
-Owned mutable state: queue.items, manual flags, resume target, shuffle timeline/cursor.
-May write: queue.*.
+Owned responsibilities: add/play-next/remove/clear/reorder/resolution and restoration; playlist create/rename/delete/member edits; like/unlike derivation.
+Owned mutable state: queue.items, manual flags, resume target, shuffle timeline/cursor, playlist record cache, liked-key set, collection mode.
+May write: queue.*, the `userPlaylists` recommendations record, `like` behavior events.
 May read: library tracks and playback mode/current track.
 Public interfaces: add, playNext, remove, clear, reorder, resolveNextTrack, resolvePreviousTrack, getVisibleQueue, restoreLibraryOrder.
 Emits: queue-related playback decisions through callers.
 Listens: Playback/UI commands.
-Allowed dependencies: Store, Selectors, Library summaries.
-Forbidden dependencies: DOM, AudioNode, IndexedDB native API.
+Allowed dependencies: Store, Selectors, Library summaries, StoragePort behavior/recommendation records.
+Forbidden dependencies: DOM, AudioNode, IndexedDB native API, schema/version changes.
 Authorized callers: Playback Service and Queue View.
 Forbidden callers or access: direct array mutation by Views.
 Lifecycle: one queue; drag resources owned by Queue UI and released after pointer end.
@@ -283,7 +283,7 @@ Purpose: Settles true listening time, reconciles identities and supplies listeni
 Owned files:
 - src/services/history-service.js
 - src/services/history-service-port.js
-Owned responsibilities: checkpoints, play counts, ranges, favorites, charts and history metadata reconciliation.
+Owned responsibilities: checkpoints, play counts, ranges, favorites, charts, yearly aggregation/report export and history metadata reconciliation.
 Owned mutable state: private history cache, revisions and checkpoint timestamps.
 May write: existing history persistence and history View output.
 May read: playback events, library identity summaries and ClockPort.
@@ -314,7 +314,7 @@ May read: Track features, history aggregates and time context.
 Public interfaces: recordBehavior, generateDailyMix, getUserModel.
 Emits: none currently.
 Listens: user and playback behavior events.
-Allowed dependencies: StoragePort, Spectrum features, History summaries, ClockPort, read-only Genre Relations data and Music Galaxy Service recommendation similarity.
+Allowed dependencies: StoragePort, Spectrum features, History summaries, ClockPort and read-only Genre Relations data.
 Forbidden dependencies: direct playback control or manual Queue reorder.
 Authorized callers: UI behavior bridge and History Service.
 Forbidden callers or access: algorithm intervention before confidence gate.
@@ -323,29 +323,6 @@ Public API document: MODULE_API.md / Neural Service.
 Contract tests: decay, skip ratio, confidence fallback and queue isolation.
 Last verified: 2026-07-23; 6.4.4; confidence gate 0.70, offline Genre proximity scoring and bounded transient caches verified.
 Notes: pre-gate Shuffle remains uniform random.
-
-## Module: music-galaxy-service
-Layer: Service
-Status: Active
-Purpose: Supplies pure deterministic cached-track feature comparison, layout and shared recommendation similarity.
-Owned files:
-- src/services/galaxy-runtime.js
-Owned responsibilities: feature vectors, bounded similarity components, deterministic two-dimensional layout and the compatibility recommendation-similarity alias.
-Owned mutable state: none.
-May write: none.
-May read: caller-provided cached track snapshots and read-only bundled Genre Relations.
-Public interfaces: featureVector, compareTracks, buildLayout, recommendationSimilarity.
-Emits: none.
-Listens: none.
-Allowed dependencies: Module Registry and read-only Product Data Genre Relations.
-Forbidden dependencies: DOM, Store or browser storage, IndexedDB/localStorage, Audio/Web Audio, runtime network access, Queue, History mutation or private Neural state.
-Authorized callers: Galaxy View and Neural Service/Daily Mix only.
-Forbidden callers or access: direct mutation of returned read-only results or use as a persistence owner.
-Lifecycle: stateless factory; no timers, listeners, observers, handles or cleanup path.
-Public API document: MODULE_API.md / Music Galaxy Service signatures.
-Contract tests: deterministic feature/vector/layout coverage plus the 7.3.1 release and documentation contract.
-Last verified: 2026-08-25; 7.3.1; current source API and runtime/unit tests inspected for the Galaxy Service.
-Notes: recommendationSimilarity is the compatibility alias of compareTracks; no state, schema or event contract is introduced.
 
 ## Module: spectrum-service
 Layer: Service
@@ -472,12 +449,11 @@ Notes: none.
 ## Module: player-views
 Layer: UI
 Status: Active
-Purpose: Owns Player artwork/background, Sound, Library, Music Galaxy and Settings DOM behavior.
+Purpose: Owns Player artwork/background, Sound, Library and Settings DOM behavior.
 Owned files:
 - src/ui/player-visuals.js
 - src/ui/sound-view.js
 - src/ui/library-view.js
-- src/ui/galaxy-view.js
 - src/ui/settings-view.js
 Owned responsibilities: render and bind only the corresponding visible surfaces.
 Owned mutable state: View DOM references and animation/input state.
@@ -566,6 +542,26 @@ Last verified: 2026-07-22; 6.4.0; one initialization path.
 Notes: `build/app.js` is the only runtime script.
 
 ## Architecture Change Log
+
+- Date: 2026-09-18
+- Version: 7.4.0 典藏更新 / GP Core 4.2 / GP Fusion Engine 4.1
+- Modification: added Queue-owned user playlists plus like/unlike signals, History-owned yearly report with windowed auto-open and standalone HTML export, a Player lossless badge and missing-font fallback feedback.
+- Modules: queue-service, history-service, neural-service, player-views, product-data and bootstrap.
+- State ownership change: playlists live in one `userPlaylists` recommendations record; likes derive from `like` behavior events. No IndexedDB version/store/index change.
+- API change: none to the formal module facades; legacy runtime gains playlist/like/annual helpers under existing owners.
+- Dependency change: none new; Queue reads behavior/recommendation records through the existing storage boundary.
+- Compatibility: IndexedDB, localStorage, Spectrum identity/algorithm token, Neural model token, history, Queue, events and the one audio graph remain unchanged.
+- Verification: build, architecture validation and contract tests were run for this change; browser, audio, 4K and 120 Hz checks remain user-verified.
+
+- Date: 2026-09-17
+- Version: 7.3.2 STABILITY UPDATE / GP Core 4.2 / GP Fusion Engine 4.1
+- Modification: removed the Music Galaxy Service and Galaxy View; Daily Mix uses local cached-feature similarity plus offline Genre Relations. Playback keeps natural-ended intent so tracks advance; import closes the dialog before background spectrum analysis completes.
+- Modules: music-galaxy-service removed; neural-service, player-views, product-data and bootstrap updated.
+- State ownership change: none.
+- API change: Candidate `featureVector`, `compareTracks`, `buildLayout` and `recommendationSimilarity` interfaces are retired with the service.
+- Dependency change: Neural/Daily Mix no longer consumes Galaxy similarity; offline Genre Relations remain its only data dependency.
+- Compatibility: IndexedDB, localStorage, Spectrum identity/algorithm token, Neural model token, history, Queue, events and the one audio graph remain unchanged.
+- Verification: build, architecture validation and contract tests were run for this change; browser, audio, 4K and 120 Hz checks remain user-verified.
 
 - Date: 2026-08-25
 - Version: 7.3.1 GALAXY UPDATE / GP Fusion Engine 4.0 / GP Spectrum Engine 2.3 / GP Neural Engine 2.2

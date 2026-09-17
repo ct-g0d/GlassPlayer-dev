@@ -8,7 +8,6 @@
   const NEURAL_MIN_CONFIDENCE=.70;
   const GP_DAILY_MIX_COHERENCE_EXPONENT=3.4;
   const GP_DAILY_MIX_SHORTLIST_RATIO=.45;
-  let neuralGalaxyService=null;
   const neuralSessionId=`session-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
   let neuralModel=null,neuralBuildTimer=0,lastNeuralBuildAt=0,neuralRefreshPromise=null,pendingSelectionSource="automatic";
   let behaviorRuntime={trackId:null,startedAt:0,lastWallAt:0,lastMediaAt:0,listened:0,checkpoint:0,source:"automatic"};
@@ -40,6 +39,9 @@
     if(type==="manual_select")return 2.4;
     if(type==="queue_add")return 2.6;
     if(type==="replay")return 2.5;
+    // 7.4.0: an explicit like outweighs passive signals; unliking only flips
+    // stored state (signal 0 persists without touching the model).
+    if(type==="like")return context?.liked===false?0:3.0;
     if(type==="complete")return 1.35;
     if(type==="listen_duration")return clamp((finiteNumber(context.actualPlaybackSeconds,0)/180)*.65,0,.65);
     if(type==="skip"){
@@ -177,9 +179,11 @@
   function dailyFeatureCompleteness(features){return (features?.spectrumId?1:0)+(features?.mfcc?.length>=8?2:0)+(dailyGenreTokens(features).length?1.5:0)+(Number.isFinite(features?.bpm)?.6:0)+(Number.isFinite(features?.energy)?.4:0);}
   function dailyFeatureSimilarity(anchor,candidate){
     if(!anchor||!candidate)return 0;
-    const shared=neuralGalaxyService?.recommendationSimilarity?.(anchor,candidate);
-    const sharedScore=Number.isFinite(shared?.overall)?shared.overall:.28;
-    return clamp(sharedScore,0,1);
+    // 7.3.2: pure local similarity from cached features only.
+    const timbre=mfccSimilarity(anchor.mfcc,candidate.mfcc);
+    const genre=genreSimilarity(anchor.genre,candidate.genre);
+    const tempo=(Number.isFinite(anchor.bpm)&&Number.isFinite(candidate.bpm))?Math.exp(-Math.abs(anchor.bpm-candidate.bpm)/35):.5;
+    return clamp(timbre*.55+genre*.25+tempo*.20,0,1);
   }
   function generateDailyMix(count){
     let remaining=playlist.map((track,index)=>{const features=trackFeatureSnapshot(track);return{index,features,completeness:dailyFeatureCompleteness(features)};}).filter(item=>item.index!==currentIndex),picked=[],pickedFeatures=[],artistCounts=new Map(),preferenceScores=new Map();
