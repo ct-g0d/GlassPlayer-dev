@@ -445,7 +445,7 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.4.0",
+    version:"7.4.1",
     architecture:"Peregrine Lake",
     engines:{core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
@@ -568,7 +568,7 @@ window.GPModules.register = function register(name,factory){
     "可变字体会获得最平滑的粗细变化；普通字体会自动匹配最接近的字重。":"Variable fonts provide the smoothest weight changes; standard fonts use the closest available weight.",
     "还没有音乐":"No music yet","点击上方按钮导入，或直接把歌曲/文件夹拖进窗口":"Import above, or drop songs and folders into the window","封面会自动从 MP3/FLAC/M4A 中识别":"Artwork is read automatically from MP3, FLAC and M4A files",
     "歌曲文件不会保存到磁盘外，刷新页面需要重新导入；听歌记录会保留。":"Audio files never leave your device. Reimport after refresh; listening history is retained.",
-    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.4.0":"Current Version 7.4.0","版本 7.4.0":"Ver. 7.4.0","COLLECTION UPDATE":"COLLECTION UPDATE","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
+    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.4.1":"Current Version 7.4.1","版本 7.4.1":"Ver. 7.4.1","HOTFIX BUILD":"HOTFIX BUILD","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
     "音乐库数据":"Library Data","重新扫描歌曲库":"Rescan Music Library","重新读取当前导入歌曲的 Genre、文件名信息、时长与封面；保留 Spectrum ID、MFCC、Energy、BPM 和收听历史。":"Reread Genre, filename metadata, duration and artwork from imported songs while preserving Spectrum ID, MFCC, Energy, BPM and listening history.",
     "重新扫描歌曲库？":"Rescan Music Library?","将从当前导入的音频文件重新读取 Genre、文件名信息、时长和封面，并覆盖缓存中的旧 metadata。Spectrum ID、MFCC、Energy、BPM 与收听历史不会改变。":"The current audio files will be reread for Genre, filename metadata, duration and artwork, replacing stale cached metadata. Spectrum ID, MFCC, Energy, BPM and listening history will remain unchanged.","取消":"Cancel","开始扫描":"Start Scan",
     "精选字体":"Curated Fonts","未知艺人":"Unknown Artist","未知":"Unknown","计算中…":"Calculating…","解码中…":"Decoding…","单声道":"Mono","立体声":"Stereo","版本列表":"Version List",
@@ -600,8 +600,8 @@ window.GPModules.register = function register(name,factory){
     "暂停":"Пауза","关闭":"Выкл.","播完暂停":"Остановить после песни","播放速度":"Скорость","未选择歌曲":"Песня не выбрана","拖入或导入音乐开始播放":"Перетащите или импортируйте музыку",
     "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
     "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
-    "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.4.0":"Текущая версия 7.4.0","版本 7.4.0":"Версия 7.4.0","COLLECTION UPDATE":"ОБНОВЛЕНИЕ КОЛЛЕКЦИИ","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
+    "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно","随机播放":"Перемешивание","单曲循环":"Повтор одной песни",
+    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.4.1":"Текущая версия 7.4.1","版本 7.4.1":"Версия 7.4.1","HOTFIX BUILD":"СБОРКА HOTFIX","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
     "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
     "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
   };
@@ -668,6 +668,19 @@ window.GPModules.register = function register(name,factory){
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.4.1", date:"2026-09-26", kind:"patch",
+      summary:"HOTFIX BUILD：修复曲库空状态、年度报告语言、播放结束处理与设置一致性，让空状态、报告内容与播放反馈更容易读懂。",
+      sections:[
+        {title:"曲库与年度报告",items:["空的我喜欢和自建歌单现在会显示明确的空状态，搜索无结果仍保留自己的提示。","年度报告的导出页面会跟随界面语言，并在歌曲资料更新后显示最新的歌曲与艺人信息。"]},
+        {title:"播放器",items:["歌曲自然播完时，播放界面会继续进入下一首，不会因结束瞬间的状态切换停在原地。"]},
+        {title:"设置与语言",items:["俄语界面不再混入中文空间音频说明；播放模式和排序标签保持一致。","异常的已保存外观选项会回到可用的默认值，避免设置页出现空选中状态。"]}
+      ],english:{summary:"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency so empty states, exports and playback feedback stay clear.",sections:[
+        {title:"Library and Annual Report",items:["Empty Liked and custom playlists now explain their state clearly, while search no-match feedback remains separate.","Annual Report exports follow the interface language and show refreshed song and artist metadata after a library rescan."]},
+        {title:"Player",items:["Natural track endings continue into the next song instead of stopping during the end-state transition."]},
+        {title:"Settings and Language",items:["Russian Settings no longer mixes Chinese spatial-audio copy into the page; playback-mode and sort labels stay consistent.","Invalid saved appearance choices return to supported defaults instead of leaving Settings with no active option."]}
+      ]}
     },
     {
       version:"7.4.0", date:"2026-09-18", kind:"minor",
@@ -3119,6 +3132,7 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
     "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
     "7.3.2":"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import switching, and moves audio analysis behind the import dialog.",
     "7.3.1":"GALAXY UPDATE adds Music Galaxy for exploring acoustic and tempo relationships, with Daily Mix reusing the same similarity model.",
@@ -4566,7 +4580,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.0 — COLLECTION UPDATE`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.1 — HOTFIX BUILD`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4581,7 +4595,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.4.0 COLLECTION UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.4.1 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -6911,6 +6925,17 @@ window.GPModules.register = function register(name,factory){
     clearTimeout(listActionHoverTimers.get(button));
   });
   document.addEventListener("click",event=>{const button=event.target.closest?.(".track-action,.queue-drag-handle");if(button)runListActionMotion(button);},true);
+  function syncLibraryEmptyState(emptyState,visibleCount,hasSearch){
+    const show=!hasSearch&&visibleCount===0;
+    emptyState.style.display=show?"block":"none";
+    if(!show)return;
+    const text=playlist.length===0
+      ? tr("还没有音乐<br>点击上方按钮导入，或直接把歌曲/文件夹拖进窗口<br>封面会自动从 MP3/FLAC/M4A 中识别","Your library is empty.<br>Import music from Library or drop files or folders here.<br>Artwork is read from MP3, FLAC, or M4A files.")
+      : libraryCollectionMode==="liked"
+        ? tr("还没有喜欢的歌曲","No liked songs yet")
+        : tr("这个歌单还没有歌曲","This playlist is empty");
+    const message=emptyState.querySelector("p");if(message)message.innerHTML=text;
+  }
   function render(filterText){
     libraryRenderCommits++;
     GP.performance.libraryRenderCommits=libraryRenderCommits;
@@ -6918,8 +6943,8 @@ window.GPModules.register = function register(name,factory){
     const listEl = $("#trackList"), emptyState = $("#emptyState"), panel=$(".library-panel");
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(n => n.remove());
-    emptyState.style.display = playlist.length === 0 ? "block" : "none";
     const visibleIndices=collectionTrackIndices();
+    syncLibraryEmptyState(emptyState,visibleIndices.length,q.length>0);
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
@@ -6935,8 +6960,8 @@ window.GPModules.register = function register(name,factory){
     const q=(filterText||"").trim(),listEl=$("#trackList"),emptyState=$("#emptyState"),panel=$(".library-panel");
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(node=>node.remove());
-    emptyState.style.display=playlist.length===0?"block":"none";
     const visibleIndices=collectionTrackIndices();
+    syncLibraryEmptyState(emptyState,visibleIndices.length,q.length>0);
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
@@ -6961,7 +6986,7 @@ window.GPModules.register = function register(name,factory){
     lastPlaybackIndicatorIndex=currentIndex;
   }
   const SORT_LABELS={original:["排序：原始顺序","Sort: Original"],artist:["排序：歌手 A–Z","Sort: Artist A–Z"],title:["排序：歌名 A–Z","Sort: Title A–Z"]};
-  function syncSortUI(){ $("#sortBtnText").textContent=SORT_LABELS[librarySortMode][uiLanguage==="zh"?0:1]; $$("#sortPop button").forEach(button=>button.classList.toggle("active",button.dataset.sort===librarySortMode)); }
+  function syncSortUI(){ const labels=SORT_LABELS[librarySortMode]||SORT_LABELS.original;$("#sortBtnText").textContent=tr(labels[0],labels[1]); $$("#sortPop button").forEach(button=>button.classList.toggle("active",button.dataset.sort===librarySortMode)); }
   $("#sortBtn").addEventListener("click",e=>{e.stopPropagation();setMotionPopover($("#sortPop"),!$("#sortPop").classList.contains("show"));});
   $("#sortPop").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;librarySortMode=button.dataset.sort;syncSortUI();render(searchInputSafe());setMotionPopover($("#sortPop"),false);});
   $("#libraryViewBtn").addEventListener("click",e=>{e.stopPropagation();libraryGridView=!libraryGridView;$("#libraryViewBtn").setAttribute("aria-pressed",String(libraryGridView));$(".library-panel")?.classList.toggle("library-grid",libraryGridView);render(searchInputSafe());});
@@ -8287,6 +8312,16 @@ window.GPModules.register = function register(name,factory){
   let listeningKey = null;
   let lastTimeMark = 0;
   let pauseCommitTimer=0,pauseEnvelopeToken=0;
+  let nativeEndPauseTimer=0,nativeEndPauseToken=0,nativeEndPausePending=false;
+  function clearNativeEndPause(){nativeEndPauseToken++;nativeEndPausePending=false;if(nativeEndPauseTimer){clearTimeout(nativeEndPauseTimer);nativeEndPauseTimer=0;}}
+  function deferNativeEndPause(deck){
+    clearNativeEndPause();nativeEndPausePending=true;const token=nativeEndPauseToken;
+    nativeEndPauseTimer=setTimeout(()=>{
+      if(token!==nativeEndPauseToken||deck!==audio)return;
+      nativeEndPauseTimer=0;nativeEndPausePending=false;emitListeningCheckpoint("pause");
+      if(!pendingPlayToken)wantsPlayback=false;setPlaybackVisualState(false);
+    },32);
+  }
   let trackDetailRevision=0,trackDetailHoldUntil=0;
   let firstPlaybackQueueAlignment=true;
   function ensureTrackMediaURL(track){
@@ -8322,6 +8357,7 @@ window.GPModules.register = function register(name,factory){
 
   function loadTrack(idx, autoplay){
     if(!Number.isInteger(idx)||idx<0 || idx>=playlist.length) return;
+    clearNativeEndPause();
     const doCrossfade = crossfadeEnabled && currentIndex !== -1 && autoplay !== false && isPlaying;
     if(doCrossfade){ crossfadeTo(idx); return; }
     const doClickSafeSwap=currentIndex!==-1&&autoplay!==false&&isPlaying;
@@ -8347,6 +8383,7 @@ window.GPModules.register = function register(name,factory){
 
   function crossfadeTo(idx,durationOverride=null){
     if(!Number.isInteger(idx)||idx<0||idx>=playlist.length)return;
+    clearNativeEndPause();
     ensureAudioCtx();
     flushHistory();
     if(crossfadeSwapTimer){ clearTimeout(crossfadeSwapTimer); crossfadeSwapTimer=null; }
@@ -8462,6 +8499,7 @@ window.GPModules.register = function register(name,factory){
   }
   document.addEventListener("visibilitychange",syncPlaybackMotion120);
   function playAudio(){
+    clearNativeEndPause();
     ensureAudioCtx();
     if(playMode!=="repeatOne"&&manualQueueActive&&!playingQueuedTrack&&playQueue.length){
       const queuedIdx=takeNextQueuedIndex();
@@ -8489,6 +8527,7 @@ window.GPModules.register = function register(name,factory){
     });
   }
   function pauseAudio(){
+    clearNativeEndPause();
     settleBehaviorProgress();emitListeningCheckpoint("pause");
     flushHistory();
     playbackIntentToken++;pendingPlayToken=0;wantsPlayback=false;
@@ -8568,7 +8607,8 @@ window.GPModules.register = function register(name,factory){
     loadTrack(idx, true);
   }
   function onEnded(){
-    if(!wantsPlayback||!isPlaying)return;
+    if(!wantsPlayback||!isPlaying){if(!nativeEndPausePending)return;}
+    clearNativeEndPause();
     if(crossfading) return; // already advanced proactively
     if(!playlist.length){pauseAudio();return;}
     recordComplete(playlist[currentIndex]);
@@ -8599,7 +8639,7 @@ window.GPModules.register = function register(name,factory){
     const previous=playMode;playMode = mode; shuffleHistory = [];
     shuffleTimeline=currentIndex>=0&&mode==="shuffle"?[currentIndex]:[];shuffleTimelineCursor=shuffleTimeline.length-1;
     $("#modeIcon").innerHTML = modeIcons[mode];
-    $("#modeLabel").textContent = modeLabels[mode][uiLanguage==="zh"?0:1];
+    $("#modeLabel").textContent = tr(modeLabels[mode][0],modeLabels[mode][1]);
     $("#modeBtn").classList.toggle("active", mode !== "sequential");
     $("#repeatOneBadge").style.display = mode === "repeatOne" ? "grid" : "none";
     savePrefs();
@@ -8890,7 +8930,7 @@ window.GPModules.register = function register(name,factory){
     el.innerHTML=`<span class="compare-arrow">${up?"▲":"▼"}</span>${tr(`相比${period}${up?"增加":"减少"} ${fmtDuration(Math.abs(diff))}`,`${fmtDuration(Math.abs(diff))} ${up?"more":"less"} than ${period}`)}`;
   }
   function renderHistoryRanking(store,range){
-    const candidates=Object.entries(store.songs||{}).map(([historyKey,s])=>{const track=currentTrackForHistory(historyKey,s);return {...s,historyKey,track,rangeSeconds:sumSongRange(s,range)};}).filter(s=>s.rangeSeconds>0).sort((a,b)=>b.rangeSeconds-a.rangeSeconds),ranked=candidates.slice(0,50);
+    const candidates=Object.entries(store.songs||{}).map(([historyKey,s])=>{const track=currentTrackForHistory(historyKey,s);return {...s,historyKey,track,title:track?.title||s.title,artist:track?.artist||s.artist,rangeSeconds:sumSongRange(s,range)};}).filter(s=>s.rangeSeconds>0).sort((a,b)=>b.rangeSeconds-a.rangeSeconds),ranked=candidates.slice(0,50);
     const topSong=$("#historyStatTopSong");
     if(topSong)topSong.textContent=ranked[0]?.title||"—";
     const topList=$("#topList");if(!ranked.length){setBatchedScrollHTML(topList,`<div class="empty-state"><p>${tr("这个时间段还没有听歌记录","No listening history for this range")}</p></div>`);return;}
@@ -9089,23 +9129,32 @@ window.GPModules.register = function register(name,factory){
   function buildAnnualReportHTML(report){
     const esc=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     const style=`*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 50% -8%,#2a2417 0%,#141318 46%,#0e0d12 100%);color:#f2ecdf;font-family:system-ui,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;min-height:100vh}header.cover{max-width:880px;margin:0 auto;padding:64px 40px 10px;text-align:center}.kicker{letter-spacing:.42em;font-size:12px;color:#c9a45c;font-weight:600}.year{font-family:Georgia,"Songti SC","SimSun",serif;font-size:120px;line-height:1;margin:10px 0 4px;background:linear-gradient(180deg,#f6e7c4 20%,#d9ab55 62%,#9a7430 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.rule{width:120px;height:2px;margin:18px auto;background:linear-gradient(90deg,transparent,#c9a45c,transparent)}.gen{color:#8f8a7c;font-size:13px}.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:880px;margin:26px auto 0;padding:0 40px}.hero .cell{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:20px 10px;text-align:center;box-shadow:0 18px 44px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}.hero .k{font-size:12px;letter-spacing:.2em;color:#a49d8b}.hero .v{font-family:Georgia,"Songti SC",serif;font-size:34px;margin-top:8px;color:#f6e7c4}main{max-width:880px;margin:0 auto;padding:26px 40px 10px}section.card{background:rgba(255,255,255,.038);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:26px 28px;margin:0 0 18px;box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.07)}h2{margin:0 0 4px;font-size:15px;letter-spacing:.28em;color:#c9a45c;font-weight:600}h2 small{display:block;letter-spacing:.06em;color:#6f6a5c;font-size:12px;margin-top:6px;font-weight:400}.topsong{display:flex;align-items:baseline;gap:18px;margin-top:14px}.topsong .no{font-family:Georgia,serif;font-size:54px;color:#c9a45c;line-height:1}.topsong .t{font-size:24px;font-weight:700}.topsong .a{color:#a49d8b;margin-top:4px}.topsong .m{margin-left:auto;text-align:right;color:#a49d8b;font-size:13px;white-space:nowrap}.row{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:11px 2px;border-top:1px solid rgba(255,255,255,.07)}.row:first-of-type{border-top:0}.row .no{font-family:Georgia,serif;font-size:26px;color:#8f8a7c}.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no{color:#e3bd72}.row .t{font-weight:600}.row .a{color:#8f8a7c;font-size:13px;margin-top:2px}.row .m{color:#a49d8b;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.bar{display:grid;grid-template-columns:70px 1fr 96px;gap:12px;align-items:center;margin:9px 0;font-size:13px}.bar .track{height:8px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar .fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8a6a2e,#e3bd72)}.bar .num{text-align:right;color:#a49d8b;font-variant-numeric:tabular-nums}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}h4{margin:2px 0 8px;font-size:13px;letter-spacing:.2em;color:#c9a45c}details{margin-top:14px}summary{cursor:pointer;color:#a49d8b;font-size:13px}svg.chart{display:block;width:100%;height:auto;margin-top:10px}.dot{fill:#e3bd72;stroke:#141318;stroke-width:2}.axis{fill:#8f8a7c;font-size:12px}.rhythm{margin-top:6px;color:#cfc8b4;font-size:14px;line-height:2}footer{max-width:880px;margin:0 auto;padding:14px 40px 56px;color:#6f6a5c;font-size:12px;text-align:center}@media(prefers-color-scheme:light){body{background:radial-gradient(1200px 500px at 50% -8%,#f7ecd4 0%,#f3efe6 46%,#ece7d9 100%);color:#2b2620}header .gen{color:#8a7a52}section.card,.hero .cell{background:rgba(255,255,255,.72);border-color:rgba(120,90,30,.16);box-shadow:0 14px 34px rgba(120,90,30,.12)}.hero .v,.topsong .t{color:#4a3a17}.kicker,h2,h4,.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no,.topsong .no{color:#8a6a2e}.row{border-color:rgba(120,90,30,.14)}.row .a,.row .m,.bar .num,.topsong .m,.topsong .a,.rhythm{color:#6f6553}.bar .track{background:rgba(120,90,30,.14)}footer{color:#8a7a52}}`;
+    const zh=uiLanguage==="zh",copy=zh?{
+      lang:"zh-CN",title:`Glass Player ${report.year} 年度报告`,kicker:"GLASS PLAYER · 年度报告",generated:"本地生成",listening:"年度听歌",plays:"年度播放",activeDays:"活跃天数",topSongSection:"年度之歌",topSongSub:"年度之歌",monthly:"月度曲线",monthlySub:"月度听歌",yearlyTop:"年度 TOP 10",yearlySub:"年度歌曲排行",expand:"展开 / 收起",favorites:"最爱版图",favoritesSub:"偏好",artists:"艺人",albums:"专辑",genres:"风格",peak:"单日最高",playsUnit:"次",footer:"由 Glass Player 在本地生成，未上传任何数据。",hourText:hour=>`你通常在 ${hour}:00 进入听歌状态。`
+    }:{
+      lang:"en",title:`Glass Player ${report.year} Annual Report`,kicker:"GLASS PLAYER · ANNUAL REPORT",generated:"Generated locally",listening:"Listening Time",plays:"Plays",activeDays:"Active Days",topSongSection:"Top Song of the Year",topSongSub:"TOP SONG OF THE YEAR",monthly:"Monthly Listening",monthlySub:"MONTHLY LISTENING",yearlyTop:"Yearly Top 10",yearlySub:"YEARLY TOP SONGS",expand:"Expand / Collapse",favorites:"Favorites",favoritesSub:"FAVORITES",artists:"Artists",albums:"Albums",genres:"Genres",peak:"Peak day",playsUnit:"plays",footer:"Generated locally by Glass Player. Nothing was uploaded.",hourText:hour=>`You usually settle in around ${hour}:00.`
+    };
+    const formatDuration=seconds=>{const total=Math.round(seconds||0),hours=Math.floor(total/3600),minutes=Math.floor(total%3600/60);if(hours>0)return zh?`${hours}小时${minutes}分钟`:`${hours}h ${minutes}m`;if(minutes>0)return zh?`${minutes}分钟`:`${minutes} min`;return zh?`${total}秒`:`${total} sec`;};
+    const generatedDate=new Date().toLocaleDateString(zh?"zh-CN":"en-US");
     const W=760,H=230,padX=10,padB=32,padT=18;
     const maxMonth=Math.max(1,...report.monthly.map(row=>row.value));
     const pts=report.monthly.map((row,i)=>({x:padX+i*(W-padX*2)/11,y:H-padB-(row.value/maxMonth)*(H-padT-padB),...row}));
     const linePath="M"+pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L");
     const areaPath=`${linePath} L${(W-padX).toFixed(1)},${H-padB} L${padX.toFixed(1)},${H-padB} Z`;
-    const chart=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="annualGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3bd72" stop-opacity=".85"/><stop offset="1" stop-color="#e3bd72" stop-opacity=".04"/></linearGradient></defs><path d="${areaPath}" fill="url(#annualGold)"/><path d="${linePath}" fill="none" stroke="#e3bd72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${pts.map(p=>`<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"><title>${esc(p.label)} · ${esc(p.name)} · ${esc(fmtDuration(p.value))}</title></circle><text class="axis" x="${p.x.toFixed(1)}" y="${H-10}" text-anchor="middle">${esc(p.label)}</text>`).join("")}</svg>`;
-    const topRows=report.songs.map((item,rank)=>`<div class="row"><span class="no">${String(rank+1).padStart(2,"0")}</span><span><span class="t">${esc(item.track?.title||item.entry.title)}</span><div class="a">${esc(item.track?.artist||item.entry.artist)}</div></span><span class="m">${esc(fmtDuration(item.seconds))} · ${item.plays} 次</span></div>`).join("");
-    const dim=(title,list)=>`<div><h4>${title}</h4>${list.map(([name,value])=>`<div class="bar" title="${esc(fmtDuration(value))}"><span></span><span>${esc(name)}</span><span class="num">${esc(fmtDuration(value))}</span></div>`).join("")||'<div class="a">—</div>'}</div>`;
+    const chart=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="annualGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3bd72" stop-opacity=".85"/><stop offset="1" stop-color="#e3bd72" stop-opacity=".04"/></linearGradient></defs><path d="${areaPath}" fill="url(#annualGold)"/><path d="${linePath}" fill="none" stroke="#e3bd72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${pts.map(p=>`<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"><title>${esc(p.label)} · ${esc(p.name)} · ${esc(formatDuration(p.value))}</title></circle><text class="axis" x="${p.x.toFixed(1)}" y="${H-10}" text-anchor="middle">${esc(p.label)}</text>`).join("")}</svg>`;
+    const topRows=report.songs.map((item,rank)=>`<div class="row"><span class="no">${String(rank+1).padStart(2,"0")}</span><span><span class="t">${esc(item.track?.title||item.entry.title)}</span><div class="a">${esc(item.track?.artist||item.entry.artist)}</div></span><span class="m">${esc(formatDuration(item.seconds))} · ${item.plays} ${copy.playsUnit}</span></div>`).join("");
+    const dim=(title,list)=>`<div><h4>${title}</h4>${list.map(([name,value])=>`<div class="bar" title="${esc(formatDuration(value))}"><span></span><span>${esc(name)}</span><span class="num">${esc(formatDuration(value))}</span></div>`).join("")||'<div class="a">—</div>'}</div>`;
     const top=report.topSong;
-    return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glass Player ${report.year} 年度报告</title><style>${style}</style></head><body>`
-      +`<header class="cover"><div class="kicker">GLASS PLAYER · ANNUAL REPORT</div><div class="year">${report.year}</div><div class="rule"></div><div class="gen">本地生成 · ${esc(new Date().toLocaleDateString())}</div></header>`
-      +`<div class="hero"><div class="cell"><div class="k">年度听歌</div><div class="v">${esc(fmtDuration(report.total))}</div></div><div class="cell"><div class="k">年度播放</div><div class="v">${report.totalPlays}</div></div><div class="cell"><div class="k">活跃天数</div><div class="v">${report.activeDays}</div></div></div>`
-      +`<main><section class="card"><h2>年度之歌<small>TOP SONG OF THE YEAR</small></h2><div class="topsong"><span class="no">01</span><span><span class="t">${esc(top?.track?.title||top?.entry.title||"—")}</span><div class="a">${esc(top?.track?.artist||top?.entry.artist||"")}</div></span><span class="m">${top?esc(fmtDuration(top.seconds))+" · "+top.plays+" 次":""}</span></div></section>`
-      +`<section class="card"><h2>月度曲线<small>MONTHLY LISTENING</small></h2>${chart}</section>`
-      +`<section class="card"><h2>年度 TOP 10<small>YEARLY TOP SONGS</small></h2><details open><summary>展开 / 收起</summary>${topRows}</details></section>`
-      +`<section class="card"><h2>最爱版图<small>FAVORITES</small></h2><div class="cols">${dim("艺人 ARTISTS",report.artists)}${dim("专辑 ALBUMS",report.albums)}${dim("风格 GENRES",report.genres)}</div><div class="rhythm">单日最高 ${esc(report.bestDay?`${report.bestDay.key} · ${fmtDuration(report.bestDay.value)}`:"—")}。${report.peakHour===null?"":`你通常在 ${report.peakHour}:00 进入听歌状态。`}</div></section></main>`
-      +`<footer>由 Glass Player 在本地生成，未上传任何数据 · Generated locally, nothing uploaded.</footer></body></html>`;
+    const peakText=report.bestDay?`${copy.peak} ${esc(`${report.bestDay.key} · ${formatDuration(report.bestDay.value)}`)}${zh?"。":"."}`:`${copy.peak} —`;
+    const rhythm=`${peakText}${report.peakHour===null?"":` ${copy.hourText(report.peakHour)}`}`;
+    return `<!DOCTYPE html><html lang="${copy.lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(copy.title)}</title><style>${style}</style></head><body>`
+      +`<header class="cover"><div class="kicker">${copy.kicker}</div><div class="year">${report.year}</div><div class="rule"></div><div class="gen">${copy.generated} · ${esc(generatedDate)}</div></header>`
+      +`<div class="hero"><div class="cell"><div class="k">${copy.listening}</div><div class="v">${esc(formatDuration(report.total))}</div></div><div class="cell"><div class="k">${copy.plays}</div><div class="v">${report.totalPlays}</div></div><div class="cell"><div class="k">${copy.activeDays}</div><div class="v">${report.activeDays}</div></div></div>`
+      +`<main><section class="card"><h2>${copy.topSongSection}<small>${copy.topSongSub}</small></h2><div class="topsong"><span class="no">01</span><span><span class="t">${esc(top?.track?.title||top?.entry.title||"—")}</span><div class="a">${esc(top?.track?.artist||top?.entry.artist||"")}</div></span><span class="m">${top?esc(formatDuration(top.seconds))+" · "+top.plays+" "+copy.playsUnit:""}</span></div></section>`
+      +`<section class="card"><h2>${copy.monthly}<small>${copy.monthlySub}</small></h2>${chart}</section>`
+      +`<section class="card"><h2>${copy.yearlyTop}<small>${copy.yearlySub}</small></h2><details open><summary>${copy.expand}</summary>${topRows}</details></section>`
+      +`<section class="card"><h2>${copy.favorites}<small>${copy.favoritesSub}</small></h2><div class="cols">${dim(copy.artists,report.artists)}${dim(copy.albums,report.albums)}${dim(copy.genres,report.genres)}</div><div class="rhythm">${rhythm}</div></section></main>`
+      +`<footer>${copy.footer}</footer></body></html>`;
   }
   function downloadAnnualReport(year){
     const store=loadHistoryStore(),report=buildAnnualReport(store,year);
@@ -9726,10 +9775,12 @@ window.GPModules.register = function register(name,factory){
     d.addEventListener("playing",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);}});
     d.addEventListener("pause",()=>{
       if(d!==audio)return;
-      // 7.3.2: a native pause arriving with ended/crossfading set is the track
-      // finishing or handing over, not a user pause — keep the intent so the
-      // following ended event can advance instead of stalling.
+      // A native pause may arrive at the terminal media time before `ended`.
+      // Keep the intent across that ordering window; ordinary pauses still
+      // clear it immediately below.
       if(d.ended||crossfading){setPlaybackVisualState(false);return;}
+      const atNaturalEnd=Number.isFinite(d.duration)&&d.duration>0&&Number.isFinite(d.currentTime)&&d.currentTime>=d.duration-.05&&wantsPlayback&&isPlaying;
+      if(atNaturalEnd){deferNativeEndPause(d);setPlaybackVisualState(false);return;}
       emitListeningCheckpoint("pause");
       setPlaybackVisualState(false);
       if(!pendingPlayToken)wantsPlayback=false;
@@ -9938,7 +9989,7 @@ window.GPModules.register = function register(name,factory){
     }finally{defaultFolderButton.disabled=false;}
   });
 
-  $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=modeLabels[playMode][uiLanguage==="zh"?0:1];savePrefs();requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
+  $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=tr(modeLabels[playMode][0],modeLabels[playMode][1]);savePrefs();requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
   let themeMode = "auto";
   let autoThemeTimer=0;
   function scheduledAutoTheme(date=new Date()){const hour=date.getHours();return hour>=18||hour<5?"dark":"light";}
@@ -10021,7 +10072,7 @@ window.GPModules.register = function register(name,factory){
     savePrefs();
   }
   function renderSpatialInfo(){
-    const language=GP.i18n.getLanguage()==="en"?"en":"zh";$("#spatialInfoList").innerHTML=GP.spatialPresets.getAllPresets().filter(preset=>preset.id!=="none").map(preset=>`<li><strong>${escapeHTML(preset.name[language])}</strong> · ${escapeHTML(GP.spatialPresets.getDescription(preset.id,language))}</li>`).join("");
+    $("#spatialInfoList").innerHTML=GP.spatialPresets.getAllPresets().filter(preset=>preset.id!=="none").map(preset=>`<li><strong>${escapeHTML(tr(preset.name.zh,preset.name.en))}</strong> · ${escapeHTML(tr(preset.description.zh,preset.description.en))}</li>`).join("");
   }
   function renderLoudnessInfo(){
     $("#loudnessInfoList").innerHTML=tr(
@@ -10343,9 +10394,9 @@ window.GPModules.register = function register(name,factory){
     let p; try{ p = JSON.parse(GPBrowserStorage.getLocal("glassPlayerPrefs")); }catch(e){}
     if(!p) p = {};
     uiLanguage = p.uiLanguage === "en" ? "en" : p.uiLanguage === "ru" ? "ru" : "zh";
-    themeMode = p.themeMode || "auto";
-    coverDisplayMode = p.coverDisplayMode || "rotate";
-    bgMode = p.bgMode || "glow";
+    themeMode = ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
+    coverDisplayMode = ["rotate","static"].includes(p.coverDisplayMode) ? p.coverDisplayMode : "rotate";
+    bgMode = ["glow","color","blur"].includes(p.bgMode) ? p.bgMode : "glow";
     $$("#coverSeg button").forEach(b => b.classList.toggle("active", b.dataset.v===coverDisplayMode));
     $$("#bgSeg button").forEach(b => b.classList.toggle("active", b.dataset.v===bgMode));
     const fontOptions=Array.from($("#fontSelect").options);
@@ -10563,6 +10614,6 @@ window.GPModules.register = function register(name,factory){
   const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
   const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.4.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.4.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
 })();

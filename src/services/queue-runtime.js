@@ -364,6 +364,17 @@
     clearTimeout(listActionHoverTimers.get(button));
   });
   document.addEventListener("click",event=>{const button=event.target.closest?.(".track-action,.queue-drag-handle");if(button)runListActionMotion(button);},true);
+  function syncLibraryEmptyState(emptyState,visibleCount,hasSearch){
+    const show=!hasSearch&&visibleCount===0;
+    emptyState.style.display=show?"block":"none";
+    if(!show)return;
+    const text=playlist.length===0
+      ? tr("还没有音乐<br>点击上方按钮导入，或直接把歌曲/文件夹拖进窗口<br>封面会自动从 MP3/FLAC/M4A 中识别","Your library is empty.<br>Import music from Library or drop files or folders here.<br>Artwork is read from MP3, FLAC, or M4A files.")
+      : libraryCollectionMode==="liked"
+        ? tr("还没有喜欢的歌曲","No liked songs yet")
+        : tr("这个歌单还没有歌曲","This playlist is empty");
+    const message=emptyState.querySelector("p");if(message)message.innerHTML=text;
+  }
   function render(filterText){
     libraryRenderCommits++;
     GP.performance.libraryRenderCommits=libraryRenderCommits;
@@ -371,8 +382,8 @@
     const listEl = $("#trackList"), emptyState = $("#emptyState"), panel=$(".library-panel");
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(n => n.remove());
-    emptyState.style.display = playlist.length === 0 ? "block" : "none";
     const visibleIndices=collectionTrackIndices();
+    syncLibraryEmptyState(emptyState,visibleIndices.length,q.length>0);
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
@@ -388,8 +399,8 @@
     const q=(filterText||"").trim(),listEl=$("#trackList"),emptyState=$("#emptyState"),panel=$(".library-panel");
     panel?.classList.toggle("library-grid",libraryGridView);
     listEl.querySelectorAll(".track-item").forEach(node=>node.remove());
-    emptyState.style.display=playlist.length===0?"block":"none";
     const visibleIndices=collectionTrackIndices();
+    syncLibraryEmptyState(emptyState,visibleIndices.length,q.length>0);
     if(librarySortMode==="artist")visibleIndices.sort((a,b)=>playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN",{sensitivity:"base"})||playlist[a].title.localeCompare(playlist[b].title,"zh-CN"));
     if(librarySortMode==="title")visibleIndices.sort((a,b)=>playlist[a].title.localeCompare(playlist[b].title,"zh-CN",{sensitivity:"base"})||playlist[a].artist.localeCompare(playlist[b].artist,"zh-CN"));
     const playCounts=typeof getLibraryPlayCounts==="function"?getLibraryPlayCounts():new Map();
@@ -414,7 +425,7 @@
     lastPlaybackIndicatorIndex=currentIndex;
   }
   const SORT_LABELS={original:["排序：原始顺序","Sort: Original"],artist:["排序：歌手 A–Z","Sort: Artist A–Z"],title:["排序：歌名 A–Z","Sort: Title A–Z"]};
-  function syncSortUI(){ $("#sortBtnText").textContent=SORT_LABELS[librarySortMode][uiLanguage==="zh"?0:1]; $$("#sortPop button").forEach(button=>button.classList.toggle("active",button.dataset.sort===librarySortMode)); }
+  function syncSortUI(){ const labels=SORT_LABELS[librarySortMode]||SORT_LABELS.original;$("#sortBtnText").textContent=tr(labels[0],labels[1]); $$("#sortPop button").forEach(button=>button.classList.toggle("active",button.dataset.sort===librarySortMode)); }
   $("#sortBtn").addEventListener("click",e=>{e.stopPropagation();setMotionPopover($("#sortPop"),!$("#sortPop").classList.contains("show"));});
   $("#sortPop").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;librarySortMode=button.dataset.sort;syncSortUI();render(searchInputSafe());setMotionPopover($("#sortPop"),false);});
   $("#libraryViewBtn").addEventListener("click",e=>{e.stopPropagation();libraryGridView=!libraryGridView;$("#libraryViewBtn").setAttribute("aria-pressed",String(libraryGridView));$(".library-panel")?.classList.toggle("library-grid",libraryGridView);render(searchInputSafe());});

@@ -15,6 +15,19 @@
       ]
     },
     {
+      version:"7.4.1", date:"2026-09-26", kind:"patch",
+      summary:"HOTFIX BUILD：修复曲库空状态、年度报告语言、播放结束处理与设置一致性，让空状态、报告内容与播放反馈更容易读懂。",
+      sections:[
+        {title:"曲库与年度报告",items:["空的我喜欢和自建歌单现在会显示明确的空状态，搜索无结果仍保留自己的提示。","年度报告的导出页面会跟随界面语言，并在歌曲资料更新后显示最新的歌曲与艺人信息。"]},
+        {title:"播放器",items:["歌曲自然播完时，播放界面会继续进入下一首，不会因结束瞬间的状态切换停在原地。"]},
+        {title:"设置与语言",items:["俄语界面不再混入中文空间音频说明；播放模式和排序标签保持一致。","异常的已保存外观选项会回到可用的默认值，避免设置页出现空选中状态。"]}
+      ],english:{summary:"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency so empty states, exports and playback feedback stay clear.",sections:[
+        {title:"Library and Annual Report",items:["Empty Liked and custom playlists now explain their state clearly, while search no-match feedback remains separate.","Annual Report exports follow the interface language and show refreshed song and artist metadata after a library rescan."]},
+        {title:"Player",items:["Natural track endings continue into the next song instead of stopping during the end-state transition."]},
+        {title:"Settings and Language",items:["Russian Settings no longer mixes Chinese spatial-audio copy into the page; playback-mode and sort labels stay consistent.","Invalid saved appearance choices return to supported defaults instead of leaving Settings with no active option."]}
+      ]}
+    },
+    {
       version:"7.4.0", date:"2026-09-18", kind:"minor",
       summary:"典藏更新：自建歌单与我喜欢收藏上线，听歌记录右下角加入年度报告，播放界面为无损格式加上标识，并修复字体切换问题。",
       sections:[
@@ -2464,6 +2477,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
     "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
     "7.3.2":"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import switching, and moves audio analysis behind the import dialog.",
     "7.3.1":"GALAXY UPDATE adds Music Galaxy for exploring acoustic and tempo relationships, with Daily Mix reusing the same similarity model.",
@@ -3911,7 +3925,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.0 — COLLECTION UPDATE`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.1 — HOTFIX BUILD`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -3926,7 +3940,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.4.0 COLLECTION UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.4.1 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}

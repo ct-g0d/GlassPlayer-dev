@@ -84,7 +84,7 @@
     }finally{defaultFolderButton.disabled=false;}
   });
 
-  $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=modeLabels[playMode][uiLanguage==="zh"?0:1];savePrefs();requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
+  $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=tr(modeLabels[playMode][0],modeLabels[playMode][1]);savePrefs();requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
   let themeMode = "auto";
   let autoThemeTimer=0;
   function scheduledAutoTheme(date=new Date()){const hour=date.getHours();return hour>=18||hour<5?"dark":"light";}
@@ -167,7 +167,7 @@
     savePrefs();
   }
   function renderSpatialInfo(){
-    const language=GP.i18n.getLanguage()==="en"?"en":"zh";$("#spatialInfoList").innerHTML=GP.spatialPresets.getAllPresets().filter(preset=>preset.id!=="none").map(preset=>`<li><strong>${escapeHTML(preset.name[language])}</strong> · ${escapeHTML(GP.spatialPresets.getDescription(preset.id,language))}</li>`).join("");
+    $("#spatialInfoList").innerHTML=GP.spatialPresets.getAllPresets().filter(preset=>preset.id!=="none").map(preset=>`<li><strong>${escapeHTML(tr(preset.name.zh,preset.name.en))}</strong> · ${escapeHTML(tr(preset.description.zh,preset.description.en))}</li>`).join("");
   }
   function renderLoudnessInfo(){
     $("#loudnessInfoList").innerHTML=tr(
@@ -489,9 +489,9 @@
     let p; try{ p = JSON.parse(GPBrowserStorage.getLocal("glassPlayerPrefs")); }catch(e){}
     if(!p) p = {};
     uiLanguage = p.uiLanguage === "en" ? "en" : p.uiLanguage === "ru" ? "ru" : "zh";
-    themeMode = p.themeMode || "auto";
-    coverDisplayMode = p.coverDisplayMode || "rotate";
-    bgMode = p.bgMode || "glow";
+    themeMode = ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
+    coverDisplayMode = ["rotate","static"].includes(p.coverDisplayMode) ? p.coverDisplayMode : "rotate";
+    bgMode = ["glow","color","blur"].includes(p.bgMode) ? p.bgMode : "glow";
     $$("#coverSeg button").forEach(b => b.classList.toggle("active", b.dataset.v===coverDisplayMode));
     $$("#bgSeg button").forEach(b => b.classList.toggle("active", b.dataset.v===bgMode));
     const fontOptions=Array.from($("#fontSelect").options);

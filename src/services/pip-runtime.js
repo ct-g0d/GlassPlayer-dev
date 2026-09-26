@@ -174,10 +174,12 @@
     d.addEventListener("playing",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);}});
     d.addEventListener("pause",()=>{
       if(d!==audio)return;
-      // 7.3.2: a native pause arriving with ended/crossfading set is the track
-      // finishing or handing over, not a user pause — keep the intent so the
-      // following ended event can advance instead of stalling.
+      // A native pause may arrive at the terminal media time before `ended`.
+      // Keep the intent across that ordering window; ordinary pauses still
+      // clear it immediately below.
       if(d.ended||crossfading){setPlaybackVisualState(false);return;}
+      const atNaturalEnd=Number.isFinite(d.duration)&&d.duration>0&&Number.isFinite(d.currentTime)&&d.currentTime>=d.duration-.05&&wantsPlayback&&isPlaying;
+      if(atNaturalEnd){deferNativeEndPause(d);setPlaybackVisualState(false);return;}
       emitListeningCheckpoint("pause");
       setPlaybackVisualState(false);
       if(!pendingPlayToken)wantsPlayback=false;

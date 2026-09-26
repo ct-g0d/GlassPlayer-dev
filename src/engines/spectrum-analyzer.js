@@ -8,7 +8,7 @@
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.4.0",
+    version:"7.4.1",
     architecture:"Peregrine Lake",
     engines:{core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},

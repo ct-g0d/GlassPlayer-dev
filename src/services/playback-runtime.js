@@ -2,6 +2,16 @@
   let listeningKey = null;
   let lastTimeMark = 0;
   let pauseCommitTimer=0,pauseEnvelopeToken=0;
+  let nativeEndPauseTimer=0,nativeEndPauseToken=0,nativeEndPausePending=false;
+  function clearNativeEndPause(){nativeEndPauseToken++;nativeEndPausePending=false;if(nativeEndPauseTimer){clearTimeout(nativeEndPauseTimer);nativeEndPauseTimer=0;}}
+  function deferNativeEndPause(deck){
+    clearNativeEndPause();nativeEndPausePending=true;const token=nativeEndPauseToken;
+    nativeEndPauseTimer=setTimeout(()=>{
+      if(token!==nativeEndPauseToken||deck!==audio)return;
+      nativeEndPauseTimer=0;nativeEndPausePending=false;emitListeningCheckpoint("pause");
+      if(!pendingPlayToken)wantsPlayback=false;setPlaybackVisualState(false);
+    },32);
+  }
   let trackDetailRevision=0,trackDetailHoldUntil=0;
   let firstPlaybackQueueAlignment=true;
   function ensureTrackMediaURL(track){
@@ -37,6 +47,7 @@
 
   function loadTrack(idx, autoplay){
     if(!Number.isInteger(idx)||idx<0 || idx>=playlist.length) return;
+    clearNativeEndPause();
     const doCrossfade = crossfadeEnabled && currentIndex !== -1 && autoplay !== false && isPlaying;
     if(doCrossfade){ crossfadeTo(idx); return; }
     const doClickSafeSwap=currentIndex!==-1&&autoplay!==false&&isPlaying;
@@ -62,6 +73,7 @@
 
   function crossfadeTo(idx,durationOverride=null){
     if(!Number.isInteger(idx)||idx<0||idx>=playlist.length)return;
+    clearNativeEndPause();
     ensureAudioCtx();
     flushHistory();
     if(crossfadeSwapTimer){ clearTimeout(crossfadeSwapTimer); crossfadeSwapTimer=null; }
@@ -177,6 +189,7 @@
   }
   document.addEventListener("visibilitychange",syncPlaybackMotion120);
   function playAudio(){
+    clearNativeEndPause();
     ensureAudioCtx();
     if(playMode!=="repeatOne"&&manualQueueActive&&!playingQueuedTrack&&playQueue.length){
       const queuedIdx=takeNextQueuedIndex();
@@ -204,6 +217,7 @@
     });
   }
   function pauseAudio(){
+    clearNativeEndPause();
     settleBehaviorProgress();emitListeningCheckpoint("pause");
     flushHistory();
     playbackIntentToken++;pendingPlayToken=0;wantsPlayback=false;
@@ -283,7 +297,8 @@
     loadTrack(idx, true);
   }
   function onEnded(){
-    if(!wantsPlayback||!isPlaying)return;
+    if(!wantsPlayback||!isPlaying){if(!nativeEndPausePending)return;}
+    clearNativeEndPause();
     if(crossfading) return; // already advanced proactively
     if(!playlist.length){pauseAudio();return;}
     recordComplete(playlist[currentIndex]);
@@ -314,7 +329,7 @@
     const previous=playMode;playMode = mode; shuffleHistory = [];
     shuffleTimeline=currentIndex>=0&&mode==="shuffle"?[currentIndex]:[];shuffleTimelineCursor=shuffleTimeline.length-1;
     $("#modeIcon").innerHTML = modeIcons[mode];
-    $("#modeLabel").textContent = modeLabels[mode][uiLanguage==="zh"?0:1];
+    $("#modeLabel").textContent = tr(modeLabels[mode][0],modeLabels[mode][1]);
     $("#modeBtn").classList.toggle("active", mode !== "sequential");
     $("#repeatOneBadge").style.display = mode === "repeatOne" ? "grid" : "none";
     savePrefs();

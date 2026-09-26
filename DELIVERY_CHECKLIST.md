@@ -582,3 +582,13 @@ could not support.
 - PASS — `tests/import-performance.test.js` plus Node syntax checks.
 - NOT RUN — Edge/file:// interaction with real local music, audible-device
   verification, 4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 19. 7.4.1 HOTFIX BUILD — 2026-09-26
+
+- PASS — User-specified patch release: 7.4.1 HOTFIX BUILD; 7.4.0 remains in history and no speculative Unreleased item was marked shipped.
+- PASS — Library empty liked/custom collections now show localized empty-state copy without masking search no-match feedback; history rankings prefer current metadata after rescan; annual HTML exports follow Chinese or English fallback copy from the active UI language.
+- PASS — Natural media-end pause ordering keeps playback intent until ended can advance the existing queue/crossfade path; genuine user pauses still clear intent.
+- PASS — Settings no longer leaks Chinese spatial copy in Russian mode, playback/sort labels use translation keys, and invalid persisted theme/cover/background values clamp to supported choices.
+- PASS — No IndexedDB/localStorage/schema, Store/Event Bus, queue identity, AudioContext/Deck graph or DOM contract changed; all 7.4.1 identity surfaces and bilingual changelog data are synchronized.
+- PASS — build.ps1 regenerated build/app.js (SHA256 DC6FDED3D99821472C7288A1395EC7C4F4D13AE3FD627BBF4C13E3060896C082); architecture validation passed with 55 sources / 22 modules; contract tests passed with 261 checks; Node syntax checks passed for changed sources and generated build.
+- NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110% visual comparison, and 120 Hz hardware profiling.
