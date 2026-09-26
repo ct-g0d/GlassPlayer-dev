@@ -15,6 +15,17 @@
       ]
     },
     {
+      version:"7.4.2", date:"2026-09-26", kind:"patch",
+      summary:"HOTFIX BUILD：修复界面与年度报告在不同状态、语言和尺寸下的显示不一致。",
+      sections:[
+        {title:"界面一致性",items:["修复曲库、设置和播放器在空状态、操作反馈与布局尺寸上的不一致。"]},
+        {title:"年度报告",items:["修复年度报告的统计展示、窄屏布局与导出内容，使页面与导出文件保持一致。"]}
+      ],english:{summary:"HOTFIX BUILD fixes interface and Annual Report inconsistencies across states, languages and layouts.",sections:[
+        {title:"Interface Consistency",items:["Library, Settings and Player states now keep their empty-state, feedback and layout behavior aligned."]},
+        {title:"Annual Report",items:["Annual Report statistics, narrow layouts and exported content now stay consistent between the page and its standalone file."]}
+      ]}
+    },
+    {
       version:"7.4.1", date:"2026-09-26", kind:"patch",
       summary:"HOTFIX BUILD：修复曲库空状态、年度报告语言、播放结束处理与设置一致性，让空状态、报告内容与播放反馈更容易读懂。",
       sections:[
@@ -2477,6 +2488,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.4.2":"HOTFIX BUILD fixes interface and Annual Report inconsistencies across states, languages and layouts.",
     "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
     "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
     "7.3.2":"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import switching, and moves audio analysis behind the import dialog.",
@@ -3925,7 +3937,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.1 — HOTFIX BUILD`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.2 — HOTFIX BUILD`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -3940,7 +3952,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.4.1 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.4.2 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -3948,3 +3960,5 @@
     function getRelease(version){if(HIDDEN_RELEASE_VERSIONS.has(version))return null;return cloneRelease(DISPLAY_RELEASES.find(release=>release.version===version)||RELEASES.find(release=>release.version===version));}
     return Object.freeze({getReleases,getRelease,render:renderChangelog,exportLog:exportChangelog});
   })();
+
+

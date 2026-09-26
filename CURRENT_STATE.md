@@ -2,7 +2,7 @@
 
 Last documentation update: 2026-09-26 (Pacific/Auckland)
 
-The last full build/architecture checkpoint is 2026-09-26 for 7.4.1. The
+The last full build/architecture checkpoint is 2026-09-26 for 7.4.2. The
 generated build, architecture, ordered-source syntax and 260 contract checks
 pass. Import regression tests pass. Browser, audio, 4K and 120 Hz
 checks remain unrun.
@@ -16,7 +16,7 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 |
-| Version | 7.4.1 |
+| Version | 7.4.2 |
 | Release name | HOTFIX BUILD |
 | Architecture | Peregrine Lake |
 | GP Core | 4.2 |
@@ -388,4 +388,4 @@ output. Do not treat a historical report as current runtime truth.
 
 ## 19. 2026-09-26 focused bug-fix pass
 
-The current runtime carries the 7.4.1 HOTFIX BUILD identity. This pass repaired empty Library collections, stale History labels after metadata refresh, localized annual exports, terminal pause ordering, Russian Settings copy, invalid persisted display preferences, Library search telemetry, queue action copy/counts, annual report bar/rank layout, responsive report export cards, Settings folder/EQ layout, and hidden Player disc motion. Persistence/schema, Store/Event Bus, queue identity, audio graph and DOM contracts remain unchanged. Build/architecture/contract and syntax checks passed; Edge/audio/4K/120 Hz checks remain unrun.
+The current runtime carries the 7.4.2 HOTFIX BUILD identity. This pass repaired empty Library collections, stale History labels after metadata refresh, localized annual exports, terminal pause ordering, Russian Settings copy, invalid persisted display preferences, Library search telemetry, queue action copy/counts, annual report bar/rank layout, responsive report export cards, Settings folder/EQ layout, and hidden Player disc motion. Persistence/schema, Store/Event Bus, queue identity, audio graph and DOM contracts remain unchanged. Build/architecture/contract and syntax checks passed; Edge/audio/4K/120 Hz checks remain unrun.
