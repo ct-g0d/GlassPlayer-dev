@@ -17,11 +17,11 @@
     return accentPalettes[key]?.[theme==="dark"?1:0]||accentPalettes.navy[theme==="dark"?1:0];
   }
   function setAccent(key,{refreshAmbient=true,persist=true}={}){
-    accentKey = key;
+    accentKey = accentPalettes[key]?key:"navy";
     const hexToRgbArray = hex => { const v=hex.replace("#",""); return [parseInt(v.slice(0,2),16),parseInt(v.slice(2,4),16),parseInt(v.slice(4,6),16)]; };
-    const primary=accentSeedForTheme(key);
+    const primary=accentSeedForTheme(accentKey);
     commitAccentRgb(hexToRgbArray(primary));
-    $$(".swatch").forEach(s => s.classList.toggle("active", s.dataset.k===key));
+    $$(".swatch").forEach(s => s.classList.toggle("active", s.dataset.k===accentKey));
     if(refreshAmbient)updateAmbient();if(persist)savePrefs();
   }
   function srgbToLinear(value){value=Math.max(0,Math.min(255,value))/255;return value<=.04045?value/12.92:Math.pow((value+.055)/1.055,2.4);}
@@ -413,6 +413,7 @@
     const rotor=$("#discRotor");if(rotor)rotor.style.transform=`rotate(${discAngle.toFixed(3)}deg) translateZ(0)`;
   }
   function runDiscRotation(now){
+    if(!$(".view[data-view='player']")?.classList.contains("active")){discRotationFrame=0;discRotationStamp=0;return;}
     const dt=Math.min(.05,Math.max(0,(now-(discRotationStamp||now))/1000));discRotationStamp=now;
     if(discTargetVelocity>0){
       discStopStarted=0;discVelocity+=(discTargetVelocity-discVelocity)*(1-Math.exp(-7.5*dt));

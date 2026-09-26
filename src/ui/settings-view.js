@@ -190,7 +190,6 @@
       const stage=$(".eq-curve-stage"),curve=$("#eqCurveVisual"),bands=$("#eqBands");
       if(!stage||!curve||!bands||!stage.offsetWidth)return;
       const compact=window.matchMedia("(max-width:660px)").matches;
-      stage.style.height=compact?"228px":"260px";
       const stageRect=stage.getBoundingClientRect(),visualRect=curve.getBoundingClientRect();
       if(!visualRect.width||!visualRect.height)return;
       const viewBox=curve.viewBox?.baseVal,viewWidth=viewBox?.width||700,viewHeight=viewBox?.height||180;
@@ -355,7 +354,7 @@
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.0"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.1"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
       [tr("引擎","Engines"),engineList||"GP Core 4.2 · GP Fusion Engine 4.1 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]

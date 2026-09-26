@@ -18,13 +18,13 @@
       version:"7.4.1", date:"2026-09-26", kind:"patch",
       summary:"HOTFIX BUILD：修复曲库空状态、年度报告语言、播放结束处理与设置一致性，让空状态、报告内容与播放反馈更容易读懂。",
       sections:[
-        {title:"曲库与年度报告",items:["空的我喜欢和自建歌单现在会显示明确的空状态，搜索无结果仍保留自己的提示。","年度报告的导出页面会跟随界面语言，并在歌曲资料更新后显示最新的歌曲与艺人信息。"]},
-        {title:"播放器",items:["歌曲自然播完时，播放界面会继续进入下一首，不会因结束瞬间的状态切换停在原地。"]},
-        {title:"设置与语言",items:["俄语界面不再混入中文空间音频说明；播放模式和排序标签保持一致。","异常的已保存外观选项会回到可用的默认值，避免设置页出现空选中状态。"]}
+        {title:"曲库与年度报告",items:["空的我喜欢和自建歌单现在会显示明确的空状态，搜索无结果仍保留自己的提示。","年度报告的导出页面会跟随界面语言，并在歌曲资料更新后显示最新的歌曲与艺人信息；条形图、Top 10 和窄屏卡片保持可读。"]},
+        {title:"播放器",items:["歌曲自然播完时，播放界面会继续进入下一首，不会因结束瞬间的状态切换停在原地。","离开播放器后，唱片旋转不会继续占用页面动画帧。"]},
+        {title:"设置与语言",items:["俄语界面不再混入中文空间音频说明；播放模式和排序标签保持一致。","异常的已保存外观选项会回到可用的默认值，避免设置页出现空选中状态；默认文件夹提示可见，均衡器尺寸与设置布局一致。"]}
       ],english:{summary:"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency so empty states, exports and playback feedback stay clear.",sections:[
-        {title:"Library and Annual Report",items:["Empty Liked and custom playlists now explain their state clearly, while search no-match feedback remains separate.","Annual Report exports follow the interface language and show refreshed song and artist metadata after a library rescan."]},
-        {title:"Player",items:["Natural track endings continue into the next song instead of stopping during the end-state transition."]},
-        {title:"Settings and Language",items:["Russian Settings no longer mixes Chinese spatial-audio copy into the page; playback-mode and sort labels stay consistent.","Invalid saved appearance choices return to supported defaults instead of leaving Settings with no active option."]}
+        {title:"Library and Annual Report",items:["Empty Liked and custom playlists now explain their state clearly, while search no-match feedback remains separate.","Annual Report exports follow the interface language and show refreshed song and artist metadata after a library rescan; bars, Top 10 rows and narrow cards stay readable."]},
+        {title:"Player",items:["Natural track endings continue into the next song instead of stopping during the end-state transition.","Disc rotation stops scheduling frames while the Player view is hidden."]},
+        {title:"Settings and Language",items:["Russian Settings no longer mixes Chinese spatial-audio copy into the page; playback-mode and sort labels stay consistent.","Invalid saved appearance choices return to supported defaults instead of leaving Settings with no active option; folder status and EQ geometry remain visible and aligned."]}
       ]}
     },
     {

@@ -673,13 +673,13 @@ window.GPModules.register = function register(name,factory){
       version:"7.4.1", date:"2026-09-26", kind:"patch",
       summary:"HOTFIX BUILD：修复曲库空状态、年度报告语言、播放结束处理与设置一致性，让空状态、报告内容与播放反馈更容易读懂。",
       sections:[
-        {title:"曲库与年度报告",items:["空的我喜欢和自建歌单现在会显示明确的空状态，搜索无结果仍保留自己的提示。","年度报告的导出页面会跟随界面语言，并在歌曲资料更新后显示最新的歌曲与艺人信息。"]},
-        {title:"播放器",items:["歌曲自然播完时，播放界面会继续进入下一首，不会因结束瞬间的状态切换停在原地。"]},
-        {title:"设置与语言",items:["俄语界面不再混入中文空间音频说明；播放模式和排序标签保持一致。","异常的已保存外观选项会回到可用的默认值，避免设置页出现空选中状态。"]}
+        {title:"曲库与年度报告",items:["空的我喜欢和自建歌单现在会显示明确的空状态，搜索无结果仍保留自己的提示。","年度报告的导出页面会跟随界面语言，并在歌曲资料更新后显示最新的歌曲与艺人信息；条形图、Top 10 和窄屏卡片保持可读。"]},
+        {title:"播放器",items:["歌曲自然播完时，播放界面会继续进入下一首，不会因结束瞬间的状态切换停在原地。","离开播放器后，唱片旋转不会继续占用页面动画帧。"]},
+        {title:"设置与语言",items:["俄语界面不再混入中文空间音频说明；播放模式和排序标签保持一致。","异常的已保存外观选项会回到可用的默认值，避免设置页出现空选中状态；默认文件夹提示可见，均衡器尺寸与设置布局一致。"]}
       ],english:{summary:"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency so empty states, exports and playback feedback stay clear.",sections:[
-        {title:"Library and Annual Report",items:["Empty Liked and custom playlists now explain their state clearly, while search no-match feedback remains separate.","Annual Report exports follow the interface language and show refreshed song and artist metadata after a library rescan."]},
-        {title:"Player",items:["Natural track endings continue into the next song instead of stopping during the end-state transition."]},
-        {title:"Settings and Language",items:["Russian Settings no longer mixes Chinese spatial-audio copy into the page; playback-mode and sort labels stay consistent.","Invalid saved appearance choices return to supported defaults instead of leaving Settings with no active option."]}
+        {title:"Library and Annual Report",items:["Empty Liked and custom playlists now explain their state clearly, while search no-match feedback remains separate.","Annual Report exports follow the interface language and show refreshed song and artist metadata after a library rescan; bars, Top 10 rows and narrow cards stay readable."]},
+        {title:"Player",items:["Natural track endings continue into the next song instead of stopping during the end-state transition.","Disc rotation stops scheduling frames while the Player view is hidden."]},
+        {title:"Settings and Language",items:["Russian Settings no longer mixes Chinese spatial-audio copy into the page; playback-mode and sort labels stay consistent.","Invalid saved appearance choices return to supported defaults instead of leaving Settings with no active option; folder status and EQ geometry remain visible and aligned."]}
       ]}
     },
     {
@@ -4836,7 +4836,7 @@ window.GPModules.register = function register(name,factory){
     requestAnimationFrame(()=>{
       fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();
       if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
-      if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);drawWaveform();drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();});
+      if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();});
     });
   }
   function switchPrimaryView(viewName){
@@ -5991,11 +5991,11 @@ window.GPModules.register = function register(name,factory){
     return accentPalettes[key]?.[theme==="dark"?1:0]||accentPalettes.navy[theme==="dark"?1:0];
   }
   function setAccent(key,{refreshAmbient=true,persist=true}={}){
-    accentKey = key;
+    accentKey = accentPalettes[key]?key:"navy";
     const hexToRgbArray = hex => { const v=hex.replace("#",""); return [parseInt(v.slice(0,2),16),parseInt(v.slice(2,4),16),parseInt(v.slice(4,6),16)]; };
-    const primary=accentSeedForTheme(key);
+    const primary=accentSeedForTheme(accentKey);
     commitAccentRgb(hexToRgbArray(primary));
-    $$(".swatch").forEach(s => s.classList.toggle("active", s.dataset.k===key));
+    $$(".swatch").forEach(s => s.classList.toggle("active", s.dataset.k===accentKey));
     if(refreshAmbient)updateAmbient();if(persist)savePrefs();
   }
   function srgbToLinear(value){value=Math.max(0,Math.min(255,value))/255;return value<=.04045?value/12.92:Math.pow((value+.055)/1.055,2.4);}
@@ -6387,6 +6387,7 @@ window.GPModules.register = function register(name,factory){
     const rotor=$("#discRotor");if(rotor)rotor.style.transform=`rotate(${discAngle.toFixed(3)}deg) translateZ(0)`;
   }
   function runDiscRotation(now){
+    if(!$(".view[data-view='player']")?.classList.contains("active")){discRotationFrame=0;discRotationStamp=0;return;}
     const dt=Math.min(.05,Math.max(0,(now-(discRotationStamp||now))/1000));discRotationStamp=now;
     if(discTargetVelocity>0){
       discStopStarted=0;discVelocity+=(discTargetVelocity-discVelocity)*(1-Math.exp(-7.5*dt));
@@ -6578,8 +6579,8 @@ window.GPModules.register = function register(name,factory){
         <div class="track-dur">${t.duration ? fmtTime(t.duration) : "--:--"}</div>
         <div class="track-actions">
           <button class="track-action track-like ripple-target${isLikedTrack(playlist[idx])?" active":""}" data-idx="${idx}" aria-pressed="${isLikedTrack(playlist[idx])}" title="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}" aria-label="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
-          <button class="track-action queue-next ripple-target" data-idx="${idx}" title="下一首播放" aria-label="下一首播放"><svg class="rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path class="list-next-triangle" d="M5.9 5.55c-.52-.36-.9-.12-.9.52v11.86c0 .64.38.88.9.52l8.45-5.93c.48-.34.48-.7 0-1.04z"/><path class="list-next-echo" d="M19 5.8v12.4"/><path class="list-next-bar" d="M19 5.8v12.4"/></svg></button>
-          <button class="track-action queue-add ripple-target" data-idx="${idx}" title="加入播放队列" aria-label="加入播放队列"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="queue-bars"><path d="M4 6h9M4 12h7M4 18h7"/></g><path class="queue-plus-wave" d="M17 11v8M13 15h8"/><path class="queue-plus" d="M17 11v8M13 15h8"/></svg></button>
+          <button class="track-action queue-next ripple-target" data-idx="${idx}" title="${tr("下一首播放","Play Next")}" aria-label="${tr("下一首播放","Play Next")}"><svg class="rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path class="list-next-triangle" d="M5.9 5.55c-.52-.36-.9-.12-.9.52v11.86c0 .64.38.88.9.52l8.45-5.93c.48-.34.48-.7 0-1.04z"/><path class="list-next-echo" d="M19 5.8v12.4"/><path class="list-next-bar" d="M19 5.8v12.4"/></svg></button>
+          <button class="track-action queue-add ripple-target" data-idx="${idx}" title="${tr("加入播放队列","Add to Queue")}" aria-label="${tr("加入播放队列","Add to Queue")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="queue-bars"><path d="M4 6h9M4 12h7M4 18h7"/></g><path class="queue-plus-wave" d="M17 11v8M13 15h8"/><path class="queue-plus" d="M17 11v8M13 15h8"/></svg></button>
           ${options.playlistRemove?"":`<button class="track-action playlist-add ripple-target" data-idx="${idx}" title="${tr("添加到歌单","Add to playlist")}" aria-label="${tr("添加到歌单","Add to playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h9M4 12h9M4 18h5"/><path d="M17.5 13v7M14 16.5h7"/></svg></button>`}
           ${options.playlistRemove?`<button class="track-action playlist-remove ripple-target" data-idx="${idx}" title="${tr("从歌单移除","Remove from playlist")}" aria-label="${tr("从歌单移除","Remove from playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`:""}
         </div>
@@ -6748,7 +6749,7 @@ window.GPModules.register = function register(name,factory){
     const label=$("#playlistBtnText"),pop=$("#playlistPop"),bar=$("#collectionBar");
     if(label)label.textContent=`${tr("歌单","Playlists")}：${collectionDisplayName()}`;
     if(pop){
-      const rows=[{mode:"all",name:tr("全部歌曲","All Songs"),count:playlist.length},{mode:"liked",name:`♥ ${tr("我喜欢","Liked")}`,count:collectionTrackIndicesForMode("liked").length}].concat(userPlaylists().map(list=>({mode:`pl:${list.id}`,name:list.name,count:list.trackKeys.length,id:list.id})));
+      const rows=[{mode:"all",name:tr("全部歌曲","All Songs"),count:playlist.length},{mode:"liked",name:`♥ ${tr("我喜欢","Liked")}`,count:collectionTrackIndicesForMode("liked").length}].concat(userPlaylists().map(list=>({mode:`pl:${list.id}`,name:list.name,count:collectionTrackIndicesForMode(`pl:${list.id}`).length,id:list.id})));
       pop.querySelectorAll("[data-collection]").forEach(node=>node.remove());
       const anchor=pop.querySelector(".playlist-pop-divider");
       rows.forEach(row=>{
@@ -6813,7 +6814,7 @@ window.GPModules.register = function register(name,factory){
       lists.forEach(list=>{
         const button=document.createElement("button");button.type="button";button.className="ripple-target";button.dataset.rowPlaylist=list.id;
         const name=document.createElement("span");name.textContent=list.name;
-        const count=document.createElement("em");count.textContent=list.trackKeys.length;
+        const count=document.createElement("em");count.textContent=collectionTrackIndicesForMode(`pl:${list.id}`).length;
         button.append(name,count);pop.appendChild(button);
       });
     }
@@ -9094,7 +9095,7 @@ window.GPModules.register = function register(name,factory){
       return `<div class="top-row"><div class="top-rank">${rank+1}</div><div class="top-row-main">${thumb}<div class="top-info"><div class="t-title">${escapeHtml(item.track?.title||item.entry.title)}</div><div class="t-artist">${escapeHtml(item.track?.artist||item.entry.artist)}</div></div></div><div class="top-row-metrics"><div class="top-bar-wrap"><div class="top-bar-fill" style="width:${(item.seconds/Math.max(1,report.songs[0].seconds)*100).toFixed(0)}%"></div></div><div class="top-meta"><span>${fmtDuration(item.seconds)} · ${item.plays}${tr("次"," plays")}</span></div></div></div>`;
     }).join("");
     const dimCard=(label,rows)=>`<section class="data-card"><h3>${label}</h3>${periodBars(rows.map(([name,value])=>({label:"",name,value})))}</section>`;
-    host.innerHTML=`<div class="annual-summary">${card(tr("年度听歌","Listening Time"),fmtDuration(report.total))}${card(tr("年度播放","Plays"),`${report.totalPlays}${tr("次","")}`)}${card(tr("活跃天数","Active Days"),`${report.activeDays}${tr("天","")}`)}${card(tr("年度之歌","Top Song"),topSongValue)}</div>`
+    host.innerHTML=`<div class="annual-summary">${card(tr("年度听歌","Listening Time"),fmtDuration(report.total))}${card(tr("年度播放","Plays"),`${report.totalPlays}${tr("次","")}`)}${card(tr("活跃天数","Active Days"),`${report.activeDays}${tr("天","")}`)}${card(tr("年度之歌","Top Song"),topSongValue)}${card(tr("高峰时段","Peak Hour"),peakValue)}</div>`
       +`<section class="data-card wide"><h3>${tr("月度听歌时间","Monthly Listening")}</h3><div class="data-sub">${tr("条形为当月时长，悬停查看当月最爱艺人","Bars show monthly time; hover for the monthly top artist")}</div>${periodBars(report.monthly)}</section>`
       +`<section class="data-card wide"><h3>${tr("年度 Top 10","Yearly Top 10")}</h3>${rankRows}</section>`
       +`<div class="annual-dims">${dimCard(tr("最爱艺人","Favorite Artists"),report.artists)}${dimCard(tr("最爱专辑","Favorite Albums"),report.albums)}${dimCard(tr("最爱风格","Favorite Genres"),report.genres)}</div>`
@@ -9128,7 +9129,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildAnnualReportHTML(report){
     const esc=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    const style=`*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 50% -8%,#2a2417 0%,#141318 46%,#0e0d12 100%);color:#f2ecdf;font-family:system-ui,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;min-height:100vh}header.cover{max-width:880px;margin:0 auto;padding:64px 40px 10px;text-align:center}.kicker{letter-spacing:.42em;font-size:12px;color:#c9a45c;font-weight:600}.year{font-family:Georgia,"Songti SC","SimSun",serif;font-size:120px;line-height:1;margin:10px 0 4px;background:linear-gradient(180deg,#f6e7c4 20%,#d9ab55 62%,#9a7430 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.rule{width:120px;height:2px;margin:18px auto;background:linear-gradient(90deg,transparent,#c9a45c,transparent)}.gen{color:#8f8a7c;font-size:13px}.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:880px;margin:26px auto 0;padding:0 40px}.hero .cell{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:20px 10px;text-align:center;box-shadow:0 18px 44px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}.hero .k{font-size:12px;letter-spacing:.2em;color:#a49d8b}.hero .v{font-family:Georgia,"Songti SC",serif;font-size:34px;margin-top:8px;color:#f6e7c4}main{max-width:880px;margin:0 auto;padding:26px 40px 10px}section.card{background:rgba(255,255,255,.038);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:26px 28px;margin:0 0 18px;box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.07)}h2{margin:0 0 4px;font-size:15px;letter-spacing:.28em;color:#c9a45c;font-weight:600}h2 small{display:block;letter-spacing:.06em;color:#6f6a5c;font-size:12px;margin-top:6px;font-weight:400}.topsong{display:flex;align-items:baseline;gap:18px;margin-top:14px}.topsong .no{font-family:Georgia,serif;font-size:54px;color:#c9a45c;line-height:1}.topsong .t{font-size:24px;font-weight:700}.topsong .a{color:#a49d8b;margin-top:4px}.topsong .m{margin-left:auto;text-align:right;color:#a49d8b;font-size:13px;white-space:nowrap}.row{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:11px 2px;border-top:1px solid rgba(255,255,255,.07)}.row:first-of-type{border-top:0}.row .no{font-family:Georgia,serif;font-size:26px;color:#8f8a7c}.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no{color:#e3bd72}.row .t{font-weight:600}.row .a{color:#8f8a7c;font-size:13px;margin-top:2px}.row .m{color:#a49d8b;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.bar{display:grid;grid-template-columns:70px 1fr 96px;gap:12px;align-items:center;margin:9px 0;font-size:13px}.bar .track{height:8px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar .fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8a6a2e,#e3bd72)}.bar .num{text-align:right;color:#a49d8b;font-variant-numeric:tabular-nums}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}h4{margin:2px 0 8px;font-size:13px;letter-spacing:.2em;color:#c9a45c}details{margin-top:14px}summary{cursor:pointer;color:#a49d8b;font-size:13px}svg.chart{display:block;width:100%;height:auto;margin-top:10px}.dot{fill:#e3bd72;stroke:#141318;stroke-width:2}.axis{fill:#8f8a7c;font-size:12px}.rhythm{margin-top:6px;color:#cfc8b4;font-size:14px;line-height:2}footer{max-width:880px;margin:0 auto;padding:14px 40px 56px;color:#6f6a5c;font-size:12px;text-align:center}@media(prefers-color-scheme:light){body{background:radial-gradient(1200px 500px at 50% -8%,#f7ecd4 0%,#f3efe6 46%,#ece7d9 100%);color:#2b2620}header .gen{color:#8a7a52}section.card,.hero .cell{background:rgba(255,255,255,.72);border-color:rgba(120,90,30,.16);box-shadow:0 14px 34px rgba(120,90,30,.12)}.hero .v,.topsong .t{color:#4a3a17}.kicker,h2,h4,.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no,.topsong .no{color:#8a6a2e}.row{border-color:rgba(120,90,30,.14)}.row .a,.row .m,.bar .num,.topsong .m,.topsong .a,.rhythm{color:#6f6553}.bar .track{background:rgba(120,90,30,.14)}footer{color:#8a7a52}}`;
+    const style=`*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 50% -8%,#2a2417 0%,#141318 46%,#0e0d12 100%);color:#f2ecdf;font-family:system-ui,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;min-height:100vh}header.cover{max-width:880px;margin:0 auto;padding:64px clamp(16px,5vw,40px) 10px;text-align:center}.kicker{letter-spacing:.42em;font-size:12px;color:#c9a45c;font-weight:600}.year{font-family:Georgia,"Songti SC","SimSun",serif;font-size:clamp(64px,14vw,120px);line-height:1;margin:10px 0 4px;background:linear-gradient(180deg,#f6e7c4 20%,#d9ab55 62%,#9a7430 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.rule{width:120px;height:2px;margin:18px auto;background:linear-gradient(90deg,transparent,#c9a45c,transparent)}.gen{color:#8f8a7c;font-size:13px}.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;max-width:880px;margin:26px auto 0;padding:0 clamp(16px,5vw,40px)}.hero .cell{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:20px 10px;text-align:center;box-shadow:0 18px 44px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}.hero .k{font-size:12px;letter-spacing:.2em;color:#a49d8b}.hero .v{font-family:Georgia,"Songti SC",serif;font-size:34px;margin-top:8px;color:#f6e7c4}main{max-width:880px;margin:0 auto;padding:26px clamp(16px,5vw,40px) 10px}section.card{background:rgba(255,255,255,.038);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:26px 28px;margin:0 0 18px;box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.07)}h2{margin:0 0 4px;font-size:15px;letter-spacing:.28em;color:#c9a45c;font-weight:600}h2 small{display:block;letter-spacing:.06em;color:#6f6a5c;font-size:12px;margin-top:6px;font-weight:400}.topsong{display:flex;align-items:baseline;gap:18px;margin-top:14px}.topsong .no{font-family:Georgia,serif;font-size:54px;color:#c9a45c;line-height:1}.topsong .t{font-size:24px;font-weight:700}.topsong .a{color:#a49d8b;margin-top:4px}.topsong .m{margin-left:auto;text-align:right;color:#a49d8b;font-size:13px;white-space:nowrap}.row{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:11px 2px;border-top:1px solid rgba(255,255,255,.07)}.row:first-of-type{border-top:0}.row .no{font-family:Georgia,serif;font-size:26px;color:#8f8a7c}.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no{color:#e3bd72}.row .t{font-weight:600}.row .a{color:#8f8a7c;font-size:13px;margin-top:2px}.row .m{color:#a49d8b;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.bar{display:grid;grid-template-columns:1fr 2fr 96px;gap:12px;align-items:center;margin:9px 0;font-size:13px}.bar .track{height:8px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar .fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8a6a2e,#e3bd72)}.bar .num{text-align:right;color:#a49d8b;font-variant-numeric:tabular-nums}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}h4{margin:2px 0 8px;font-size:13px;letter-spacing:.2em;color:#c9a45c}details{margin-top:14px}summary{cursor:pointer;color:#a49d8b;font-size:13px}svg.chart{display:block;width:100%;height:auto;margin-top:10px}.dot{fill:#e3bd72;stroke:#141318;stroke-width:2}.axis{fill:#8f8a7c;font-size:12px}.rhythm{margin-top:6px;color:#cfc8b4;font-size:14px;line-height:2}footer{max-width:880px;margin:0 auto;padding:14px clamp(16px,5vw,40px) 56px;color:#6f6a5c;font-size:12px;text-align:center}@media(prefers-color-scheme:light){body{background:radial-gradient(1200px 500px at 50% -8%,#f7ecd4 0%,#f3efe6 46%,#ece7d9 100%);color:#2b2620}header .gen{color:#8a7a52}section.card,.hero .cell{background:rgba(255,255,255,.72);border-color:rgba(120,90,30,.16);box-shadow:0 14px 34px rgba(120,90,30,.12)}.hero .v,.topsong .t{color:#4a3a17}.kicker,h2,h4,.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no,.topsong .no{color:#8a6a2e}.row{border-color:rgba(120,90,30,.14)}.row .a,.row .m,.bar .num,.topsong .m,.topsong .a,.rhythm{color:#6f6553}.bar .track{background:rgba(120,90,30,.14)}footer{color:#8a7a52}}`;
     const zh=uiLanguage==="zh",copy=zh?{
       lang:"zh-CN",title:`Glass Player ${report.year} 年度报告`,kicker:"GLASS PLAYER · 年度报告",generated:"本地生成",listening:"年度听歌",plays:"年度播放",activeDays:"活跃天数",topSongSection:"年度之歌",topSongSub:"年度之歌",monthly:"月度曲线",monthlySub:"月度听歌",yearlyTop:"年度 TOP 10",yearlySub:"年度歌曲排行",expand:"展开 / 收起",favorites:"最爱版图",favoritesSub:"偏好",artists:"艺人",albums:"专辑",genres:"风格",peak:"单日最高",playsUnit:"次",footer:"由 Glass Player 在本地生成，未上传任何数据。",hourText:hour=>`你通常在 ${hour}:00 进入听歌状态。`
     }:{
@@ -9143,7 +9144,7 @@ window.GPModules.register = function register(name,factory){
     const areaPath=`${linePath} L${(W-padX).toFixed(1)},${H-padB} L${padX.toFixed(1)},${H-padB} Z`;
     const chart=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="annualGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3bd72" stop-opacity=".85"/><stop offset="1" stop-color="#e3bd72" stop-opacity=".04"/></linearGradient></defs><path d="${areaPath}" fill="url(#annualGold)"/><path d="${linePath}" fill="none" stroke="#e3bd72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${pts.map(p=>`<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"><title>${esc(p.label)} · ${esc(p.name)} · ${esc(formatDuration(p.value))}</title></circle><text class="axis" x="${p.x.toFixed(1)}" y="${H-10}" text-anchor="middle">${esc(p.label)}</text>`).join("")}</svg>`;
     const topRows=report.songs.map((item,rank)=>`<div class="row"><span class="no">${String(rank+1).padStart(2,"0")}</span><span><span class="t">${esc(item.track?.title||item.entry.title)}</span><div class="a">${esc(item.track?.artist||item.entry.artist)}</div></span><span class="m">${esc(formatDuration(item.seconds))} · ${item.plays} ${copy.playsUnit}</span></div>`).join("");
-    const dim=(title,list)=>`<div><h4>${title}</h4>${list.map(([name,value])=>`<div class="bar" title="${esc(formatDuration(value))}"><span></span><span>${esc(name)}</span><span class="num">${esc(formatDuration(value))}</span></div>`).join("")||'<div class="a">—</div>'}</div>`;
+    const dim=(title,list)=>{const max=Math.max(1,...list.map(([,value])=>value));return `<div><h4>${title}</h4>${list.map(([name,value])=>`<div class="bar" title="${esc(formatDuration(value))}"><span>${esc(name)}</span><span class="track"><span class="fill" style="width:${(value/max*100).toFixed(0)}%"></span></span><span class="num">${esc(formatDuration(value))}</span></div>`).join("")||'<div class="a">—</div>'}</div>`;};
     const top=report.topSong;
     const peakText=report.bestDay?`${copy.peak} ${esc(`${report.bestDay.key} · ${formatDuration(report.bestDay.value)}`)}${zh?"。":"."}`:`${copy.peak} —`;
     const rhythm=`${peakText}${report.peakHour===null?"":` ${copy.hourText(report.peakHour)}`}`;
@@ -9878,7 +9879,7 @@ window.GPModules.register = function register(name,factory){
     searchRenderFrame=requestAnimationFrame(()=>{searchRenderFrame=0;if($("#search").value===query)render(query);});
     clearTimeout(searchBehaviorTimer);
     if(query.trim())searchBehaviorTimer=setTimeout(()=>{
-      const resultCount=playlist.filter(track=>fuzzySearchMatch(track,query)).length;
+      const resultCount=playlist.filter(track=>fuzzySearchScore(track,query).score>=.5).length;
       recordBehaviorEvent("search",null,{query:query.trim(),resultCount});
     },650);
   });
@@ -10095,7 +10096,6 @@ window.GPModules.register = function register(name,factory){
       const stage=$(".eq-curve-stage"),curve=$("#eqCurveVisual"),bands=$("#eqBands");
       if(!stage||!curve||!bands||!stage.offsetWidth)return;
       const compact=window.matchMedia("(max-width:660px)").matches;
-      stage.style.height=compact?"228px":"260px";
       const stageRect=stage.getBoundingClientRect(),visualRect=curve.getBoundingClientRect();
       if(!visualRect.width||!visualRect.height)return;
       const viewBox=curve.viewBox?.baseVal,viewWidth=viewBox?.width||700,viewHeight=viewBox?.height||180;
@@ -10260,7 +10260,7 @@ window.GPModules.register = function register(name,factory){
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.0"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.1"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
       [tr("引擎","Engines"),engineList||"GP Core 4.2 · GP Fusion Engine 4.1 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]

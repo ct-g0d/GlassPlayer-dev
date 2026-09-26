@@ -1166,6 +1166,19 @@ input[type="range"]:not(.eq-slider).dragging::-webkit-slider-thumb{ margin-top:-
   .history-left-ranks .top-meta,.history-ranks-list .top-meta{ width:auto; display:flex; justify-content:flex-end; gap:8px; text-align:right; font-size:.72em; }
   .history-left-ranks .top-info .t-title,.history-ranks-list .top-info .t-title{ font-size:.86em; }
   .history-left-ranks .top-info .t-artist,.history-ranks-list .top-info .t-artist{ font-size:.72em; }
+  .annual-report-body .top-row{ display:grid; grid-template-columns:26px minmax(0,1fr) minmax(112px,.8fr); gap:10px; padding:9px 10px; }
+  .annual-report-body .top-row-main{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .annual-report-body .top-row-main .track-thumb{ width:38px; height:38px; }
+  .annual-report-body .top-row-metrics{ min-width:0; display:flex; flex-direction:column; align-items:stretch; gap:5px; }
+  .annual-report-body .top-bar-wrap{ width:100%; max-width:none; }
+  .annual-report-body .top-meta{ width:auto; display:flex; justify-content:flex-end; gap:8px; text-align:right; font-size:.72em; }
+  .annual-report-body .top-info .t-title{ font-size:.86em; }
+  .annual-report-body .top-info .t-artist{ font-size:.72em; }
+  @media(max-width:760px){
+    .annual-report-body .top-row{ grid-template-columns:24px minmax(0,1fr); gap:8px; }
+    .annual-report-body .top-row-metrics{ grid-column:2; }
+    .annual-report-body .top-meta{ justify-content:flex-start; text-align:left; }
+  }
   .view[data-view="settings"]{ max-width:var(--gp-primary-content-width); margin-inline:auto; }
   .view[data-view="settings"] .view-fill{ max-width:var(--gp-primary-content-width); margin-inline:auto; }
   .settings-panel{ padding:0; }
@@ -1242,6 +1255,7 @@ input[type="range"]:not(.eq-slider).dragging::-webkit-slider-thumb{ margin-top:-
   #languageSeg button{ width:100%; min-width:0; padding-inline:8px; }
 
   .settings-content .setting-hint,.settings-content .metadata-rescan-copy>span,.recommend-head>p,.data-sub,.history-ranking-caption,.pip-support-detail,.settings-note{ display:none!important; }
+  #defaultFolderHint{ display:block!important; }
   .font-picker-group{ min-height:28px; line-height:28px; }
   .font-picker-option{height:52px;min-height:52px;line-height:1.5;display:flex;align-items:center;box-sizing:border-box;}
   .font-preview{ min-height:60px; box-sizing:border-box; line-height:1.5; }

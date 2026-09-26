@@ -6,7 +6,7 @@
     searchRenderFrame=requestAnimationFrame(()=>{searchRenderFrame=0;if($("#search").value===query)render(query);});
     clearTimeout(searchBehaviorTimer);
     if(query.trim())searchBehaviorTimer=setTimeout(()=>{
-      const resultCount=playlist.filter(track=>fuzzySearchMatch(track,query)).length;
+      const resultCount=playlist.filter(track=>fuzzySearchScore(track,query).score>=.5).length;
       recordBehaviorEvent("search",null,{query:query.trim(),resultCount});
     },650);
   });
