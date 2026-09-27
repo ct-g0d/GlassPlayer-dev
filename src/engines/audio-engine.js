@@ -129,8 +129,9 @@
     },100);
     window.__GP_AUDIO_DIAGNOSTICS__=Object.freeze({get version(){return audioDiagnosticState.version;},get latest(){return audioDiagnosticState.latest;},get firstExceed(){return audioDiagnosticState.firstExceed;},get samples(){return audioDiagnosticState.samples.slice();},reset(){audioDiagnosticState.firstExceed=null;audioDiagnosticState.samples.length=0;}});
   }
-  function ensureAudioCtx(){
-    if(audioCtx) { if(audioCtx.state === "suspended") audioCtx.resume(); return; }
+  function ensureAudioCtx(options={}){
+    const resume=options.resume!==false;
+    if(audioCtx) { if(resume&&audioCtx.state === "suspended") audioCtx.resume(); return; }
     const AudioContextConstructor=window.AudioContext||window.webkitAudioContext;
     /* Continuous local FLAC playback benefits from the browser's playback
        buffer instead of the smallest interactive buffer. This changes no PCM
@@ -168,6 +169,7 @@
     installAudioDiagnostics({mix:mixBus,eq:eqChain[eqChain.length-1],spatial:spatial.output,final:outputLimiterBypass});
     applyCurrentTrackNormalization(true);syncAudioHeadroom(true);
   }
+  function decodeAudioBuffer(arrayBuffer){ensureAudioCtx({resume:false});return audioCtx.decodeAudioData(arrayBuffer);}
   let miniEqFrame=0,miniEqLastPaint=0,miniEqLastSample=0,miniEqData=null,miniEqLevels=[.18,.18,.18,.18],miniEqTargets=[.18,.18,.18,.18],miniEqHoldUntil=[0,0,0,0],miniEqGeometry=null;
   function drawMiniEq(levels=miniEqLevels,refreshStyle=true){
     const canvas=$("#miniEq");if(!canvas)return;

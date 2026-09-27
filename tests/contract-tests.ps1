@@ -45,7 +45,7 @@ Expect (($build -split 'window\.GPModules \?\?=').Count-1 -eq 1) 'Module Registr
 Expect (($build -split 'const playlist = \[\]').Count-1 -eq 1) 'playlist implementation must occur once'
 Expect (($build -split 'const playQueue = \[\]').Count-1 -eq 1) 'playQueue implementation must occur once'
 Expect (($build -split 'const deckA = new Audio\(\)').Count-1 -eq 1 -and ($build -split 'const deckB = new Audio\(\)').Count-1 -eq 1) 'exactly one Deck A and one Deck B expected'
-Expect (($build -split 'new AudioContextConstructor').Count-1 -eq 2 -and $build -match 'latencyHint:"playback"') 'Playback-buffer AudioContext with one compatibility fallback expected'
+Expect (($build -split 'new AudioContextConstructor').Count-1 -eq 2 -and $build -match 'latencyHint:"playback"' -and $librarySource -notmatch 'spectrumDecodeCtx|ensureSpectrumDecodeCtx|new\s+\(window\.AudioContext' -and $librarySource -match 'await decodeAudioBuffer\(arrayBuffer\)') 'Playback and analysis must share the Audio Engine context with one compatibility fallback'
 Expect ($build -notmatch '\bwindow\.currentIndex\b') 'window.currentIndex is forbidden'
 Expect ($build -notmatch '(?m)^\s*(import|export)\s') 'ES module syntax is forbidden'
 Expect ($index -match '<link rel="stylesheet" href="\./app\.css\?v=7\.4\.2-r1">' -and $index -match '<script src="\./build/app\.js\?v=7\.4\.2-r1"></script>') 'index must load the 7.4.2 CSS and build/app.js cache revision'

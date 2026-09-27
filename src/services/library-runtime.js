@@ -398,9 +398,8 @@
     };
     yieldWhenPlaybackAllows();
   });
-  let spectrumDecodeCtx=null,spectrumAnalysisQueue=Promise.resolve(),spectrumResumeAfter=0;
+  let spectrumAnalysisQueue=Promise.resolve(),spectrumResumeAfter=0;
   const spectrumQueuedKeys=new Set();
-  function ensureSpectrumDecodeCtx(){if(!spectrumDecodeCtx)spectrumDecodeCtx=new (window.AudioContext||window.webkitAudioContext)();return spectrumDecodeCtx;}
   async function buildSpectrumEnvelope(audioBuffer){
     const envelopeRate=100,sampleRate=audioBuffer.sampleRate,channels=audioBuffer.numberOfChannels;
     const startSeconds=audioBuffer.duration>210?15:0;
@@ -624,7 +623,7 @@
   async function analyzeTrackSpectrum(track){
     if(!track?.file)throw new Error("Local audio file is required");
     const arrayBuffer=await track.file.arrayBuffer();
-    const audioBuffer=await ensureSpectrumDecodeCtx().decodeAudioData(arrayBuffer);
+    const audioBuffer=await decodeAudioBuffer(arrayBuffer);
     const analysis=await buildSpectrumEnvelope(audioBuffer);
     const tempo=await detectBpmFromEnvelope(analysis.envelope,analysis.envelopeRate);
     const mfcc=await extractMfccFeatures(audioBuffer);

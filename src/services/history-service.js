@@ -143,7 +143,7 @@
   }
   function sumSongInRange(entry, days, now){
     if(!entry.daily) return days===Infinity?(entry.totalSeconds||0):0;
-    if(days === Infinity) return Object.values(entry.daily).reduce((a,b)=>a+b,0);
+    if(days === Infinity) return Object.values(entry.daily).reduce((a,b)=>a+b,0)+(Number(entry.legacyUndatedSeconds)||0);
     let sum = 0;
     for(let i=0;i<days;i++){ const d = new Date(now); d.setDate(d.getDate()-i); sum += entry.daily[todayKey(d)] || 0; }
     return sum;
@@ -200,7 +200,7 @@
   }
   function dayKeyInRange(key,range){if(!range)return true;const stamp=new Date(`${key}T12:00:00`).getTime();return stamp>=range.start.getTime()&&stamp<range.end.getTime();}
   function sumDailyRange(daily,range){return Object.entries(daily||{}).reduce((sum,[key,value])=>sum+(dayKeyInRange(key,range)?Number(value)||0:0),0);}
-  function sumSongRange(entry,range){return sumDailyRange(entry?.daily,range);}
+  function sumSongRange(entry,range){return range?sumDailyRange(entry?.daily,range):sumSongInRange(entry,Infinity);}
   function sumPlayCountRange(entry,range,duration=0){
     if(!range)return sumPlayCountInRange(entry,Infinity,new Date(),duration);
     const dated=Object.entries(entry?.dailyPlays||{}).reduce((sum,[key,value])=>sum+(dayKeyInRange(key,range)?Number(value)||0:0),0);

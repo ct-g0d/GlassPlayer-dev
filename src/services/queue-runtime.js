@@ -174,7 +174,9 @@
   function playCollectionNow(){
     const members=collectionTrackIndices();
     if(!members.length){showToast(tr("这个歌单还没有可播放的歌曲","No playable songs in this collection"));return;}
-    members.forEach(idx=>{const id=playlist[idx]?.id;if(id&&!playQueue.includes(id))playQueue.push(id);});
+    const firstId=playlist[members[0]]?.id,firstQueuePos=playQueue.indexOf(firstId);
+    if(firstId!==null&&firstId!==undefined&&firstQueuePos!==-1)playQueue.splice(firstQueuePos,1);
+    members.slice(1).forEach(idx=>{const id=playlist[idx]?.id;if(id!==null&&id!==undefined&&!playQueue.includes(id))playQueue.push(id);});
     manualQueueActive=true;beginQueuedPlayback();pendingSelectionSource="playlist";
     loadTrack(members[0],true);renderMiniQueue();
     showToast(tr(`正在播放${collectionDisplayName()}（${members.length} 首）`,`Playing ${collectionDisplayName()} (${members.length} songs)`));

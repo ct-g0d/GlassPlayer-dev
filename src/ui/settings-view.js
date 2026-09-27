@@ -529,7 +529,7 @@
     buildEQUI();
     syncEQGeometry();syncSpatialModeGeometry();syncTypographyPreviewLayout();
     setEQPresetLabel(eqPresetKey);
-    setMode(p.playMode || "sequential");
+    setMode(["sequential","shuffle","repeatOne"].includes(p.playMode)?p.playMode:"sequential");
     setAccent(p.accentKey || "navy");
     applyTheme(); updateVolIcon();
   }

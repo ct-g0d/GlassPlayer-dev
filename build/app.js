@@ -157,8 +157,9 @@ window.GPModules.register = function register(name,factory){
     },100);
     window.__GP_AUDIO_DIAGNOSTICS__=Object.freeze({get version(){return audioDiagnosticState.version;},get latest(){return audioDiagnosticState.latest;},get firstExceed(){return audioDiagnosticState.firstExceed;},get samples(){return audioDiagnosticState.samples.slice();},reset(){audioDiagnosticState.firstExceed=null;audioDiagnosticState.samples.length=0;}});
   }
-  function ensureAudioCtx(){
-    if(audioCtx) { if(audioCtx.state === "suspended") audioCtx.resume(); return; }
+  function ensureAudioCtx(options={}){
+    const resume=options.resume!==false;
+    if(audioCtx) { if(resume&&audioCtx.state === "suspended") audioCtx.resume(); return; }
     const AudioContextConstructor=window.AudioContext||window.webkitAudioContext;
     /* Continuous local FLAC playback benefits from the browser's playback
        buffer instead of the smallest interactive buffer. This changes no PCM
@@ -196,6 +197,7 @@ window.GPModules.register = function register(name,factory){
     installAudioDiagnostics({mix:mixBus,eq:eqChain[eqChain.length-1],spatial:spatial.output,final:outputLimiterBypass});
     applyCurrentTrackNormalization(true);syncAudioHeadroom(true);
   }
+  function decodeAudioBuffer(arrayBuffer){ensureAudioCtx({resume:false});return audioCtx.decodeAudioData(arrayBuffer);}
   let miniEqFrame=0,miniEqLastPaint=0,miniEqLastSample=0,miniEqData=null,miniEqLevels=[.18,.18,.18,.18],miniEqTargets=[.18,.18,.18,.18],miniEqHoldUntil=[0,0,0,0],miniEqGeometry=null;
   function drawMiniEq(levels=miniEqLevels,refreshStyle=true){
     const canvas=$("#miniEq");if(!canvas)return;
@@ -638,6 +640,7 @@ window.GPModules.register = function register(name,factory){
     GP.i18n.translateTree(document.body);
     if(typeof setEQPresetLabel==="function")setEQPresetLabel(eqPresetKey);
     if(typeof renderSpatialInfo==="function")renderSpatialInfo();
+    if(typeof renderLoudnessInfo==="function")renderLoudnessInfo();
     if(typeof syncTraditionalPiP==="function")syncTraditionalPiP(true);
     if(currentIndex===-1){setNowPlayingTitle(tr("未选择歌曲","No Song Selected"));$("#nowArtist").textContent=tr("拖入或导入音乐开始播放","Drop or import music to begin");}
     if(typeof syncTypographyLanguage==="function")syncTypographyLanguage();
@@ -671,13 +674,15 @@ window.GPModules.register = function register(name,factory){
     },
     {
       version:"7.4.2", date:"2026-09-26", kind:"patch",
-      summary:"HOTFIX BUILD：修复界面与年度报告在不同状态、语言和尺寸下的显示不一致。",
+      summary:"HOTFIX BUILD：修复歌单首曲重复、旧听歌记录统计、年度报告布局与设置恢复，并减少后台音频分析的资源占用。",
       sections:[
-        {title:"界面一致性",items:["修复曲库、设置和播放器在空状态、操作反馈与布局尺寸上的不一致。"]},
-        {title:"年度报告",items:["修复年度报告的统计展示、窄屏布局与导出内容，使页面与导出文件保持一致。"]}
-      ],english:{summary:"HOTFIX BUILD fixes interface and Annual Report inconsistencies across states, languages and layouts.",sections:[
-        {title:"Interface Consistency",items:["Library, Settings and Player states now keep their empty-state, feedback and layout behavior aligned."]},
-        {title:"Annual Report",items:["Annual Report statistics, narrow layouts and exported content now stay consistent between the page and its standalone file."]}
+        {title:"播放与曲库",items:["播放歌单时，首曲不会再次留在待播队列中；已有待播歌曲保留顺序。","清除搜索后不再记录过时的搜索行为；后台分析复用播放器的音频资源，不会恢复已挂起的播放。"]},
+        {title:"听歌历史与年度报告",items:["全部时间排行保留旧记录中没有日期的听歌时长，按日期筛选仍只统计有日期的记录。","年度报告的五张摘要卡在宽屏上保持一行，报告滚动条使用现有的滚动显示样式。"]},
+        {title:"设置与语言",items:["无效的已保存播放模式回到顺序播放，避免启动中断。","切换语言时，响度说明同步更新。"]}
+      ],english:{summary:"HOTFIX BUILD fixes repeated playlist starts, legacy listening totals, Annual Report layout and restored settings, while reducing background audio-analysis resources.",sections:[
+        {title:"Playback and Library",items:["Starting a playlist no longer leaves its first song queued to play again; existing queued songs retain their order.","Cleared searches no longer record stale search activity. Background analysis reuses the player's audio resources without resuming a suspended context."]},
+        {title:"History and Annual Report",items:["All-time rankings retain undated listening time from older records; calendar ranges still include dated records only.","The five Annual Report summary cards share one row on wide screens, and the report uses the existing scroll-triggered scrollbar style."]},
+        {title:"Settings and Language",items:["Invalid saved playback modes fall back to Sequential instead of interrupting startup.","Loudness information updates when the interface language changes."]}
       ]}
     },
     {
@@ -3143,7 +3148,7 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
-    "7.4.2":"HOTFIX BUILD fixes interface and Annual Report inconsistencies across states, languages and layouts.",
+    "7.4.2":"HOTFIX BUILD fixes playlist starts, legacy listening totals, Annual Report layout and restored settings, and shares audio resources for analysis.",
     "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
     "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
     "7.3.2":"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import switching, and moves audio analysis behind the import dialog.",
@@ -6750,7 +6755,9 @@ window.GPModules.register = function register(name,factory){
   function playCollectionNow(){
     const members=collectionTrackIndices();
     if(!members.length){showToast(tr("这个歌单还没有可播放的歌曲","No playable songs in this collection"));return;}
-    members.forEach(idx=>{const id=playlist[idx]?.id;if(id&&!playQueue.includes(id))playQueue.push(id);});
+    const firstId=playlist[members[0]]?.id,firstQueuePos=playQueue.indexOf(firstId);
+    if(firstId!==null&&firstId!==undefined&&firstQueuePos!==-1)playQueue.splice(firstQueuePos,1);
+    members.slice(1).forEach(idx=>{const id=playlist[idx]?.id;if(id!==null&&id!==undefined&&!playQueue.includes(id))playQueue.push(id);});
     manualQueueActive=true;beginQueuedPlayback();pendingSelectionSource="playlist";
     loadTrack(members[0],true);renderMiniQueue();
     showToast(tr(`正在播放${collectionDisplayName()}（${members.length} 首）`,`Playing ${collectionDisplayName()} (${members.length} songs)`));
@@ -7730,9 +7737,8 @@ window.GPModules.register = function register(name,factory){
     };
     yieldWhenPlaybackAllows();
   });
-  let spectrumDecodeCtx=null,spectrumAnalysisQueue=Promise.resolve(),spectrumResumeAfter=0;
+  let spectrumAnalysisQueue=Promise.resolve(),spectrumResumeAfter=0;
   const spectrumQueuedKeys=new Set();
-  function ensureSpectrumDecodeCtx(){if(!spectrumDecodeCtx)spectrumDecodeCtx=new (window.AudioContext||window.webkitAudioContext)();return spectrumDecodeCtx;}
   async function buildSpectrumEnvelope(audioBuffer){
     const envelopeRate=100,sampleRate=audioBuffer.sampleRate,channels=audioBuffer.numberOfChannels;
     const startSeconds=audioBuffer.duration>210?15:0;
@@ -7956,7 +7962,7 @@ window.GPModules.register = function register(name,factory){
   async function analyzeTrackSpectrum(track){
     if(!track?.file)throw new Error("Local audio file is required");
     const arrayBuffer=await track.file.arrayBuffer();
-    const audioBuffer=await ensureSpectrumDecodeCtx().decodeAudioData(arrayBuffer);
+    const audioBuffer=await decodeAudioBuffer(arrayBuffer);
     const analysis=await buildSpectrumEnvelope(audioBuffer);
     const tempo=await detectBpmFromEnvelope(analysis.envelope,analysis.envelopeRate);
     const mfcc=await extractMfccFeatures(audioBuffer);
@@ -8835,7 +8841,7 @@ window.GPModules.register = function register(name,factory){
   }
   function sumSongInRange(entry, days, now){
     if(!entry.daily) return days===Infinity?(entry.totalSeconds||0):0;
-    if(days === Infinity) return Object.values(entry.daily).reduce((a,b)=>a+b,0);
+    if(days === Infinity) return Object.values(entry.daily).reduce((a,b)=>a+b,0)+(Number(entry.legacyUndatedSeconds)||0);
     let sum = 0;
     for(let i=0;i<days;i++){ const d = new Date(now); d.setDate(d.getDate()-i); sum += entry.daily[todayKey(d)] || 0; }
     return sum;
@@ -8892,7 +8898,7 @@ window.GPModules.register = function register(name,factory){
   }
   function dayKeyInRange(key,range){if(!range)return true;const stamp=new Date(`${key}T12:00:00`).getTime();return stamp>=range.start.getTime()&&stamp<range.end.getTime();}
   function sumDailyRange(daily,range){return Object.entries(daily||{}).reduce((sum,[key,value])=>sum+(dayKeyInRange(key,range)?Number(value)||0:0),0);}
-  function sumSongRange(entry,range){return sumDailyRange(entry?.daily,range);}
+  function sumSongRange(entry,range){return range?sumDailyRange(entry?.daily,range):sumSongInRange(entry,Infinity);}
   function sumPlayCountRange(entry,range,duration=0){
     if(!range)return sumPlayCountInRange(entry,Infinity,new Date(),duration);
     const dated=Object.entries(entry?.dailyPlays||{}).reduce((sum,[key,value])=>sum+(dayKeyInRange(key,range)?Number(value)||0:0),0);
@@ -9893,6 +9899,7 @@ window.GPModules.register = function register(name,factory){
     searchRenderFrame=requestAnimationFrame(()=>{searchRenderFrame=0;if($("#search").value===query)render(query);});
     clearTimeout(searchBehaviorTimer);
     if(query.trim())searchBehaviorTimer=setTimeout(()=>{
+      if($("#search").value!==query)return;
       const resultCount=playlist.filter(track=>fuzzySearchScore(track,query).score>=.5).length;
       recordBehaviorEvent("search",null,{query:query.trim(),resultCount});
     },650);
@@ -10449,7 +10456,7 @@ window.GPModules.register = function register(name,factory){
     buildEQUI();
     syncEQGeometry();syncSpatialModeGeometry();syncTypographyPreviewLayout();
     setEQPresetLabel(eqPresetKey);
-    setMode(p.playMode || "sequential");
+    setMode(["sequential","shuffle","repeatOne"].includes(p.playMode)?p.playMode:"sequential");
     setAccent(p.accentKey || "navy");
     applyTheme(); updateVolIcon();
   }

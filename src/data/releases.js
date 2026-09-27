@@ -16,13 +16,15 @@
     },
     {
       version:"7.4.2", date:"2026-09-26", kind:"patch",
-      summary:"HOTFIX BUILD：修复界面与年度报告在不同状态、语言和尺寸下的显示不一致。",
+      summary:"HOTFIX BUILD：修复歌单首曲重复、旧听歌记录统计、年度报告布局与设置恢复，并减少后台音频分析的资源占用。",
       sections:[
-        {title:"界面一致性",items:["修复曲库、设置和播放器在空状态、操作反馈与布局尺寸上的不一致。"]},
-        {title:"年度报告",items:["修复年度报告的统计展示、窄屏布局与导出内容，使页面与导出文件保持一致。"]}
-      ],english:{summary:"HOTFIX BUILD fixes interface and Annual Report inconsistencies across states, languages and layouts.",sections:[
-        {title:"Interface Consistency",items:["Library, Settings and Player states now keep their empty-state, feedback and layout behavior aligned."]},
-        {title:"Annual Report",items:["Annual Report statistics, narrow layouts and exported content now stay consistent between the page and its standalone file."]}
+        {title:"播放与曲库",items:["播放歌单时，首曲不会再次留在待播队列中；已有待播歌曲保留顺序。","清除搜索后不再记录过时的搜索行为；后台分析复用播放器的音频资源，不会恢复已挂起的播放。"]},
+        {title:"听歌历史与年度报告",items:["全部时间排行保留旧记录中没有日期的听歌时长，按日期筛选仍只统计有日期的记录。","年度报告的五张摘要卡在宽屏上保持一行，报告滚动条使用现有的滚动显示样式。"]},
+        {title:"设置与语言",items:["无效的已保存播放模式回到顺序播放，避免启动中断。","切换语言时，响度说明同步更新。"]}
+      ],english:{summary:"HOTFIX BUILD fixes repeated playlist starts, legacy listening totals, Annual Report layout and restored settings, while reducing background audio-analysis resources.",sections:[
+        {title:"Playback and Library",items:["Starting a playlist no longer leaves its first song queued to play again; existing queued songs retain their order.","Cleared searches no longer record stale search activity. Background analysis reuses the player's audio resources without resuming a suspended context."]},
+        {title:"History and Annual Report",items:["All-time rankings retain undated listening time from older records; calendar ranges still include dated records only.","The five Annual Report summary cards share one row on wide screens, and the report uses the existing scroll-triggered scrollbar style."]},
+        {title:"Settings and Language",items:["Invalid saved playback modes fall back to Sequential instead of interrupting startup.","Loudness information updates when the interface language changes."]}
       ]}
     },
     {
@@ -2488,7 +2490,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
-    "7.4.2":"HOTFIX BUILD fixes interface and Annual Report inconsistencies across states, languages and layouts.",
+    "7.4.2":"HOTFIX BUILD fixes playlist starts, legacy listening totals, Annual Report layout and restored settings, and shares audio resources for analysis.",
     "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
     "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
     "7.3.2":"STABILITY UPDATE removes Music Galaxy, fixes end-of-track auto-pause and post-import switching, and moves audio analysis behind the import dialog.",

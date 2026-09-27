@@ -1,10 +1,13 @@
 # Glass Player — Current State
 
-Last documentation update: 2026-09-26 (Pacific/Auckland)
+Last documentation update: 2026-09-27 (Pacific/Auckland)
 
-The last full build/architecture checkpoint is 2026-09-26 for 7.4.2. The
-generated build, architecture, ordered-source syntax and 260 contract checks
-pass. Import regression tests pass. Browser, audio, 4K and 120 Hz
+The 7.4.2 identity checkpoint was committed on 2026-09-26 as 388ce99.
+The follow-up patch restores collection queue handling and legacy all-time
+history totals, aligns the annual report summary and scrollbar, ignores stale
+search telemetry, validates restored playback modes, refreshes loudness copy,
+and reuses the Audio Engine context for background decoding. Final verification
+is recorded in DELIVERY_CHECKLIST.md. Browser, audio-device, 4K and 120 Hz
 checks remain unrun.
 
 This file is the short operational snapshot. Read it after AGENTS.md at the
@@ -388,4 +391,4 @@ output. Do not treat a historical report as current runtime truth.
 
 ## 19. 2026-09-26 focused bug-fix pass
 
-The current runtime carries the 7.4.2 HOTFIX BUILD identity. This pass repaired empty Library collections, stale History labels after metadata refresh, localized annual exports, terminal pause ordering, Russian Settings copy, invalid persisted display preferences, Library search telemetry, queue action copy/counts, annual report bar/rank layout, responsive report export cards, Settings folder/EQ layout, and hidden Player disc motion. Persistence/schema, Store/Event Bus, queue identity, audio graph and DOM contracts remain unchanged. Build/architecture/contract and syntax checks passed; Edge/audio/4K/120 Hz checks remain unrun.
+The 7.4.1 pass repaired empty Library collections, stale History labels after metadata refresh, localized annual exports, terminal pause ordering, Russian Settings copy, invalid persisted display preferences, Library search telemetry, queue action copy/counts, annual report bar/rank layout, responsive report export cards, Settings folder/EQ layout, and hidden Player disc motion. Persistence/schema, Store/Event Bus, queue identity, audio graph and DOM contracts remained unchanged. Build/architecture/contract and syntax checks passed; Edge/audio/4K/120 Hz checks remained unrun.

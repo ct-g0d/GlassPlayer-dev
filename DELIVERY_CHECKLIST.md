@@ -594,3 +594,43 @@ could not support.
 - PASS — Focused UI/layout follow-up repaired Library search telemetry, localized queue actions and playable playlist counts; annual reports now render visible dimension bars, responsive export cards, peak-hour summary and scoped Top 10 layout; Settings keeps folder status visible and EQ geometry aligned; hidden player disc motion stops outside the Player view.
 - PASS — Follow-up build SHA256 `DAC7EF23D0D9E5A17DB11689D618FB47A6F32C63B0590A16F8DE3192A7BD2EA5`; architecture and contract results remain 55 sources / 22 modules and 261 checks; Node syntax passed for changed sources and generated build.
 - NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110% visual comparison, and 120 Hz hardware profiling.
+
+## 20. 7.4.2 follow-up fixes — 2026-09-27
+
+### Scope and ownership
+
+- PASS — User-requested patch identity is 7.4.2 HOTFIX BUILD; the identity and
+  bilingual changelog entry were committed first as `388ce99`.
+- PASS — Queue Service owns collection playback ordering; History Service owns
+  all-time and annual aggregation; Shared Controls/CSS own report scrolling;
+  Library View owns search telemetry; Settings/i18n own restored preferences and
+  language copy; Audio Engine owns the single decode/playback context.
+- PASS — Protected IndexedDB/localStorage schema, Spectrum ID, history keys,
+  Store/Event Bus, DOM ids/classes, queue identity and audio graph topology were
+  preserved. `.tmp.driveupload/` remains untracked and untouched.
+
+### Implemented fixes
+
+- PASS — Collection playback consumes the selected first song once while
+  retaining pre-existing queue order in sequential and shuffle modes.
+- PASS — Legacy undated listening seconds remain in all-time totals; finite
+  calendar ranges remain date-bound.
+- PASS — Stale delayed search telemetry is ignored after the query changes.
+- PASS — Annual Report uses five wide summary columns and the existing shared
+  scrollbar reveal selectors/styles.
+- PASS — Invalid persisted play modes fall back to Sequential; loudness
+  information re-renders when the interface language changes.
+- PASS — Background Spectrum decoding reuses the Audio Engine context without
+  resuming a suspended context or rebuilding the graph.
+
+### Verification
+
+- PASS — `build.ps1`: generated build SHA-256
+  `3F78F70890B76FC47357A75F48EB49CF1D3F6AFDC6B3BC57DC76499CD23C72CC`.
+- PASS — `validate-architecture.ps1`: 55 sources / 22 modules.
+- PASS — `tests/contract-tests.ps1`: `PASS`, Contracts checked: 261.
+- PASS — `node --check build/app.js`.
+- PASS — `tests/service-regressions.test.js`.
+- PASS — `tests/audio-context-regression.test.js`.
+- NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110%
+  visual comparison and 120 Hz hardware profiling.

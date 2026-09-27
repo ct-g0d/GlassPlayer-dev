@@ -96,6 +96,7 @@
     GP.i18n.translateTree(document.body);
     if(typeof setEQPresetLabel==="function")setEQPresetLabel(eqPresetKey);
     if(typeof renderSpatialInfo==="function")renderSpatialInfo();
+    if(typeof renderLoudnessInfo==="function")renderLoudnessInfo();
     if(typeof syncTraditionalPiP==="function")syncTraditionalPiP(true);
     if(currentIndex===-1){setNowPlayingTitle(tr("未选择歌曲","No Song Selected"));$("#nowArtist").textContent=tr("拖入或导入音乐开始播放","Drop or import music to begin");}
     if(typeof syncTypographyLanguage==="function")syncTypographyLanguage();
