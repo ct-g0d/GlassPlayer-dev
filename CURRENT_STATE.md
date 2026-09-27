@@ -2,8 +2,8 @@
 
 Last documentation update: 2026-09-27 (Pacific/Auckland)
 
-The 7.4.2 identity checkpoint was committed on 2026-09-26 as 388ce99.
-The follow-up patch restores collection queue handling and legacy all-time
+The 7.4.3 release checkpoint records the completed 7.4.2 fixes on 2026-09-27.
+The current patch restores collection queue handling and legacy all-time
 history totals, aligns the annual report summary and scrollbar, ignores stale
 search telemetry, validates restored playback modes, refreshes loudness copy,
 and reuses the Audio Engine context for background decoding. Final verification
@@ -19,7 +19,7 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 |
-| Version | 7.4.2 |
+| Version | 7.4.3 |
 | Release name | HOTFIX BUILD |
 | Architecture | Peregrine Lake |
 | GP Core | 4.2 |

@@ -48,14 +48,14 @@ Expect (($build -split 'const deckA = new Audio\(\)').Count-1 -eq 1 -and ($build
 Expect (($build -split 'new AudioContextConstructor').Count-1 -eq 2 -and $build -match 'latencyHint:"playback"' -and $librarySource -notmatch 'spectrumDecodeCtx|ensureSpectrumDecodeCtx|new\s+\(window\.AudioContext' -and $librarySource -match 'await decodeAudioBuffer\(arrayBuffer\)') 'Playback and analysis must share the Audio Engine context with one compatibility fallback'
 Expect ($build -notmatch '\bwindow\.currentIndex\b') 'window.currentIndex is forbidden'
 Expect ($build -notmatch '(?m)^\s*(import|export)\s') 'ES module syntax is forbidden'
-Expect ($index -match '<link rel="stylesheet" href="\./app\.css\?v=7\.4\.2-r1">' -and $index -match '<script src="\./build/app\.js\?v=7\.4\.2-r1"></script>') 'index must load the 7.4.2 CSS and build/app.js cache revision'
+Expect ($index -match '<link rel="stylesheet" href="\./app\.css\?v=7\.4\.3-r1">' -and $index -match '<script src="\./build/app\.js\?v=7\.4\.3-r1"></script>') 'index must load the 7.4.3 CSS and build/app.js cache revision'
 Expect ($index -notmatch '<script src="\./app\.js"></script>') 'index must not load baseline app.js'
-Expect ($index -match '<title>Glass Player 7\.4\.2</title>') 'HTML version mismatch'
-Expect ($spectrumSource -match 'const GP=window\.GP=\{[\s\S]*?generation:7,[\s\S]*?version:"7\.4\.2"') 'early analyzer facade version mismatch'
+Expect ($index -match '<title>Glass Player 7\.4\.3</title>') 'HTML version mismatch'
+Expect ($spectrumSource -match 'const GP=window\.GP=\{[\s\S]*?generation:7,[\s\S]*?version:"7\.4\.3"') 'early analyzer facade version mismatch'
 Expect ($build -match 'architecture:"Peregrine Lake"') 'architecture mismatch'
 Expect ($build -match 'core:"GP Core 4\.2"') 'Core version mismatch'
 Expect ($index -match 'id="buildBadgeBtn">HOTFIX BUILD</button>') 'current release name missing'
-Expect ($bootstrapSource -match 'Object\.freeze\(\{generation:7,version:"7\.4\.2"') 'public facade not frozen'
+Expect ($bootstrapSource -match 'Object\.freeze\(\{generation:7,version:"7\.4\.3"') 'public facade not frozen'
 Expect ($build -match 'motion:"GP Motion Engine 4\.1"') 'Motion Engine version mismatch'
 Expect ($build -match 'const GP_MOTION_TARGET_FPS = 120' -and $build -match 'refreshRateCeiling:GP_MOTION_TARGET_FPS' -and $build -match 'scheduler:"requestAnimationFrame"' -and $build -match 'fixedFrameTimers:false') '120Hz Motion contract missing from Core runtime'
 Expect ($visualMotionSource -notmatch 'setInterval\s*\(' -and $visualMotionSource -notmatch '1000\s*/\s*60|16\.6(?:6+)?') 'Visual motion must not use fixed 60Hz frame timers'
@@ -105,7 +105,7 @@ Expect ($build -match 'function scheduleHistoryPersistence' -and $build -match '
 Expect ($build -match 'if\(isPlaying\|\|wantsPlayback\)\{setTimeout\(waitUntilPlaybackIsIdle,700\);return;\}') 'Spectrum analysis must yield completely while music is playing'
 Expect ($build -match 'version:"6\.5\.4"') '6.5.4 runtime version missing'
 Expect ($build -match '"6\.5\.4":"HOTFIX BUILD') '6.5.4 English release summary missing'
-Expect ($index -match 'id="currentVersionBtn"[^>]*>[^<]*7\.4\.2</button>') '7.4.2 current-version label missing'
+Expect ($index -match 'id="currentVersionBtn"[^>]*>[^<]*7\.4\.3</button>') '7.4.3 current-version label missing'
 Expect ($css -match '\.build-card\{[^}]*border:1px solid var\(--accent\)' -and $css -match '\.build-card::after\{\s*content:none') 'Build card must use one real Accent border'
 Expect ($build -match 'requestAnimationFrame\(\(\)=>\{position\(\);requestAnimationFrame\(position\);\}\)') 'Sound information portals must position after visibility commits'
 Expect ($build -match 'await renderLibraryIncrementally\(searchInputSafe\(\)\);\s*if\(currentIndex===-1&&playlist\.length>0\)') 'First import must finish frame-yielding Library render before selecting its initial track'
@@ -234,7 +234,7 @@ Expect ($css -match '\.view\[data-view="player"\],\.view\[data-view="library"\],
 Expect ($css -match '\.gp-sse-shell-releaseIndex>\.release-index\.gp-sse-viewport,\.gp-sse-shell-releaseDetail>\.release-detail\.gp-sse-viewport\{ -webkit-mask-image:none!important; mask-image:none!important; \}') 'Changelog edge mask must be disabled without removing its scroll surfaces'
 Expect ($css -match '\.history-ranking-grid\{[^}]*height:100%;[^}]*min-height:0;[^}]*overflow:hidden' -and $css -match '\.history-ranking-left\{[^}]*min-height:0;[^}]*height:100%;[^}]*overflow-y:auto' -and $css -match '\.history-ranks-list\{[^}]*height:100%;[^}]*overflow-y:auto' -and $css -match '\.history-ranking-left\{ border-right:1px solid var\(--divider\); \}' -and $sharedControlsSource -match 'GP_SCROLL_EDGE_SELECTORS=\[[^\]]*#historyRankingLeft[^\]]*#historyRanks11to50' -and $sharedControlsSource -notmatch 'GP_SCROLL_EDGE_SELECTORS=\[[^\]]*#topList') 'Listening History ranking must provide independent left/right scroll viewports'
 Expect ($sharedControlsSource -notmatch 'document\.addEventListener\("pointerover",event=>\{const surface=event\.target\.closest\?\.\(GP_SCROLLBAR_SELECTOR\)' -and $sharedControlsSource -match 'GP_SCROLLBAR_SELECTOR="[^"]*\.history-ranking-left[^\"]*\.history-ranks-list' -and $css -match '\.history-ranking-left\.gp-scrollbar-active::-webkit-scrollbar-thumb' -and $css -match '\.history-ranks-list\.gp-scrollbar-active::-webkit-scrollbar-thumb') 'History scrollbars must be separate, draggable and reveal only after actual scrolling'
-Expect ($index -match '<title>Glass Player 7\.4\.2</title>' -and $spectrumSource -match 'version:"7\.4\.2"' -and $bootstrapSource -match 'version:"7\.4\.2"') '7.4.2 source identity must stay synchronized'
+Expect ($index -match '<title>Glass Player 7\.4\.3</title>' -and $spectrumSource -match 'version:"7\.4\.3"' -and $bootstrapSource -match 'version:"7\.4\.3"') '7.4.3 source identity must stay synchronized'
 Expect ($index -match 'class="settings-layout"' -and $index -match 'class="settings-nav"' -and $index -match 'data-settings-category="appearance"' -and $index -match 'data-settings-category="about"' -and $index -match 'class="settings-content"' -and $index -match 'data-settings-pane="about"' -and $build -match 'settingsCategory') 'Settings category navigation and single active pane missing'
 Expect ($index -match 'class="settings-nav"[^>]*data-gp-glider' -and $css -match '\.settings-nav\.glider-ready \.settings-nav-item\.active\{ background:transparent; box-shadow:none; \}' -and $css -match '\.settings-nav-item\{[^}]*position:relative;[^}]*z-index:2') 'Settings sidebar must use the shared selection glider'
 Expect ($neuralSource -match 'trackRowHTML\(playlist\[idx\], idx, \{compact:true,rowClass:"recommend-track"\}\)' -and $queueSource -match 'if\(options\.compact===true\)' -and $css -match '#recommendList \.recommend-track\{[^}]*display:flex') 'Daily Mix must use compact Queue-like rows without Library columns'
@@ -289,8 +289,9 @@ Expect ($runtimeConstantsSource -match 'const GP_FUSION_ENGINE_VERSION = "4\.1";
 Expect ($spectrumSource -match 'fusion:`GP Fusion Engine \$\{GP_FUSION_ENGINE_VERSION\}`' -and $spectrumSource -match 'spectrum:`GP Spectrum Engine \$\{GP_SPECTRUM_ENGINE_VERSION\}`' -and $spectrumSource -match 'neural:`GP Neural Engine \$\{GP_NEURAL_ENGINE_VERSION\} \u2014 Resonance Boost`' -and $bootstrapSource -match 'fusion:`GP Fusion Engine \$\{GP_FUSION_ENGINE_VERSION\}`' -and $bootstrapSource -match 'spectrum:`GP Spectrum Engine \$\{GP_SPECTRUM_ENGINE_VERSION\}`' -and $bootstrapSource -match 'neural:`GP Neural Engine \$\{GP_NEURAL_ENGINE_VERSION\} \u2014 Resonance Boost`' -and $audioSource -match 'audioDiagnosticState=\{version:GP_FUSION_ENGINE_VERSION,') '7.3.1 engine identity must use centralized visible constants'
 Expect ($audioSource -match 'window\.__GP_AUDIO_DIAGNOSTICS__=Object\.freeze\(\{get version\(\)\{return audioDiagnosticState\.version;\},get latest\(\)\{return audioDiagnosticState\.latest;\}') 'Audio diagnostics must expose the centralized Fusion version through its frozen public surface'
 Expect ($runtimeConstantsSource -match 'const GP_SPECTRUM_ALGORITHM_VERSION = "2\.1\.0";' -and $neuralSource -match 'const NEURAL_MODEL_VERSION=4;') 'Spectrum algorithm and Neural model compatibility tokens must remain unchanged'
-Expect ($index -match 'buildVersionText[^>]*>[^<]*7\.4\.2<' -and $index -match 'currentVersionBtn[^>]*>[^<]*7\.4\.2<' -and $i18nSource -match '"Current Version 7\.4\.2"' -and $i18nSource -match '"Ver\. 7\.4\.2"' -and $i18nSource -match '"HOTFIX BUILD":"HOTFIX BUILD"' -and $i18nSource -match '"\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f 7\.4\.2"' -and $i18nSource -match '"\u0412\u0435\u0440\u0441\u0438\u044f 7\.4\.2"' -and $i18nSource -match '"HOTFIX BUILD":"\u0421\u0411\u041e\u0420\u041a\u0410 HOTFIX"') '7.4.2 localized version and release strings are incomplete'
+Expect ($index -match 'buildVersionText[^>]*>[^<]*7\.4\.3<' -and $index -match 'currentVersionBtn[^>]*>[^<]*7\.4\.3<' -and $i18nSource -match '"Current Version 7\.4\.3"' -and $i18nSource -match '"Ver\. 7\.4\.3"' -and $i18nSource -match '"HOTFIX BUILD":"HOTFIX BUILD"' -and $i18nSource -match '"\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f 7\.4\.3"' -and $i18nSource -match '"\u0412\u0435\u0440\u0441\u0438\u044f 7\.4\.3"' -and $i18nSource -match '"HOTFIX BUILD":"\u0421\u0411\u041e\u0420\u041a\u0410 HOTFIX"') '7.4.3 localized version and release strings are incomplete'
 $release740Index=$releasesSource.IndexOf('version:"7.4.0"')
+$release743Index=$releasesSource.IndexOf('version:"7.4.3"')
 $release742Index=$releasesSource.IndexOf('version:"7.4.2"')
 $release741Index=$releasesSource.IndexOf('version:"7.4.1"')
 $release732Index=$releasesSource.IndexOf('version:"7.3.2"')
@@ -307,11 +308,11 @@ $release740Areas=@(
 )
 $release740AreaParity=$release740Block -match 'english:\{summary:'
 foreach($area in $release740Areas){$release740AreaParity=$release740AreaParity -and $release740Block -match ('title:"'+$area[0]+'"') -and $release740Block -match ('title:"'+[regex]::Escape($area[1])+'"')}
-Expect ($release742Index -ge 0 -and $release742Index -lt $release741Index -and $release741Index -lt $release740Index -and $release740Index -lt $release732Index -and $release732Index -lt $release731Index -and $releasesSource -match '"7\.4\.2":"HOTFIX BUILD') '7.4.2 HOTFIX BUILD must be the newest released entry'
+Expect ($release743Index -ge 0 -and $release743Index -lt $release742Index -and $release742Index -lt $release741Index -and $release741Index -lt $release740Index -and $release740Index -lt $release732Index -and $release732Index -lt $release731Index -and $releasesSource -match '"7\.4\.3":"HOTFIX BUILD') '7.4.3 HOTFIX BUILD must be the newest released entry'
 Expect $release740AreaParity '7.4.0 Chinese and English release areas must match the approved user-facing set'
 Expect ($release740Index -ge 0 -and $release740Block -notmatch '\u656C\u8BF7\u671F\u5F85|Coming Soon|placeholder|preview|\u9884\u544A|\u5F85\u5B9A|TBD|\u8DEF\u7EBF|roadmap') '7.4.0 release notes must not contain placeholder or roadmap wording'
 Expect ($unreleasedBlock -notmatch 'Galaxy' -and $unreleasedBlock -match 'Recommendation Quality' -and $unreleasedBlock -match 'Electron Lake') 'Unreleased must drop the Galaxy roadmap and retain the recommendation and Electron plans'
-Expect ($releasesSource -match '\}: 7\.4\.2 \u2014 HOTFIX BUILD' -and $releasesSource -match 'Glass Player Changelog 7\.4\.2 HOTFIX BUILD\.txt') '7.4.2 exported changelog identity is incomplete'
+Expect ($releasesSource -match '\}: 7\.4\.3 \u2014 HOTFIX BUILD' -and $releasesSource -match 'Glass Player Changelog 7\.4\.3 HOTFIX BUILD\.txt') '7.4.3 exported changelog identity is incomplete'
 
 # 7.3.2 stability and import contracts
 $yieldBody=[regex]::Match($librarySource,'function scheduleCooperativeYield[\s\S]*?function yieldToInputPriority').Value

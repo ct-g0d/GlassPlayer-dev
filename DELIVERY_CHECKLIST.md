@@ -634,3 +634,13 @@ could not support.
 - PASS — `tests/audio-context-regression.test.js`.
 - NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110%
   visual comparison and 120 Hz hardware profiling.
+
+## 21. 7.4.3 HOTFIX BUILD — 2026-09-27
+
+- PASS — Promoted the completed queue, history, Annual Report, settings, language and background-analysis fixes to the user-requested 7.4.3 HOTFIX BUILD; 7.4.2 remains in the release history.
+- PASS — Synchronized `index.html`, bootstrap facade, Spectrum facade, Settings fallback, Chinese/English/Russian labels, release data and exported changelog identity.
+- PASS — Preserved IndexedDB/localStorage schema, Store/Event Bus, queue identity, AudioContext/Deck graph and existing DOM contracts; `.tmp.driveupload/` remains untouched.
+- PASS — `build.ps1` regenerated `build/app.js`; SHA-256 `33581E0AB8724131FE33F4BEF3EAB35BA9112A28BBCD6F095EF75E1F39E38D29`.
+- PASS — Architecture validation: 55 sources / 22 modules; contract checks: 261; generated JavaScript syntax, service regressions, audio-context regression and diff whitespace checks passed.
+- PASS — Release commit and annotated tag `v7.4.3` were created after the checks above.
+- NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110% visual comparison and 120 Hz hardware profiling.

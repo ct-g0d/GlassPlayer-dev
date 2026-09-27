@@ -15,6 +15,19 @@
       ]
     },
     {
+      version:"7.4.3", date:"2026-09-27", kind:"patch",
+      summary:"HOTFIX BUILD：继续修复播放队列、旧听歌记录、年度报告、设置恢复与后台音频分析的一致性。",
+      sections:[
+        {title:"播放与曲库",items:["播放歌单时，首曲不会再次留在待播队列中；已有待播歌曲保留顺序。","清除搜索后不再记录过时的搜索行为；后台分析复用播放器的音频资源，不会恢复已挂起的播放。"]},
+        {title:"听歌历史与年度报告",items:["全部时间排行保留旧记录中没有日期的听歌时长，按日期筛选仍只统计有日期的记录。","年度报告的五张摘要卡在宽屏上保持一行，报告滚动条使用现有的滚动显示样式。"]},
+        {title:"设置与语言",items:["无效的已保存播放模式回到顺序播放，避免启动中断。","切换语言时，响度说明同步更新。"]}
+      ],english:{summary:"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",sections:[
+        {title:"Playback and Library",items:["Starting a playlist no longer leaves its first song queued to play again; existing queued songs retain their order.","Cleared searches no longer record stale search activity. Background analysis reuses the player's audio resources without resuming a suspended context."]},
+        {title:"History and Annual Report",items:["All-time rankings retain undated listening time from older records; calendar ranges still include dated records only.","The five Annual Report summary cards share one row on wide screens, and the report uses the existing scroll-triggered scrollbar style."]},
+        {title:"Settings and Language",items:["Invalid saved playback modes fall back to Sequential instead of interrupting startup.","Loudness information updates when the interface language changes."]}
+      ]}
+    },
+    {
       version:"7.4.2", date:"2026-09-26", kind:"patch",
       summary:"HOTFIX BUILD：修复歌单首曲重复、旧听歌记录统计、年度报告布局与设置恢复，并减少后台音频分析的资源占用。",
       sections:[
@@ -2490,6 +2503,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.4.3":"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",
     "7.4.2":"HOTFIX BUILD fixes playlist starts, legacy listening totals, Annual Report layout and restored settings, and shares audio resources for analysis.",
     "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
     "7.4.0":"COLLECTION UPDATE adds user playlists with likes, a yearly report in Listening History, a lossless badge and font-switch feedback.",
@@ -3939,7 +3953,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.2 — HOTFIX BUILD`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.3 — HOTFIX BUILD`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -3954,7 +3968,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.4.2 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.4.3 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}

@@ -36,7 +36,7 @@ const sandbox = {
   syncAudioHeadroom:()=>{},
   metrics
 };
-vm.runInNewContext(`${audioSource.slice(audioSource.indexOf("  function ensureAudioCtx("),sourceEnd)}\nglobalThis.ensureAudioCtx=ensureAudioCtx;globalThis.decodeAudioBuffer=decodeAudioBuffer;`,sandbox,{filename:"audio-engine.js"});
+vm.runInNewContext(`let audioCtx=null,mixBus=null,eqHeadroomGain=null,finalOutputTrimGain=null,masterGain=null,outputLimiterBypass=null,analyser=null,deckNormalizationGains=[],deckGains=[];\n${audioSource.slice(audioSource.indexOf("  function ensureAudioCtx("),sourceEnd)}\nglobalThis.ensureAudioCtx=ensureAudioCtx;globalThis.decodeAudioBuffer=decodeAudioBuffer;`,sandbox,{filename:"audio-engine.js"});
 
 async function run(){
   assert.equal(sandbox.ensureAudioCtx(),undefined,"public initialization keeps its void return");
