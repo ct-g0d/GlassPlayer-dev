@@ -462,11 +462,12 @@
          CSS pixels. Mixing the two under-travelled by ~30% in compact Edge. */
       const naturalWidth=layoutScale>0?spanRect.width/layoutScale:0,available=host.clientWidth;
       if(layoutScale>0)lastTitleLayoutScale=layoutScale;
-      if(available<=1||naturalWidth<=1){
+      const maxAllowed=Math.min(parseFloat(getComputedStyle(host).maxWidth)||available,host.parentElement?.clientWidth||available);
+      if(maxAllowed<=1||naturalWidth<=1){
         if(attempt<30)titleMeasureTimer=setTimeout(()=>measureNowTitleMarquee(revision,attempt+1),100);
         return;
       }
-      if(naturalWidth<=available-28){host.classList.remove("marquee-pending");return;}
+      if(naturalWidth<=maxAllowed-10){host.classList.remove("marquee-pending");return;}
       const track=document.createElement("span");track.className="track-title-marquee-track";
       track.style.setProperty("--title-copy-width",`${naturalWidth.toFixed(3)}px`);
       const copy=span.cloneNode(true);copy.setAttribute("aria-hidden","true");track.append(span,copy);host.replaceChildren(track);

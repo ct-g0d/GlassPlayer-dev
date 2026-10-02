@@ -15,6 +15,19 @@
       ]
     },
     {
+      version:"7.5.1", date:"2026-10-02", kind:"patch",
+      summary:"HOTFIX BUILD：全面重做独立年度报告长卷，修复听歌时间选择栏底色，完善字体弹窗尺寸并解决歌曲名居中与无损标识排版。",
+      sections:[
+        {title:"年度报告",items:["完全重做可下载的独立 HTML 年度报告，带来深邃星空与极光氛围的长卷体验、随滚动位移与渐入的章节动画、昼夜时钟、发烧音质档案与本地隐私认证。","在任何设备离线打开，支持打印与保存。"]},
+        {title:"听歌记录与播放器",items:["听歌记录右上角时间段选择栏移除多余底色与阴影，恢复与其他分段控件一致的纯净设计。","重构歌曲标题排版：无论歌名长短均精准视觉居中，FLAC 无损徽标紧随右侧且绝不折叠丢失标题。"]},
+        {title:"设置与字体",items:["优化字体选择弹窗尺寸，压缩选项高度并消除多余滚动条，无需滚动即可直接浏览与选择全部字体。","高级设置与播放设置新增高刷新率流动视觉、平滑连续播放与键盘播控开关，数据设置增加恢复默认偏好选项。"]}
+      ],english:{summary:"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",sections:[
+        {title:"Annual Report",items:["Completely redesigned downloadable HTML annual report with cinematic obsidian and aurora aesthetic, scroll-linked parallax, circadian clock, audiophile DNA, and local privacy seal.","Opens fully offline on any device with print and save support."]},
+        {title:"Listening History and Player",items:["Removed extraneous background and drop shadow from the History view range selector, matching shared segmented control aesthetics.","Song title row maintains optical centering across all lengths, keeping the FLAC lossless badge directly adjacent without title collapsing."]},
+        {title:"Settings and Typography",items:["Compacted font picker dropdown row heights and container bounds, eliminating awkward scrollbars so all fonts are instantly visible.","Added fluid 120Hz motion, continuous playback, and keyboard controls toggles, plus a reset preferences action."]}
+      ]}
+    },
+    {
       version:"7.5.0", date:"2026-10-02", kind:"minor",
       summary:"REPLAY ATLAS：带来全新章节式年度音乐报告，全面重构中文字体衬线与等宽回退栈，并优化播放标题与设置排版。",
       sections:[
@@ -2518,6 +2531,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.5.1":"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",
     "7.5.0":"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete CJK serif and monospace font fallback stacks, and centered player title and settings layout.",
     "7.4.3":"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",
     "7.4.2":"HOTFIX BUILD fixes playlist starts, legacy listening totals, Annual Report layout and restored settings, and shares audio resources for analysis.",
@@ -3969,7 +3983,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.0 — REPLAY ATLAS`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.1 — REPLAY ATLAS`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -3984,7 +3998,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.5.0 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.5.1 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}

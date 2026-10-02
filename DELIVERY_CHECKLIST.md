@@ -667,3 +667,21 @@ could not support.
 - PASS — `node --check build/app.js`; `tests/service-regressions.test.js`; `tests/audio-context-regression.test.js`; `git diff --check` passed.
 - NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110%
   visual comparison and 120 Hz hardware profiling.
+
+## 23. 7.5.1 HOTFIX BUILD — 2026-10-02
+
+- PASS — Promoted standalone Annual Report redesign, History range selector background removal, font picker sizing, Settings toggles and centered player title/lossless alignment to 7.5.1 HOTFIX BUILD.
+- PASS — Standalone Annual Report downloadable HTML completely redesigned as a cinematic obsidian/aurora long scroll with 8 rich story chapters, sticky chapter nav, scroll-linked parallax animations, 100% offline self-contained operation, and print/save support.
+- PASS — History view range selector (`#rangeSeg`) background and shadow removed, seamlessly harmonizing with shared segmented control styling.
+- PASS — Font picker dropdown options compacted to 38px Chinese-baseline rows with expanded portal height, eliminating awkward vertical scrollbars.
+- PASS — Song title row keeps the song title optically centered across all lengths with balanced offset, placing the FLAC lossless badge immediately adjacent to the title without marquee clipping or width collapse.
+- PASS — Settings gains fluid 120Hz motion, continuous playback, and keyboard controls toggles, plus a reset preferences action.
+- PASS — Synchronized `index.html`, bootstrap facade, Spectrum facade, Settings fallback, Chinese/English/Russian labels, release data and exported changelog identity.
+- PASS — Protected IndexedDB/localStorage schema, Store/Event Bus, queue identity, AudioContext/Deck graph, source order and existing DOM contracts were preserved; `.tmp.driveupload/` remains untracked and untouched.
+- PASS — `build.ps1`: generated build SHA-256
+  `30CB26BDEC544DEF486EB8B7478006328BD9D4246AF0807B12A3E4E7FC5C02C0`.
+- PASS — `validate-architecture.ps1`: 55 sources / 22 modules.
+- PASS — `tests/contract-tests.ps1`: `PASS`, Contracts checked: 261.
+- PASS — `node --check build/app.js`; `tests/service-regressions.test.js`; `tests/audio-context-regression.test.js`; `git diff --check` passed.
+- NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110%
+  visual comparison and 120 Hz hardware profiling.

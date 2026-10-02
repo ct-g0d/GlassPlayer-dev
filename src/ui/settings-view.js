@@ -262,6 +262,49 @@
   bindDragToggle($("#crossfadeToggle"),()=>crossfadeEnabled,setCrossfadeEnabled);
   bindDragToggle($("#spatialToggle"),()=>spatialEnabled,setSpatialEnabled);
   bindDragToggle($("#loudnessNormalizeToggle"),()=>loudnessNormalizationEnabled,setLoudnessNormalizationEnabled);
+  let fluidMotionEnabled=true,continuousPlayEnabled=true,keyboardControlsEnabled=true;
+  bindDragToggle($("#fluidMotionToggle"),()=>fluidMotionEnabled,value=>{
+    fluidMotionEnabled=!!value;
+    $("#fluidMotionToggle")?.classList.toggle("on",fluidMotionEnabled);
+    savePrefs();
+  });
+  bindDragToggle($("#continuousPlayToggle"),()=>continuousPlayEnabled,value=>{
+    continuousPlayEnabled=!!value;
+    $("#continuousPlayToggle")?.classList.toggle("on",continuousPlayEnabled);
+    savePrefs();
+  });
+  bindDragToggle($("#keyboardControlsToggle"),()=>keyboardControlsEnabled,value=>{
+    keyboardControlsEnabled=!!value;
+    $("#keyboardControlsToggle")?.classList.toggle("on",keyboardControlsEnabled);
+    savePrefs();
+  });
+  $("#resetPrefsBtn")?.addEventListener("click",()=>{
+    themeMode="auto";
+    coverDisplayMode="rotate";
+    bgMode="glow";
+    adaptiveColorOn=true;
+    crossfadeEnabled=false;
+    crossfadeSeconds=3;
+    spatialEnabled=false;
+    loudnessNormalizationEnabled=false;
+    fluidMotionEnabled=true;
+    continuousPlayEnabled=true;
+    keyboardControlsEnabled=true;
+    setAccent("navy");
+    applyTheme();
+    $("#crossfadeToggle")?.classList.toggle("on",crossfadeEnabled);
+    $("#spatialToggle")?.classList.toggle("on",spatialEnabled);
+    $("#loudnessNormalizeToggle")?.classList.toggle("on",loudnessNormalizationEnabled);
+    $("#fluidMotionToggle")?.classList.toggle("on",fluidMotionEnabled);
+    $("#continuousPlayToggle")?.classList.toggle("on",continuousPlayEnabled);
+    $("#keyboardControlsToggle")?.classList.toggle("on",keyboardControlsEnabled);
+    $("#fontSizeSlider").value=1;
+    document.documentElement.style.setProperty("--font-scale","1");
+    $("#fontWeightSlider").value=450;
+    applyFontWeight(450);
+    savePrefs();
+    showToast(tr("已恢复默认设置","Settings restored to defaults"));
+  });
   function formatCrossfadeValue(value){return `${Number(value).toFixed(1)}s`;}
   $("#crossfadeSlider").addEventListener("input", () => {
     crossfadeSeconds = parseFloat($("#crossfadeSlider").value);
@@ -374,7 +417,7 @@
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Replay Atlas · ${runtime.version||"7.5.0"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Replay Atlas · ${runtime.version||"7.5.1"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
       [tr("引擎","Engines"),engineList||"GP Core 4.2 — Atlas Runtime · GP Fusion Engine 4.1 — Playlist Flow · GP Motion Engine 4.1 — Story Scroll · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
@@ -392,7 +435,7 @@
     if(!button||!pop||!pop.classList.contains("gp-font-portal"))return;
     const rect=button.getBoundingClientRect(),margin=10,gap=8;
     pop.style.setProperty("--font-pop-width",`${rect.width}px`);
-    const popHeight=Math.min(pop.scrollHeight||320,Math.min(320,window.innerHeight*.55));
+    const popHeight=Math.min(pop.scrollHeight||260,Math.min(380,window.innerHeight*.7));
     let top=rect.top-popHeight-gap;
     if(top<margin)top=Math.min(window.innerHeight-popHeight-margin,rect.bottom+gap);
     const left=Math.max(margin,Math.min(window.innerWidth-rect.width-margin,rect.left));
@@ -499,6 +542,7 @@
         font: $("#fontSelect").value, fontScale: $("#fontSizeSlider").value, fontWeight: $("#fontWeightSlider").value,
         volume: currentVolume(), playMode, playbackRate,
         crossfadeEnabled, crossfadeSeconds, adaptiveColorOn, spatialEnabled, spatialMode, spatialLastMode, loudnessNormalizationEnabled,
+        fluidMotionEnabled, continuousPlayEnabled, keyboardControlsEnabled,
         eqPresetKey, eqGains, customEQGains
       }));
     }catch(e){}
@@ -539,6 +583,12 @@
     syncSpatialUI(false);
     loudnessNormalizationEnabled=!!p.loudnessNormalizationEnabled;
     $("#loudnessNormalizeToggle").classList.toggle("on",loudnessNormalizationEnabled);
+    fluidMotionEnabled = p.fluidMotionEnabled !== undefined ? !!p.fluidMotionEnabled : true;
+    continuousPlayEnabled = p.continuousPlayEnabled !== undefined ? !!p.continuousPlayEnabled : true;
+    keyboardControlsEnabled = p.keyboardControlsEnabled !== undefined ? !!p.keyboardControlsEnabled : true;
+    $("#fluidMotionToggle")?.classList.toggle("on", fluidMotionEnabled);
+    $("#continuousPlayToggle")?.classList.toggle("on", continuousPlayEnabled);
+    $("#keyboardControlsToggle")?.classList.toggle("on", keyboardControlsEnabled);
     adaptiveColorOn = !!p.adaptiveColorOn;
     $("#adaptiveColorToggle").classList.toggle("on", adaptiveColorOn);
     syncAccentAvailability();

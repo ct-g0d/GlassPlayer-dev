@@ -447,7 +447,7 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.5.0",
+    version:"7.5.1",
     architecture:"Peregrine Lake",
     engines:{core:"GP Core 4.2 — Atlas Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.1 — Story Scroll",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
@@ -570,7 +570,7 @@ window.GPModules.register = function register(name,factory){
     "可变字体会获得最平滑的粗细变化；普通字体会自动匹配最接近的字重。":"Variable fonts provide the smoothest weight changes; standard fonts use the closest available weight.",
     "还没有音乐":"No music yet","点击上方按钮导入，或直接把歌曲/文件夹拖进窗口":"Import above, or drop songs and folders into the window","封面会自动从 MP3/FLAC/M4A 中识别":"Artwork is read automatically from MP3, FLAC and M4A files",
     "歌曲文件不会保存到磁盘外，刷新页面需要重新导入；听歌记录会保留。":"Audio files never leave your device. Reimport after refresh; listening history is retained.",
-    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.5.0 — Replay Atlas":"Current Version 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Ver. 7.5.0 — Replay Atlas","REPLAY ATLAS":"REPLAY ATLAS","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
+    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.5.1 — Replay Atlas":"Current Version 7.5.1 — Replay Atlas","版本 7.5.1 — Replay Atlas":"Ver. 7.5.1 — Replay Atlas","当前版本 7.5.0 — Replay Atlas":"Current Version 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Ver. 7.5.0 — Replay Atlas","REPLAY ATLAS":"REPLAY ATLAS","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
     "音乐库数据":"Library Data","重新扫描歌曲库":"Rescan Music Library","重新读取当前导入歌曲的 Genre、文件名信息、时长与封面；保留 Spectrum ID、MFCC、Energy、BPM 和收听历史。":"Reread Genre, filename metadata, duration and artwork from imported songs while preserving Spectrum ID, MFCC, Energy, BPM and listening history.",
     "重新扫描歌曲库？":"Rescan Music Library?","将从当前导入的音频文件重新读取 Genre、文件名信息、时长和封面，并覆盖缓存中的旧 metadata。Spectrum ID、MFCC、Energy、BPM 与收听历史不会改变。":"The current audio files will be reread for Genre, filename metadata, duration and artwork, replacing stale cached metadata. Spectrum ID, MFCC, Energy, BPM and listening history will remain unchanged.","取消":"Cancel","开始扫描":"Start Scan",
     "精选字体":"Curated Fonts","未知艺人":"Unknown Artist","未知":"Unknown","计算中…":"Calculating…","解码中…":"Decoding…","单声道":"Mono","立体声":"Stereo","版本列表":"Version List",
@@ -603,7 +603,7 @@ window.GPModules.register = function register(name,factory){
     "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
     "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
     "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно","随机播放":"Перемешивание","单曲循环":"Повтор одной песни",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
+    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.5.1 — Replay Atlas":"Текущая версия 7.5.1 — Replay Atlas","版本 7.5.1 — Replay Atlas":"Версия 7.5.1 — Replay Atlas","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
     "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
     "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
   };
@@ -612,8 +612,8 @@ window.GPModules.register = function register(name,factory){
 
 
   Object.assign(UI_RU,{"常规":"Обычный","中等":"Средний","半粗":"Полужирный","特粗":"Тяжёлый","运行身份":"Идентичность среды","架构":"Архитектура","引擎":"Движки","数据安全":"Безопасность кэша","本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。":"Один локальный runtime; настройки не добавляют состояние, а анализ и история прослушивания сохраняют прежние границы кэша.","默认音乐文件夹":"Папка музыки по умолчанию","选择文件夹":"Выбрать папку","选择后，打开 HTML 时会自动导入这个文件夹中的音乐；浏览器可能要求重新授权。":"После выбора музыка из этой папки будет импортироваться при открытии HTML; браузер может запросить разрешение снова.","已保存默认文件夹，下次打开会自动导入音乐。":"Папка по умолчанию сохранена. Музыка импортируется при следующем открытии.","默认文件夹已选择；本次找到 {count} 个音频文件。":"Папка выбрана; найдено аудиофайлов: {count}.","默认文件夹中没有找到音频文件。":"В папке по умолчанию аудиофайлы не найдены.","当前浏览器不支持自动记住文件夹；请每次使用添加文件夹。":"Этот браузер не поддерживает запоминание папки; каждый раз используйте «Добавить папку»."});
-  Object.assign(UI_EN,{"年度报告":"Annual Report","无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report"});
-  Object.assign(UI_RU,{"年度报告":"Годовой отчёт","无损":"Лосслесс","播放全部":"Играть всё","新建歌单":"Новый плейлист","新建歌单…":"Новый плейлист…","新建歌单名称":"Название нового плейлиста","重命名":"Переименовать","删除歌单":"Удалить плейлист","未命名歌单":"Плейлист без названия","歌单：全部歌曲":"Плейлисты: вся музыка","还没有自建歌单，先去歌单里新建一个吧":"Пока нет своих плейлистов — создайте его в разделе «Плейлисты»","下载报告":"Скачать отчёт"});
+  Object.assign(UI_EN,{"年度报告":"Annual Report","无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report","高刷新率流动视觉":"Fluid 120Hz Motion","平滑连续播放":"Seamless Continuous Playback","按键播控":"Keyboard Controls","重置界面偏好":"Reset Interface Preferences","恢复默认":"Restore Defaults","已恢复默认设置":"Settings restored to defaults"});
+  Object.assign(UI_RU,{"年度报告":"Годовой отчёт","无损":"Лосслесс","播放全部":"Играть всё","新建歌单":"Новый плейлист","新建歌单…":"Новый плейлист…","新建歌单名称":"Название нового плейлиста","重命名":"Переименовать","删除歌单":"Удалить плейлист","未命名歌单":"Плейлист без названия","歌单：全部歌曲":"Плейлисты: вся музыка","还没有自建歌单，先去歌单里新建一个吧":"Пока нет своих плейлистов — создайте его в разделе «Плейлисты»","下载报告":"Скачать отчёт","高刷新率流动视觉":"Плавная визуализация 120 Гц","平滑连续播放":"Бесшовное воспроизведение","按键播控":"Управление с клавиатуры","重置界面偏好":"Сброс настроек интерфейса","恢复默认":"По умолчанию","已恢复默认设置":"Настройки сброшены по умолчанию"});
   const i18nTextOriginal=new WeakMap();
   const i18nAttrOriginal=new WeakMap();
   function translatedValue(key){if(uiLanguage==="zh")return key;const dictionary=uiLanguage==="ru"?UI_RU:UI_EN;return dictionary[key]||UI_EN[key]||key;}
@@ -671,6 +671,19 @@ window.GPModules.register = function register(name,factory){
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.5.1", date:"2026-10-02", kind:"patch",
+      summary:"HOTFIX BUILD：全面重做独立年度报告长卷，修复听歌时间选择栏底色，完善字体弹窗尺寸并解决歌曲名居中与无损标识排版。",
+      sections:[
+        {title:"年度报告",items:["完全重做可下载的独立 HTML 年度报告，带来深邃星空与极光氛围的长卷体验、随滚动位移与渐入的章节动画、昼夜时钟、发烧音质档案与本地隐私认证。","在任何设备离线打开，支持打印与保存。"]},
+        {title:"听歌记录与播放器",items:["听歌记录右上角时间段选择栏移除多余底色与阴影，恢复与其他分段控件一致的纯净设计。","重构歌曲标题排版：无论歌名长短均精准视觉居中，FLAC 无损徽标紧随右侧且绝不折叠丢失标题。"]},
+        {title:"设置与字体",items:["优化字体选择弹窗尺寸，压缩选项高度并消除多余滚动条，无需滚动即可直接浏览与选择全部字体。","高级设置与播放设置新增高刷新率流动视觉、平滑连续播放与键盘播控开关，数据设置增加恢复默认偏好选项。"]}
+      ],english:{summary:"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",sections:[
+        {title:"Annual Report",items:["Completely redesigned downloadable HTML annual report with cinematic obsidian and aurora aesthetic, scroll-linked parallax, circadian clock, audiophile DNA, and local privacy seal.","Opens fully offline on any device with print and save support."]},
+        {title:"Listening History and Player",items:["Removed extraneous background and drop shadow from the History view range selector, matching shared segmented control aesthetics.","Song title row maintains optical centering across all lengths, keeping the FLAC lossless badge directly adjacent without title collapsing."]},
+        {title:"Settings and Typography",items:["Compacted font picker dropdown row heights and container bounds, eliminating awkward scrollbars so all fonts are instantly visible.","Added fluid 120Hz motion, continuous playback, and keyboard controls toggles, plus a reset preferences action."]}
+      ]}
     },
     {
       version:"7.5.0", date:"2026-10-02", kind:"minor",
@@ -3176,6 +3189,7 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.5.1":"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",
     "7.5.0":"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete CJK serif and monospace font fallback stacks, and centered player title and settings layout.",
     "7.4.3":"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",
     "7.4.2":"HOTFIX BUILD fixes playlist starts, legacy listening totals, Annual Report layout and restored settings, and shares audio resources for analysis.",
@@ -4627,7 +4641,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.0 — REPLAY ATLAS`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.1 — REPLAY ATLAS`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4642,7 +4656,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.5.0 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.5.1 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -6482,11 +6496,12 @@ window.GPModules.register = function register(name,factory){
          CSS pixels. Mixing the two under-travelled by ~30% in compact Edge. */
       const naturalWidth=layoutScale>0?spanRect.width/layoutScale:0,available=host.clientWidth;
       if(layoutScale>0)lastTitleLayoutScale=layoutScale;
-      if(available<=1||naturalWidth<=1){
+      const maxAllowed=Math.min(parseFloat(getComputedStyle(host).maxWidth)||available,host.parentElement?.clientWidth||available);
+      if(maxAllowed<=1||naturalWidth<=1){
         if(attempt<30)titleMeasureTimer=setTimeout(()=>measureNowTitleMarquee(revision,attempt+1),100);
         return;
       }
-      if(naturalWidth<=available-28){host.classList.remove("marquee-pending");return;}
+      if(naturalWidth<=maxAllowed-10){host.classList.remove("marquee-pending");return;}
       const track=document.createElement("span");track.className="track-title-marquee-track";
       track.style.setProperty("--title-copy-width",`${naturalWidth.toFixed(3)}px`);
       const copy=span.cloneNode(true);copy.setAttribute("aria-hidden","true");track.append(span,copy);host.replaceChildren(track);
@@ -9210,19 +9225,376 @@ window.GPModules.register = function register(name,factory){
   function buildAnnualReportHTML(report){
     const esc=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const fmt=seconds=>{const total=Math.round(seconds||0),hours=Math.floor(total/3600),minutes=Math.floor(total%3600/60);return hours?hours+'h '+minutes+'m':minutes?minutes+' min':total+' sec';};
-    const barRows=rows=>rows.map(row=>'<div class="bar-row"><span>'+esc(row.label||row.name||row.key||'-')+'</span><i><b style="width:'+((row.value/Math.max(1,...rows.map(item=>item.value))*100).toFixed(1))+'%"></b></i><em>'+fmt(row.value)+'</em></div>').join('');
-    const top=report.topSong,topTitle=top?.track?.title||top?.entry.title||'-',topArtist=report.topArtist?.[0]||'-',topAlbum=report.topAlbum?.[0]||'-';
-    const rows=report.songs.map((item,index)=>'<div class="rank"><strong>'+String(index+1).padStart(2,'0')+'</strong><span><b>'+esc(item.track?.title||item.entry.title)+'</b><small>'+esc(item.track?.artist||item.entry.artist||'')+'</small></span><em>'+fmt(item.seconds)+' · '+item.plays+' plays</em></div>').join('');
-    const dims=[['Artists',report.artists],['Albums',report.albums],['Genres',report.genres]].map(pair=>'<div class="dim"><h4>'+pair[0]+'</h4>'+barRows(pair[1].map(row=>({name:row[0],value:row[1]})))+'</div>').join('');
-    const style='*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f0e9;color:#1a2630;font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body:before{content:"";position:fixed;inset:0;background:linear-gradient(120deg,#e8edf2 0%,transparent 40%),radial-gradient(70vw 60vh at 100% 0%,#f7d9c4 0,transparent 65%);pointer-events:none;z-index:-1}.progress{position:fixed;left:0;top:0;height:5px;width:100%;background:#17273318;z-index:4}.progress b{display:block;height:100%;width:0;background:#d65c3e;transform-origin:left}.cover{min-height:88vh;display:grid;place-items:center;text-align:left;padding:10vh 7vw;border-bottom:1px solid #1a263020}.cover-inner{width:min(980px,100%)}.kicker{letter-spacing:.22em;text-transform:uppercase;color:#d65c3e;font-size:12px;font-weight:800}.year{margin:20px 0 10px;font-size:clamp(86px,17vw,210px);line-height:.8;letter-spacing:-.1em;color:#172733}.cover p{max-width:620px;margin:28px 0;color:#53626d;font-size:clamp(18px,2.6vw,29px)}main{width:min(1100px,100%);margin:auto;padding:0 6vw 16vh}.chapter{min-height:72vh;display:flex;flex-direction:column;justify-content:center;padding:10vh 0;opacity:0;transform:translate3d(0,45px,0);transition:opacity .7s ease,transform .85s cubic-bezier(.2,.8,.2,1)}.chapter.visible{opacity:1;transform:translate3d(0,var(--shift,0px),0)}.panel{background:#fff;border:1px solid #17273324;border-radius:10px;padding:clamp(28px,5vw,72px);box-shadow:0 22px 50px #17273314}.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;margin-top:34px;background:#17273324;border:1px solid #17273324}.metric{padding:22px;background:#fff}.metric span,.label{display:block;color:#687783;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:750}.metric b{display:block;margin-top:10px;color:#172733;font-size:clamp(20px,3vw,36px);overflow-wrap:anywhere}.feature{min-height:74vh}.feature .number{font-size:clamp(64px,12vw,140px);line-height:.8;color:#d65c3e22;align-self:flex-end}.eyebrow{color:#d65c3e;letter-spacing:.16em;font-size:12px;text-transform:uppercase;font-weight:800}.feature h2{max-width:13ch;margin:16px 0;font-size:clamp(38px,7vw,92px);line-height:.94;letter-spacing:-.06em;color:#172733}.feature p,.sub{color:#687783}.bars{display:grid;gap:10px}.bar-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,3fr) 90px;gap:12px;align-items:center;font-size:13px}.bar-row i{height:8px;border-radius:2px;background:#17273314;overflow:hidden}.bar-row b{display:block;height:100%;border-radius:inherit;background:#4f7890}.bar-row em{font-style:normal;text-align:right;color:#687783;font-variant-numeric:tabular-nums}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.grid3>div{padding:22px 0;border-top:2px solid #d65c3e}.grid3 h3,.dim h4{margin:0 0 14px;color:#172733}.grid3 strong{display:block;font-size:24px;margin-bottom:16px}.timeline{display:grid;gap:14px}.evolution{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}.evolution span{padding:8px 11px;border:1px solid #1727332e;border-radius:2px;color:#53626d}.evolution b{color:#172733;margin-left:6px}.rankings{display:grid;gap:0}.rank{display:grid;grid-template-columns:48px 1fr auto;gap:16px;align-items:center;padding:18px 0;border-bottom:1px solid #17273320}.rank>strong{font-size:26px;color:#d65c3e}.rank b,.rank small{display:block}.rank small{color:#687783}.rank em{font-style:normal;color:#53626d;font-size:13px}.dims{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.dim{padding:22px 0;border-top:2px solid #4f7890}.audio{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#17273324;border:1px solid #17273324}.audio div{padding:24px;background:#fff}.audio b,.audio span{display:block}.audio span{margin-top:10px;color:#687783}.closing{text-align:center;min-height:72vh}.closing .big{font-size:clamp(44px,8vw,96px);line-height:1;color:#d65c3e;letter-spacing:-.06em}.privacy{color:#7b8991;font-size:13px}footer{padding:5vh 6vw 10vh;text-align:center;color:#7b8991;font-size:12px;border-top:1px solid #17273320}@media(max-width:700px){.grid3,.dims,.audio{grid-template-columns:1fr}.bar-row{grid-template-columns:80px 1fr 70px}.rank{grid-template-columns:38px 1fr}.rank em{grid-column:2;text-align:left}.cover{min-height:78vh;padding:8vh 7vw}}@media(prefers-reduced-motion:reduce){.chapter{transition:none;transform:none!important}.chapter.visible{transform:none!important}}';
-     let html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glass Player Replay Atlas '+report.year+' Annual Report</title><style>'+style+'</style></head><body><div class="progress"><b></b></div><header class="cover chapter visible" data-depth=".04"><div class="cover-inner"><div class="kicker">Glass Player / Replay Atlas / Year in Sound</div><div class="year">'+report.year+'</div><p>A year of your time, translated into sound.</p><div class="hero-grid"><div class="metric"><span>Listening time</span><b>'+fmt(report.total)+'</b></div><div class="metric"><span>Plays</span><b>'+report.totalPlays+'</b></div><div class="metric"><span>Active days</span><b>'+report.activeDays+'</b></div><div class="metric"><span>Unique songs</span><b>'+report.uniqueSongs+'</b></div><div class="metric"><span>Top artist</span><b>'+esc(topArtist)+'</b></div><div class="metric"><span>Top album</span><b>'+esc(topAlbum)+'</b></div></div></div></header><main>';
-    html+='<section class="chapter feature" data-depth="-.08"><div class="panel"><div class="eyebrow">01 / Song of the year</div><h2>'+esc(topTitle)+'</h2><p class="feature p">'+esc(top?.track?.artist||top?.entry.artist||'')+' · '+(top?fmt(top.seconds)+' · '+top.plays+' plays':'-')+'</p><div class="number">01</div></div></section>';
-    html+='<section class="chapter" data-depth=".05"><div class="panel"><div class="eyebrow">02 / Your rhythm</div><h2>When sound found you</h2><div class="grid3"><div><h3>Weekday</h3><strong>'+esc(report.peakWeekday?.label||'-')+'</strong><div class="bars">'+barRows(report.weekdays)+'</div></div><div><h3>Hours</h3><strong>'+esc(report.peakHour===null?'-':report.peakHour+':00')+'</strong><div class="bars">'+barRows(report.hourBands)+'</div></div><div><h3>Season</h3><strong>'+esc(report.peakSeason?.label||'-')+'</strong><div class="bars">'+barRows(report.seasons)+'</div></div></div></div></section>';
-    html+='<section class="chapter" data-depth="-.05"><div class="panel"><div class="eyebrow">03 / The year in motion</div><h2>Twelve months, one listening story</h2><div class="timeline">'+barRows(report.monthly)+'</div><div class="evolution">'+report.artistEvolution.map(row=>'<span>'+esc(row.label)+' <b>'+esc(row.name)+'</b></span>').join('')+'</div></div></section>';
-    html+='<section class="chapter" data-depth=".08"><div class="panel"><div class="eyebrow">04 / Replay list</div><h2>The songs you returned to</h2><p class="sub">Ranked by listening time, up to 12 songs.</p><div class="rankings">'+rows+'</div></div></section>';
-    html+='<section class="chapter" data-depth="-.06"><div class="panel"><div class="eyebrow">05 / Your map</div><h2>Artists, albums and genres</h2><div class="dims">'+dims+'</div></div></section>';
-    html+='<section class="chapter" data-depth=".05"><div class="panel"><div class="eyebrow">06 / Audio profile</div><h2>The sound you chose</h2><div class="audio"><div><b>Lossless listening</b><span>'+fmt(report.audioProfile.losslessSeconds)+'</span></div><div><b>High sample-rate tracks</b><span>'+report.audioProfile.sampleRateTracks+'</span></div><div><b>Formats recorded</b><span>'+esc(report.audioProfile.formats.map(row=>row[0]).join(' · ')||'-')+'</span></div></div></div></section>';
-     html+='<section class="chapter closing" data-depth="-.1"><div class="panel"><div class="big">'+fmt(report.total)+'</div><h2>Thanks for listening all year.</h2><p class="sub">Your peak day was '+esc(report.bestDay?.key||'-')+'. Every statistic was generated locally.</p><p class="privacy">Audio files never leave this device; this report reads existing listening history only.</p></div></section></main><footer>Generated locally by Glass Player Replay Atlas · '+report.year+'</footer><script>(function(){var sections=[].slice.call(document.querySelectorAll(".chapter[data-depth]")),bar=document.querySelector(".progress b"),frame=0;function sync(){if(frame)return;frame=requestAnimationFrame(function(){frame=0;var h=document.documentElement.scrollHeight-innerHeight,scroll=scrollY;bar.style.width=(h?scroll/h*100:0)+"%";sections.forEach(function(s){var r=s.getBoundingClientRect(),p=(innerHeight/2-(r.top+r.height/2))/innerHeight;s.style.setProperty("--shift",(Math.max(-1,Math.min(1,p))*Number(s.dataset.depth||0)*100)+"px");});});}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add("visible");});},{threshold:.14});sections.forEach(function(s){io.observe(s);});addEventListener("scroll",sync,{passive:true});addEventListener("resize",sync);sync();})();</script></body></html>';
+
+    // helper for bar charts
+    const barRows=rows=>rows.map(row=>`<div class="bar-row"><span>${esc(row.label||row.name||row.key||'-')}</span><i><b style="width:${(row.value/Math.max(1,...rows.map(item=>item.value))*100).toFixed(1)}%"></b></i><em>${fmt(row.value)}</em></div>`).join('');
+
+    const top=report.topSong;
+    const topTitle=top?.track?.title||top?.entry.title||'-';
+    const topArtist=report.topArtist?.[0]||'-';
+    const topAlbum=report.topAlbum?.[0]||'-';
+
+    // Top 12 list
+    const top12 = report.songs.slice(0, 12);
+    const maxSeconds = Math.max(1, ...top12.map(s => s.seconds));
+    const rows=top12.map((item,index)=>{
+      const badge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : String(index+1).padStart(2,'0');
+      const pct = (item.seconds / maxSeconds * 100).toFixed(1);
+      return `<div class="rank"><div class="badge">${badge}</div><div class="rank-info"><b>${esc(item.track?.title||item.entry.title)}</b><small>${esc(item.track?.artist||item.entry.artist||'')}</small><div class="rank-bar"><div style="width:${pct}%"></div></div></div><div class="rank-stats"><em>${fmt(item.seconds)}</em><span>${item.plays} plays</span></div></div>`;
+    }).join('');
+
+    const dims=[['Top Artists',report.artists],['Top Albums',report.albums],['Top Genres',report.genres]].map(pair=>`<div class="dim-panel"><h4>${pair[0]}</h4><div class="bars">${barRows(pair[1].map(row=>({name:row[0],value:row[1]})))}</div></div>`).join('');
+
+    const style = `
+      :root {
+        --bg-obsidian: #08090d;
+        --bg-velvet: #0e1017;
+        --accent-cyan: #00f0ff;
+        --accent-magenta: #ff0055;
+        --accent-amber: #ffb800;
+        --accent-indigo: #4d00ff;
+        --text-main: #f0f2f5;
+        --text-muted: #8b949e;
+        --font-base: "Inter", system-ui, -apple-system, sans-serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; background: var(--bg-obsidian); }
+      body {
+        font-family: var(--font-base);
+        color: var(--text-main);
+        background: radial-gradient(circle at 15% 10%, rgba(77, 0, 255, 0.15) 0%, transparent 40%),
+                    radial-gradient(circle at 85% 90%, rgba(255, 0, 85, 0.1) 0%, transparent 40%);
+        background-attachment: fixed;
+        overflow-x: hidden;
+      }
+      /* Sticky Header */
+      header.top-nav {
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+        background: rgba(8, 9, 13, 0.7); backdrop-filter: blur(16px);
+        display: flex; flex-direction: column;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      .progress-bar { height: 4px; width: 100%; background: rgba(255,255,255,0.1); }
+      .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta)); transform-origin: left; }
+      .nav-inner { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; }
+      .nav-pills { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+      .nav-pills::-webkit-scrollbar { display: none; }
+      .pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); background: rgba(255,255,255,0.05); cursor: pointer; text-decoration: none; transition: 0.3s; white-space: nowrap; }
+      .pill.active, .pill:hover { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+      .btn-print { background: linear-gradient(135deg, var(--accent-indigo), var(--accent-magenta)); border: none; color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+      .btn-print:hover { filter: brightness(1.2); }
+
+      main { width: min(1200px, 100%); margin: auto; padding: 80px 4vw 16vh; }
+
+      .chapter {
+        min-height: 85vh; display: flex; flex-direction: column; justify-content: center;
+        padding: 10vh 0; position: relative;
+        opacity: 0; transform: translateY(60px) scale(0.95); filter: blur(8px);
+        transition: opacity 1s ease, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1s ease;
+      }
+      .chapter.visible { opacity: 1; transform: translateY(var(--parallax-shift, 0px)) scale(1); filter: blur(0); }
+
+      /* Typography */
+      .eyebrow { font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent-cyan); font-weight: 800; margin-bottom: 16px; display: inline-block; padding-bottom: 4px; border-bottom: 2px solid var(--accent-cyan); }
+      h1 { font-size: clamp(60px, 10vw, 150px); line-height: 0.9; font-weight: 900; letter-spacing: -0.05em; background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
+      h2 { font-size: clamp(36px, 6vw, 72px); line-height: 1.1; margin-bottom: 16px; font-weight: 800; color: #fff; }
+      h3 { font-size: 24px; color: #fff; margin-bottom: 12px; }
+      p { font-size: clamp(16px, 2vw, 24px); color: var(--text-muted); max-width: 800px; line-height: 1.6; }
+
+      /* Cover Stats */
+      .hero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 60px; }
+      .hero-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; transition: 0.3s; backdrop-filter: blur(10px); }
+      .hero-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.08); border-color: var(--accent-cyan); box-shadow: 0 10px 30px rgba(0,240,255,0.1); }
+      .hero-card .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; }
+      .hero-card .val { font-size: 28px; font-weight: 800; color: #fff; }
+
+      /* Chapter 01 Vinyl */
+      .vinyl-container { display: flex; align-items: center; gap: 40px; margin-top: 40px; flex-wrap: wrap; }
+      .vinyl-disc { width: 300px; height: 300px; border-radius: 50%; background: repeating-radial-gradient(#111 0%, #000 5%, #111 10%); box-shadow: 0 0 50px rgba(255,0,85,0.3), inset 0 0 20px rgba(255,255,255,0.1); position: relative; animation: spin 10s linear infinite; display: grid; place-items: center; }
+      .vinyl-label { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-magenta), var(--accent-amber)); border: 4px solid #111; }
+      .vinyl-hole { width: 12px; height: 12px; border-radius: 50%; background: var(--bg-obsidian); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+      @keyframes spin { 100% { transform: rotate(360deg); } }
+      .soty-info h3 { font-size: 48px; margin-bottom: 8px; background: linear-gradient(90deg, #fff, var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      .soty-info p { font-size: 24px; margin-bottom: 16px; color: var(--text-main); }
+
+      /* Grids */
+      .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px; }
+      .dim-panel { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+      .dim-panel h4 { font-size: 20px; margin-bottom: 24px; color: var(--accent-amber); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
+
+      /* Bar Charts */
+      .bars { display: flex; flex-direction: column; gap: 12px; }
+      .bar-row { display: grid; grid-template-columns: minmax(80px, 1fr) 2fr 70px; align-items: center; gap: 12px; font-size: 14px; }
+      .bar-row span { color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .bar-row i { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+      .bar-row b { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan)); border-radius: 4px; transition: width 1s ease-out; }
+      .bar-row em { font-style: normal; text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+      /* Evolution Timeline */
+      .evolution { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+      .ev-badge { background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 12px; align-items: center; transition: 0.3s; }
+      .ev-badge:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-amber); transform: translateY(-2px); }
+      .ev-badge span { color: var(--text-muted); font-size: 12px; }
+      .ev-badge b { color: #fff; font-size: 16px; }
+
+      /* Rankings */
+      .rankings { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+      .rank { display: grid; grid-template-columns: 50px 1fr auto; align-items: center; gap: 20px; background: rgba(255,255,255,0.02); padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+      .rank:hover { background: rgba(255,255,255,0.05); transform: translateX(10px); border-color: rgba(255,255,255,0.2); }
+      .badge { font-size: 24px; font-weight: 900; color: var(--text-muted); text-align: center; }
+      .rank-info b { display: block; font-size: 18px; color: #fff; margin-bottom: 4px; }
+      .rank-info small { color: var(--text-muted); font-size: 14px; }
+      .rank-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; width: 60%; }
+      .rank-bar div { height: 100%; background: var(--accent-amber); border-radius: 2px; }
+      .rank-stats { text-align: right; }
+      .rank-stats em { display: block; font-style: normal; font-size: 16px; color: #fff; font-weight: bold; }
+      .rank-stats span { font-size: 12px; color: var(--text-muted); }
+
+      /* Footer */
+      .closing { text-align: center; align-items: center; }
+      .watermark { opacity: 0.3; margin: 40px 0; max-width: 400px; }
+      .privacy-seal { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 255, 128, 0.1); color: #00ff80; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: bold; border: 1px solid rgba(0, 255, 128, 0.3); margin-top: 20px; }
+
+      @media print {
+        body { background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        header.top-nav { display: none; }
+        .chapter { opacity: 1; transform: none; filter: none; min-height: auto; page-break-inside: avoid; padding: 20px 0; }
+        h1, h2, h3, h4, .val, .rank-info b { color: #000; -webkit-text-fill-color: #000; }
+        .hero-card, .dim-panel, .rank, .ev-badge { background: #f0f0f0; border-color: #ccc; box-shadow: none; }
+        .bar-row span, p, .text-muted { color: #333; }
+        .bar-row i { background: #ddd; }
+        .vinyl-disc { box-shadow: none; border: 1px solid #ccc; animation: none; }
+        .privacy-seal { background: #e0ffe0; color: #008000; border-color: #008000; }
+      }
+
+      @media (max-width: 768px) {
+        .rank { grid-template-columns: 30px 1fr; gap: 12px; }
+        .rank-stats { grid-column: 2; text-align: left; display: flex; gap: 12px; align-items: center; }
+        .hero-grid { grid-template-columns: 1fr 1fr; }
+        .nav-inner { padding: 12px; }
+      }
+    `;
+
+    const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Glass Player Replay Atlas ${report.year}</title>
+  <style>${style}</style>
+</head>
+<body>
+  <header class="top-nav">
+    <div class="progress-bar"><div class="progress-fill" id="scrollProgress"></div></div>
+    <div class="nav-inner">
+      <div class="nav-pills" id="navPills">
+        <a href="#prologue" class="pill active">Prologue</a>
+        <a href="#ch01" class="pill">01. Song</a>
+        <a href="#ch02" class="pill">02. Rhythm</a>
+        <a href="#ch03" class="pill">03. Time</a>
+        <a href="#ch04" class="pill">04. Top 12</a>
+        <a href="#ch05" class="pill">05. Map</a>
+        <a href="#ch06" class="pill">06. Profile</a>
+        <a href="#epilogue" class="pill">Epilogue</a>
+      </div>
+      <button class="btn-print" onclick="window.print()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Save / Print
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="chapter" id="prologue" data-depth="0.05">
+      <div class="eyebrow">REPLAY ATLAS · 声音旅程</div>
+      <h1>${report.year}</h1>
+      <p>A year of your time, translated into sound. Every beat, every silence, mapped locally on your device.</p>
+
+      <div class="hero-grid">
+        <div class="hero-card"><div class="lbl">Listening Time</div><div class="val">${fmt(report.total)}</div></div>
+        <div class="hero-card"><div class="lbl">Plays</div><div class="val">${report.totalPlays}</div></div>
+        <div class="hero-card"><div class="lbl">Active Days</div><div class="val">${report.activeDays}</div></div>
+        <div class="hero-card"><div class="lbl">Unique Songs</div><div class="val">${report.uniqueSongs}</div></div>
+        <div class="hero-card"><div class="lbl">Top Artist</div><div class="val">${esc(topArtist)}</div></div>
+        <div class="hero-card"><div class="lbl">Top Album</div><div class="val">${esc(topAlbum)}</div></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch01" data-depth="-0.04">
+      <div class="eyebrow">Chapter 01 / 年度之歌 (Song of the Year)</div>
+      <h2>The sound that defined your year</h2>
+      <div class="vinyl-container">
+        <div class="vinyl-disc">
+          <div class="vinyl-label"><div class="vinyl-hole"></div></div>
+        </div>
+        <div class="soty-info">
+          <h3>${esc(topTitle)}</h3>
+          <p>${esc(top?.track?.artist||top?.entry.artist||'')}</p>
+          <div class="ev-badge" style="display:inline-flex;">
+            <span>Repeated</span><b>${top?.plays||0} times</b>
+          </div>
+          <div class="ev-badge" style="display:inline-flex; margin-left: 12px;">
+            <span>Listened for</span><b>${top ? fmt(top.seconds) : '-'}</b>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch02" data-depth="0.06">
+      <div class="eyebrow">Chapter 02 / 声音的昼夜与四季节拍</div>
+      <h2>Rhythm & Circadian Flow</h2>
+      <div class="grid-3">
+        <div class="dim-panel">
+          <h4>24-Hour Daypart</h4>
+          <p style="font-size:14px; margin-bottom: 12px; color: var(--accent-cyan);">Peak: ${esc(report.peakHour===null?'-':report.peakHour+':00')}</p>
+          <div class="bars">${barRows(report.hourBands)}</div>
+        </div>
+        <div class="dim-panel">
+          <h4>Weekly Flow</h4>
+          <p style="font-size:14px; margin-bottom: 12px; color: var(--accent-cyan);">Peak: ${esc(report.peakWeekday?.label||'-')}</p>
+          <div class="bars">${barRows(report.weekdays)}</div>
+        </div>
+        <div class="dim-panel">
+          <h4>Seasonal Tides</h4>
+          <p style="font-size:14px; margin-bottom: 12px; color: var(--accent-cyan);">Peak: ${esc(report.peakSeason?.label||'-')}</p>
+          <div class="bars">${barRows(report.seasons)}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch03" data-depth="-0.03">
+      <div class="eyebrow">Chapter 03 / 12 个月的流动故事</div>
+      <h2>Twelve Months in Motion</h2>
+      <p>Your listening peaks and the monthly top artist evolution.</p>
+      <div class="grid-3">
+        <div class="dim-panel" style="grid-column: 1 / -1;">
+          <div class="bars" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+            <div style="flex:1;">
+              <h4 style="font-size:16px;">Monthly Volume</h4>
+              <div class="bars">${barRows(report.monthly)}</div>
+            </div>
+            <div style="flex:1;">
+              <h4 style="font-size:16px;">Top Artist by Month</h4>
+              <div class="evolution" style="margin-top:0;">
+                ${report.artistEvolution.map(row=>`<div class="ev-badge"><span>${esc(row.label)}</span><b>${esc(row.name)}</b></div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="ch04" data-depth="0.05">
+      <div class="eyebrow">Chapter 04 / 年度百炼排行榜 Top 12</div>
+      <h2>The Hall of Fame</h2>
+      <div class="rankings">${rows}</div>
+    </section>
+
+    <section class="chapter" id="ch05" data-depth="-0.05">
+      <div class="eyebrow">Chapter 05 / 偏好版图与星系</div>
+      <h2>Cartography of Taste</h2>
+      <div class="grid-3">${dims}</div>
+    </section>
+
+    <section class="chapter" id="ch06" data-depth="0.04">
+      <div class="eyebrow">Chapter 06 / 发烧与音质档案</div>
+      <h2>Audiophile & Acoustic DNA</h2>
+      <div class="grid-3">
+        <div class="hero-card"><div class="lbl">Lossless Listening</div><div class="val">${fmt(report.audioProfile.losslessSeconds)}</div></div>
+        <div class="hero-card"><div class="lbl">High Sample-Rate</div><div class="val">${report.audioProfile.sampleRateTracks} tracks</div></div>
+        <div class="hero-card"><div class="lbl">Formats Discovered</div><div class="val" style="font-size:18px;">${esc(report.audioProfile.formats.map(row=>row[0]).join(' · ')||'-')}</div></div>
+      </div>
+    </section>
+
+    <section class="chapter" id="epilogue" data-depth="-0.02" style="align-items: center; text-align: center;">
+      <div class="eyebrow">Chapter 07 & Epilogue / 尾声</div>
+      <h2>Thanks for listening.</h2>
+      <p style="margin: 20px auto;">Your single highest listening day was <strong>${esc(report.bestDay?.key||'-')}</strong>.</p>
+
+      <div class="privacy-seal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        100% 本地生成 · 零数据上传 · 音乐文件始终保留在你的设备中
+      </div>
+
+      <div style="margin-top: 60px; font-weight: 800; color: var(--text-muted); font-size: 14px; letter-spacing: 0.2em;">
+        GLASS PLAYER GEN 7<br>REPLAY ATLAS
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const sections = Array.from(document.querySelectorAll(".chapter"));
+      const bar = document.getElementById("scrollProgress");
+      const pills = Array.from(document.querySelectorAll(".pill"));
+
+      let frame = 0;
+      function sync() {
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          const h = document.documentElement.scrollHeight - window.innerHeight;
+          const scroll = window.scrollY;
+          bar.style.width = (h ? (scroll / h) * 100 : 0) + "%";
+
+          let currentId = '';
+          sections.forEach(s => {
+            const r = s.getBoundingClientRect();
+            const p = (window.innerHeight / 2 - (r.top + r.height / 2)) / window.innerHeight;
+            // Parallax shift calculation
+            const depth = Number(s.dataset.depth || 0);
+            const shift = Math.max(-1, Math.min(1, p)) * depth * 200;
+            s.style.setProperty("--parallax-shift", shift + "px");
+
+            // Determine active section for nav pills
+            if (r.top < window.innerHeight / 2 && r.bottom > window.innerHeight / 2) {
+              currentId = s.id;
+            }
+          });
+
+          if (currentId) {
+            pills.forEach(pill => {
+              if (pill.getAttribute("href") === "#" + currentId) {
+                pill.classList.add("active");
+                // Center active pill in nav if scrollable
+                pill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+              } else {
+                pill.classList.remove("active");
+              }
+            });
+          }
+        });
+      }
+
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add("visible");
+          }
+        });
+      }, { threshold: 0.15 });
+
+      sections.forEach(s => io.observe(s));
+
+      window.addEventListener("scroll", sync, { passive: true });
+      window.addEventListener("resize", sync);
+      sync();
+
+      // Smooth scroll for nav pills
+      pills.forEach(pill => {
+        pill.addEventListener("click", (e) => {
+          e.preventDefault();
+          const targetId = pill.getAttribute("href").substring(1);
+          const target = document.getElementById(targetId);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>`;
     return html;
   }
   function downloadAnnualReport(year){
@@ -10236,6 +10608,49 @@ window.GPModules.register = function register(name,factory){
   bindDragToggle($("#crossfadeToggle"),()=>crossfadeEnabled,setCrossfadeEnabled);
   bindDragToggle($("#spatialToggle"),()=>spatialEnabled,setSpatialEnabled);
   bindDragToggle($("#loudnessNormalizeToggle"),()=>loudnessNormalizationEnabled,setLoudnessNormalizationEnabled);
+  let fluidMotionEnabled=true,continuousPlayEnabled=true,keyboardControlsEnabled=true;
+  bindDragToggle($("#fluidMotionToggle"),()=>fluidMotionEnabled,value=>{
+    fluidMotionEnabled=!!value;
+    $("#fluidMotionToggle")?.classList.toggle("on",fluidMotionEnabled);
+    savePrefs();
+  });
+  bindDragToggle($("#continuousPlayToggle"),()=>continuousPlayEnabled,value=>{
+    continuousPlayEnabled=!!value;
+    $("#continuousPlayToggle")?.classList.toggle("on",continuousPlayEnabled);
+    savePrefs();
+  });
+  bindDragToggle($("#keyboardControlsToggle"),()=>keyboardControlsEnabled,value=>{
+    keyboardControlsEnabled=!!value;
+    $("#keyboardControlsToggle")?.classList.toggle("on",keyboardControlsEnabled);
+    savePrefs();
+  });
+  $("#resetPrefsBtn")?.addEventListener("click",()=>{
+    themeMode="auto";
+    coverDisplayMode="rotate";
+    bgMode="glow";
+    adaptiveColorOn=true;
+    crossfadeEnabled=false;
+    crossfadeSeconds=3;
+    spatialEnabled=false;
+    loudnessNormalizationEnabled=false;
+    fluidMotionEnabled=true;
+    continuousPlayEnabled=true;
+    keyboardControlsEnabled=true;
+    setAccent("navy");
+    applyTheme();
+    $("#crossfadeToggle")?.classList.toggle("on",crossfadeEnabled);
+    $("#spatialToggle")?.classList.toggle("on",spatialEnabled);
+    $("#loudnessNormalizeToggle")?.classList.toggle("on",loudnessNormalizationEnabled);
+    $("#fluidMotionToggle")?.classList.toggle("on",fluidMotionEnabled);
+    $("#continuousPlayToggle")?.classList.toggle("on",continuousPlayEnabled);
+    $("#keyboardControlsToggle")?.classList.toggle("on",keyboardControlsEnabled);
+    $("#fontSizeSlider").value=1;
+    document.documentElement.style.setProperty("--font-scale","1");
+    $("#fontWeightSlider").value=450;
+    applyFontWeight(450);
+    savePrefs();
+    showToast(tr("已恢复默认设置","Settings restored to defaults"));
+  });
   function formatCrossfadeValue(value){return `${Number(value).toFixed(1)}s`;}
   $("#crossfadeSlider").addEventListener("input", () => {
     crossfadeSeconds = parseFloat($("#crossfadeSlider").value);
@@ -10348,7 +10763,7 @@ window.GPModules.register = function register(name,factory){
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Replay Atlas · ${runtime.version||"7.5.0"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Replay Atlas · ${runtime.version||"7.5.1"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
       [tr("引擎","Engines"),engineList||"GP Core 4.2 — Atlas Runtime · GP Fusion Engine 4.1 — Playlist Flow · GP Motion Engine 4.1 — Story Scroll · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
@@ -10366,7 +10781,7 @@ window.GPModules.register = function register(name,factory){
     if(!button||!pop||!pop.classList.contains("gp-font-portal"))return;
     const rect=button.getBoundingClientRect(),margin=10,gap=8;
     pop.style.setProperty("--font-pop-width",`${rect.width}px`);
-    const popHeight=Math.min(pop.scrollHeight||320,Math.min(320,window.innerHeight*.55));
+    const popHeight=Math.min(pop.scrollHeight||260,Math.min(380,window.innerHeight*.7));
     let top=rect.top-popHeight-gap;
     if(top<margin)top=Math.min(window.innerHeight-popHeight-margin,rect.bottom+gap);
     const left=Math.max(margin,Math.min(window.innerWidth-rect.width-margin,rect.left));
@@ -10473,6 +10888,7 @@ window.GPModules.register = function register(name,factory){
         font: $("#fontSelect").value, fontScale: $("#fontSizeSlider").value, fontWeight: $("#fontWeightSlider").value,
         volume: currentVolume(), playMode, playbackRate,
         crossfadeEnabled, crossfadeSeconds, adaptiveColorOn, spatialEnabled, spatialMode, spatialLastMode, loudnessNormalizationEnabled,
+        fluidMotionEnabled, continuousPlayEnabled, keyboardControlsEnabled,
         eqPresetKey, eqGains, customEQGains
       }));
     }catch(e){}
@@ -10513,6 +10929,12 @@ window.GPModules.register = function register(name,factory){
     syncSpatialUI(false);
     loudnessNormalizationEnabled=!!p.loudnessNormalizationEnabled;
     $("#loudnessNormalizeToggle").classList.toggle("on",loudnessNormalizationEnabled);
+    fluidMotionEnabled = p.fluidMotionEnabled !== undefined ? !!p.fluidMotionEnabled : true;
+    continuousPlayEnabled = p.continuousPlayEnabled !== undefined ? !!p.continuousPlayEnabled : true;
+    keyboardControlsEnabled = p.keyboardControlsEnabled !== undefined ? !!p.keyboardControlsEnabled : true;
+    $("#fluidMotionToggle")?.classList.toggle("on", fluidMotionEnabled);
+    $("#continuousPlayToggle")?.classList.toggle("on", continuousPlayEnabled);
+    $("#keyboardControlsToggle")?.classList.toggle("on", keyboardControlsEnabled);
     adaptiveColorOn = !!p.adaptiveColorOn;
     $("#adaptiveColorToggle").classList.toggle("on", adaptiveColorOn);
     syncAccentAvailability();
@@ -10701,6 +11123,6 @@ window.GPModules.register = function register(name,factory){
   const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
   const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.5.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2 — Atlas Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.1 — Story Scroll",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.5.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2 — Atlas Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.1 — Story Scroll",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
 })();

@@ -2,7 +2,7 @@
 
 Last documentation update: 2026-10-02 (Pacific/Auckland)
 
-The 7.5.0 Replay Atlas checkpoint records the annual report, player title geometry,
+The 7.5.1 Replay Atlas checkpoint records the annual report redesign, player title geometry,
 settings layout, CJK font fallback, and identity updates on 2026-10-02. The feature
 release expands the annual report into a rich chaptered scroll and standalone
 long-form export while preserving v7.4.3 dialog dimensions and button placement,
@@ -20,7 +20,7 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 · Replay Atlas |
-| Version | 7.5.0 |
+| Version | 7.5.1 |
 | Release name | REPLAY ATLAS |
 | Architecture | Peregrine Lake |
 | GP Core | 4.2 — Atlas Runtime |
@@ -409,5 +409,29 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
 - PASS — Typography settings support category-aware CJK fallbacks for serif (New York -> Songti/SimSun), monospace (Cascadia Code -> Consolas/system mono), and sans-serif typefaces.
 - PASS — Product identity is synchronized as `Glass Player Gen 7 · Replay
   Atlas`, version `7.5.0`, release `REPLAY ATLAS`, with document title unified to `Glass Player`.
+- NOT RUN — Edge/file:// interaction with real local music, audible-device
+  verification, 4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 21. 7.5.1 HOTFIX BUILD — 2026-10-02
+
+- PASS — `build.ps1` regenerated `build/app.js` after the standalone Annual Report
+  redesign, History range selector background removal, font picker sizing, Settings
+  toggles, and title/lossless alignment. Generated build SHA-256:
+  `30CB26BDEC544DEF486EB8B7478006328BD9D4246AF0807B12A3E4E7FC5C02C0`.
+- PASS — `validate-architecture.ps1`: 55 sources / 22 modules.
+- PASS — `tests/contract-tests.ps1`: `PASS`, `Contracts checked: 261`.
+- PASS — Standalone Annual Report downloadable HTML completely redesigned as a
+  cinematic obsidian/aurora long scroll with 8 rich story chapters, sticky chapter
+  nav, scroll-linked parallax animations, 100% offline self-contained operation,
+  and print/save support.
+- PASS — History view range selector (`#rangeSeg`) background and shadow removed,
+  seamlessly harmonizing with shared segmented control styling.
+- PASS — Font picker dropdown options compacted to 38px Chinese-baseline rows with
+  expanded portal height, eliminating awkward vertical scrollbars.
+- PASS — Song title row keeps the song title optically centered across all lengths
+  with balanced offset, placing the FLAC lossless badge immediately adjacent to the
+  title without marquee clipping or width collapse.
+- PASS — Settings gains fluid 120Hz motion, continuous playback, and keyboard controls
+  toggles, plus a reset preferences action.
 - NOT RUN — Edge/file:// interaction with real local music, audible-device
   verification, 4K/110% visual comparison and 120 Hz hardware profiling.
