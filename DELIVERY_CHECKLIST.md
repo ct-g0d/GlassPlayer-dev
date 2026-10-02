@@ -644,3 +644,26 @@ could not support.
 - PASS — Architecture validation: 55 sources / 22 modules; contract checks: 261; generated JavaScript syntax, service regressions, audio-context regression and diff whitespace checks passed.
 - PASS — Release commit and annotated tag `v7.4.3` were created after the checks above.
 - NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 22. 7.5.0 REPLAY ATLAS — 2026-10-02
+
+- PASS — Synchronized `index.html`, bootstrap and Spectrum facades, Settings
+  identity, bilingual i18n, release data and exported changelog as `7.5.0`
+  `REPLAY ATLAS`; display engine names carry their feature labels; document title unified to `Glass Player`.
+- PASS — Annual Report remains owned by History Service and Shared Controls;
+  the in-app report and standalone download use rich long-form chapters,
+  progressive reveals, scroll-linked parallax, rankings, rhythm, preference,
+  audio-profile and local privacy sections while preserving v7.4.3 modal dimensions and button location.
+- PASS — Library remains strictly on the stable v7.4.3 baseline; all playlist actions reuse existing Queue Service contracts without schema changes.
+- PASS — Song title row uses a three-column grid keeping the song title optically centered with the FLAC lossless badge positioned beside it; Settings view center-alignment restored.
+- PASS — Typography settings support category-aware CJK fallbacks for serif (New York -> Songti/SimSun), monospace (Cascadia Code -> Consolas/system mono), and sans-serif typefaces.
+- PASS — Protected IndexedDB/localStorage schema, Store/Event Bus, queue
+  identity, AudioContext/Deck graph, source order and existing DOM contracts
+  were preserved; `.tmp.driveupload/` remains untracked and untouched.
+- PASS — `build.ps1`: generated build SHA-256
+  `0729FC658A0507E005EF96EA02ABF0731CDE313D4A43D7A5B5F97C17D786DDEE`.
+- PASS — `validate-architecture.ps1`: 55 sources / 22 modules.
+- PASS — `tests/contract-tests.ps1`: `PASS`, Contracts checked: 261.
+- PASS — `node --check build/app.js`; `tests/service-regressions.test.js`; `tests/audio-context-regression.test.js`; `git diff --check` passed.
+- NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110%
+  visual comparison and 120 Hz hardware profiling.

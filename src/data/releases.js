@@ -15,6 +15,21 @@
       ]
     },
     {
+      version:"7.5.0", date:"2026-10-02", kind:"minor",
+      summary:"REPLAY ATLAS：带来全新章节式年度音乐报告，全面重构中文字体衬线与等宽回退栈，并优化播放标题与设置排版。",
+      sections:[
+        {title:"年度报告",items:["年度报告新增年度总览、收听节奏、季度与月度变化、重复播放、艺人/专辑/风格版图、Top 12 与本地隐私说明。","下载报告保留独立打开的 HTML，并加入随滚动进入与位移的章节故事长卷。"]},
+        {title:"字体与排版",items:["全面支持中文字体衬线回退，选择 New York（衬线）时中文字体正确匹配宋体/明体，不再被无衬线黑体截断。","根据字体家族（衬线、等宽、无衬线）按语言精准匹配回退栈，补齐 Windows 与 macOS 下的中西文字体渲染。"]},
+        {title:"播放器与设置",items:["FLAC 无损徽标紧随歌曲名右侧，歌曲名严格保持整行居中且不会折叠隐藏。","听歌记录标题与时间范围控件根据实际渲染背景自适应对比度，修复设置界面居中对齐。"]},
+        {title:"引擎身份",items:["Glass Player Gen 7 进入 Replay Atlas 版本；Atlas Runtime、Playlist Flow、Story Scroll、Room、Signal 与 Listening DNA 成为当前引擎显示名。"]}
+      ],english:{summary:"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete serif and monospace CJK font fallback stacks, and centered player title and settings layout.",sections:[
+        {title:"Annual Report",items:["Annual Report gains totals, listening rhythm, seasonal and monthly change, repeat plays, artist/album/genre maps, Top 12 and a local privacy note.","The standalone HTML download remains self-contained and presents a smooth chaptered story scroll."]},
+        {title:"Typography and Fonts",items:["Comprehensive CJK serif fallback: selecting New York (serif) now renders Chinese glyphs with Songti/SimSun serif typefaces rather than falling back to sans-serif.","Language-aware font fallbacks correctly distinguish serif, monospace, and sans-serif stacks on Windows and macOS."]},
+        {title:"Player and Settings",items:["The FLAC lossless badge sits adjacent to the song title while the title remains strictly centered without collapsing.","Listening History title and range controls adapt contrast to the rendered background, and Settings view centers properly."]},
+        {title:"Engine Identity",items:["Glass Player Gen 7 enters the Replay Atlas release; Atlas Runtime, Playlist Flow, Story Scroll, Room, Signal and Listening DNA are the current engine display names."]}
+      ]}
+    },
+    {
       version:"7.4.3", date:"2026-09-27", kind:"patch",
       summary:"HOTFIX BUILD：继续修复播放队列、旧听歌记录、年度报告、设置恢复与后台音频分析的一致性。",
       sections:[
@@ -2503,6 +2518,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.5.0":"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete CJK serif and monospace font fallback stacks, and centered player title and settings layout.",
     "7.4.3":"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",
     "7.4.2":"HOTFIX BUILD fixes playlist starts, legacy listening totals, Annual Report layout and restored settings, and shares audio resources for analysis.",
     "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
@@ -3953,7 +3969,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.3 — HOTFIX BUILD`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.0 — REPLAY ATLAS`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -3968,7 +3984,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.4.3 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.5.0 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -3976,5 +3992,3 @@
     function getRelease(version){if(HIDDEN_RELEASE_VERSIONS.has(version))return null;return cloneRelease(DISPLAY_RELEASES.find(release=>release.version===version)||RELEASES.find(release=>release.version===version));}
     return Object.freeze({getReleases,getRelease,render:renderChangelog,exportLog:exportChangelog});
   })();
-
-

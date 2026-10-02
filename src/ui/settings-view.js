@@ -284,9 +284,19 @@
   });
 
   const GP_FONT_LANGUAGE_STACKS=Object.freeze({
-    zh:'"PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',
+    zh:'"PingFang SC", "PingFang TC", "PingFang HK", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", Arial, sans-serif',
     en:'"Segoe UI", Arial, "SF Pro Text", sans-serif',
     ru:'"Segoe UI", Arial, "SF Pro Text", sans-serif'
+  });
+  const GP_FONT_SERIF_STACKS=Object.freeze({
+    zh:'"Songti SC", "Songti TC", "Noto Serif SC", "Source Han Serif SC", "SimSun", "STSong", "Times New Roman", serif',
+    en:'Georgia, "Times New Roman", "Songti SC", "SimSun", serif',
+    ru:'Georgia, "Times New Roman", serif'
+  });
+  const GP_FONT_MONO_STACKS=Object.freeze({
+    zh:'Consolas, "Courier New", "PingFang SC", "Microsoft YaHei", monospace',
+    en:'Consolas, "Courier New", monospace',
+    ru:'Consolas, "Courier New", monospace'
   });
   const GP_APPLE_FONT_ROLES=Object.freeze({
     zh:Object.freeze({base:'"SF Pro", "SF Pro Text", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "PingFang SC", "PingFang TC", "Segoe UI", Consolas, monospace'}),
@@ -295,8 +305,18 @@
   });
   function fontLanguage(){return uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh";}
   function appendFontLanguageFallback(value,language){
-    const base=String(value||"").replace(/,\s*(?:sans-serif|serif|monospace)\s*$/i,"").trim();
-    return `${base}, ${GP_FONT_LANGUAGE_STACKS[language]}`;
+    const raw=String(value||"").trim();
+    const isMono=/\bmonospace\s*$/i.test(raw);
+    const isSerif=!isMono && /(?:^|[,\s])serif\s*$/i.test(raw);
+    const base=raw.replace(/,\s*(?:sans-serif|serif|monospace)\s*$/i,"").trim();
+    if(isSerif){
+      return `${base}, ${(GP_FONT_SERIF_STACKS[language]||GP_FONT_SERIF_STACKS.zh)}`;
+    }
+    if(isMono){
+      return `${base}, ${(GP_FONT_MONO_STACKS[language]||GP_FONT_MONO_STACKS.zh)}`;
+    }
+    return `${base}, ${(GP_FONT_LANGUAGE_STACKS[language]||GP_FONT_LANGUAGE_STACKS.zh)}`;
+
   }
   function syncTypographyLanguage(){
     const select=$("#fontSelect"),selected=select?.options?.[select.selectedIndex];if(!select||!selected)return;
@@ -354,9 +374,9 @@
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.3"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Replay Atlas · ${runtime.version||"7.5.0"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
-      [tr("引擎","Engines"),engineList||"GP Core 4.2 · GP Fusion Engine 4.1 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
+      [tr("引擎","Engines"),engineList||"GP Core 4.2 — Atlas Runtime · GP Fusion Engine 4.1 — Playlist Flow · GP Motion Engine 4.1 — Story Scroll · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
     ];
     aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>`<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div><div class="setting-hint">${escapeHTML(value)}</div></div></div>`).join("");
@@ -533,4 +553,3 @@
     setAccent(p.accentKey || "navy");
     applyTheme(); updateVolIcon();
   }
-

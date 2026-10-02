@@ -1,4 +1,4 @@
-  /* ================= GP Spatial Engine 1.1 =================
+  /* ================= GP Spatial Engine 1.1 — Room =================
      Fixed, predictable presets. Playback state, track features, RMS and stereo
      correlation never modify spatial parameters. Only an explicit user mode
      selection can start the 400 ms equal-power A/B bus transition. */
@@ -95,4 +95,3 @@
     spatialEngine={input,output,dry,irBank,buses:[],activeIndex:null,transitioning:false,pendingMode:null,transitionTimer:0};spatialEngine.buses=[createSpatialBus(c,irBank,output,0),createSpatialBus(c,irBank,output,1)];requestSpatialMode(spatialEnabled?spatialMode:"none",true);return spatialEngine;
   }
   function applySpatialParameters(immediate=false){if(!spatialEngine)return;requestSpatialMode(spatialEnabled?spatialMode:"none",immediate);}
-

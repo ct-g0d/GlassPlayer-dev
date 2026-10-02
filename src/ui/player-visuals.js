@@ -130,10 +130,10 @@
   }
   function updateAdaptiveTextColors(palette=lastFavoriteBackdropPalette){
     const black=[12,12,14],white=[248,248,250];
-    $$(".view-header h2").forEach(title=>{const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
+    $$(".view-header h2").forEach(title=>{if(!title.offsetParent)return;const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
   }
   function updateContextualControlColors(palette=lastFavoriteBackdropPalette){
-    const selectors="#addFilesBtn,#addFolderBtn,#sortBtn,#playMixBtn,#eqPresetButton,.export-log-btn,.release-tag";
+    const selectors="#addFilesBtn,#addFolderBtn,#sortBtn,#rangeSeg,#playMixBtn,#eqPresetButton,.export-log-btn,.release-tag";
     $$(selectors).forEach(control=>{const surface=elementSurface(control,palette),light=activeTheme()==="light",tone=mixRgb(surface,light?[255,255,255]:[255,255,255],light?.42:.1),accented=mixRgb(tone,currentAccentRgb(),light?.035:.065);control.style.setProperty("--context-control-bg",`rgba(${accented.join(",")},${light?.74:.62})`);control.style.setProperty("--context-control-border",`rgba(${currentAccentRgb().join(",")},${light?.09:.14})`);});
   }
   function updateFavoriteAnswerContrast(palette=lastFavoriteBackdropPalette){
@@ -494,7 +494,11 @@
     const scale=Number(getComputedStyle($("#appShell")).zoom)||1;
     if(!lastTitleLayoutScale||Math.abs(scale-lastTitleLayoutScale)>.002)refreshNowTitleMarquee();
   }
-  function setNowPlayingTitle(text){currentNowTitleText=text||"";refreshNowTitleMarquee();}
+  function setNowPlayingTitle(text){
+    const next=String(text??"").trim();
+    currentNowTitleText=next||tr("未命名歌曲","Untitled Track");
+    refreshNowTitleMarquee();
+  }
   function syncNowFormatTag(track){
     const tag=$("#nowFormatTag");if(!tag)return;
     const lossless=String(track?.format||"").toUpperCase()==="FLAC";
@@ -509,6 +513,7 @@
     const commit=()=>{
       if(revision!==nowPlayingMetaRevision)return;
       setNowPlayingTitle(title);$("#nowArtist").textContent=artist||"";
+      nodes.forEach(node=>{node.style.opacity="";});
       nowPlayingMetaAnimations=nodes.map(node=>node.animate([{opacity:0},{opacity:1}],{duration:145,easing:"cubic-bezier(.2,.72,.2,1)",fill:"both"}));
       const incoming=[...nowPlayingMetaAnimations];
       Promise.all(incoming.map(animation=>animation.finished.catch(()=>null))).then(()=>{incoming.forEach(animation=>{try{animation.cancel();}catch(error){}});if(revision===nowPlayingMetaRevision)nowPlayingMetaAnimations=[];});

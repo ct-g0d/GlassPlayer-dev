@@ -1,14 +1,15 @@
 # Glass Player — Current State
 
-Last documentation update: 2026-09-27 (Pacific/Auckland)
+Last documentation update: 2026-10-02 (Pacific/Auckland)
 
-The 7.4.3 release checkpoint records the completed 7.4.2 fixes on 2026-09-27.
-The current patch restores collection queue handling and legacy all-time
-history totals, aligns the annual report summary and scrollbar, ignores stale
-search telemetry, validates restored playback modes, refreshes loudness copy,
-and reuses the Audio Engine context for background decoding. Final verification
-is recorded in DELIVERY_CHECKLIST.md. Browser, audio-device, 4K and 120 Hz
-checks remain unrun.
+The 7.5.0 Replay Atlas checkpoint records the annual report, player title geometry,
+settings layout, CJK font fallback, and identity updates on 2026-10-02. The feature
+release expands the annual report into a rich chaptered scroll and standalone
+long-form export while preserving v7.4.3 dialog dimensions and button placement,
+keeps the lossless badge beside an optically centered song title, restores Settings
+view centered alignment, provides comprehensive CJK serif and monospace font fallbacks,
+and sets the document title strictly to Glass Player. Final verification is recorded
+in DELIVERY_CHECKLIST.md. Browser, audio-device, 4K and 120 Hz checks remain unrun.
 
 This file is the short operational snapshot. Read it after AGENTS.md at the
 start of every new conversation. It intentionally records current facts, not
@@ -18,16 +19,16 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 
 | Field | Current value |
 | --- | --- |
-| Product | Glass Player Gen 7 |
-| Version | 7.4.3 |
-| Release name | HOTFIX BUILD |
+| Product | Glass Player Gen 7 · Replay Atlas |
+| Version | 7.5.0 |
+| Release name | REPLAY ATLAS |
 | Architecture | Peregrine Lake |
-| GP Core | 4.2 |
-| GP Fusion Engine | 4.1 |
-| GP Motion Engine | 4.1 |
-| GP Spatial Engine | 1.1 |
-| GP Spectrum Engine | 2.3 |
-| GP Neural Engine | 2.2 — Resonance Boost |
+| GP Core | 4.2 — Atlas Runtime |
+| GP Fusion Engine | 4.1 — Playlist Flow |
+| GP Motion Engine | 4.1 — Story Scroll |
+| GP Spatial Engine | 1.1 — Room |
+| GP Spectrum Engine | 2.3 — Signal |
+| GP Neural Engine | 2.2 — Listening DNA |
 | Runtime entry | index.html |
 | Generated JavaScript | build/app.js |
 | Source fragments | 55 |
@@ -392,3 +393,21 @@ output. Do not treat a historical report as current runtime truth.
 ## 19. 2026-09-26 focused bug-fix pass
 
 The 7.4.1 pass repaired empty Library collections, stale History labels after metadata refresh, localized annual exports, terminal pause ordering, Russian Settings copy, invalid persisted display preferences, Library search telemetry, queue action copy/counts, annual report bar/rank layout, responsive report export cards, Settings folder/EQ layout, and hidden Player disc motion. Persistence/schema, Store/Event Bus, queue identity, audio graph and DOM contracts remained unchanged. Build/architecture/contract and syntax checks passed; Edge/audio/4K/120 Hz checks remained unrun.
+
+## 20. 7.5.0 Replay Atlas feature checkpoint — 2026-10-02
+
+- PASS — `build.ps1` regenerated `build/app.js` after the annual report,
+  title-row, settings alignment, and font fallback changes. Generated build SHA-256:
+  `0729FC658A0507E005EF96EA02ABF0731CDE313D4A43D7A5B5F97C17D786DDEE`.
+- PASS — `validate-architecture.ps1`: 55 sources / 22 modules.
+- PASS — `tests/contract-tests.ps1`: `PASS`, `Contracts checked: 261`.
+- PASS — Annual report data remains history-only and local; the modal and
+  downloaded HTML expose chaptered rhythm, timeline, rankings, preference,
+  audio-profile and privacy sections with reveal/parallax motion while modal dimensions and trigger position stay at the v7.4.3 baseline.
+- PASS — Library remains strictly on the stable v7.4.3 baseline; all playlist actions reuse existing Queue Service contracts without schema changes.
+- PASS — Song title row uses a three-column grid keeping the song title optically centered with the FLAC lossless badge positioned beside it; Settings view center-alignment restored.
+- PASS — Typography settings support category-aware CJK fallbacks for serif (New York -> Songti/SimSun), monospace (Cascadia Code -> Consolas/system mono), and sans-serif typefaces.
+- PASS — Product identity is synchronized as `Glass Player Gen 7 · Replay
+  Atlas`, version `7.5.0`, release `REPLAY ATLAS`, with document title unified to `Glass Player`.
+- NOT RUN — Edge/file:// interaction with real local music, audible-device
+  verification, 4K/110% visual comparison and 120 Hz hardware profiling.

@@ -447,9 +447,9 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.4.3",
+    version:"7.5.0",
     architecture:"Peregrine Lake",
-    engines:{core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`},
+    engines:{core:"GP Core 4.2 — Atlas Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.1 — Story Scroll",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
     core:{audio:GPAudioCore,database:GPDatabase,analyzer:GPAnalyzer},
     ui:GPUIModules,
@@ -570,7 +570,7 @@ window.GPModules.register = function register(name,factory){
     "可变字体会获得最平滑的粗细变化；普通字体会自动匹配最接近的字重。":"Variable fonts provide the smoothest weight changes; standard fonts use the closest available weight.",
     "还没有音乐":"No music yet","点击上方按钮导入，或直接把歌曲/文件夹拖进窗口":"Import above, or drop songs and folders into the window","封面会自动从 MP3/FLAC/M4A 中识别":"Artwork is read automatically from MP3, FLAC and M4A files",
     "歌曲文件不会保存到磁盘外，刷新页面需要重新导入；听歌记录会保留。":"Audio files never leave your device. Reimport after refresh; listening history is retained.",
-    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.4.3":"Current Version 7.4.3","版本 7.4.3":"Ver. 7.4.3","HOTFIX BUILD":"HOTFIX BUILD","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
+    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.5.0 — Replay Atlas":"Current Version 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Ver. 7.5.0 — Replay Atlas","REPLAY ATLAS":"REPLAY ATLAS","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
     "音乐库数据":"Library Data","重新扫描歌曲库":"Rescan Music Library","重新读取当前导入歌曲的 Genre、文件名信息、时长与封面；保留 Spectrum ID、MFCC、Energy、BPM 和收听历史。":"Reread Genre, filename metadata, duration and artwork from imported songs while preserving Spectrum ID, MFCC, Energy, BPM and listening history.",
     "重新扫描歌曲库？":"Rescan Music Library?","将从当前导入的音频文件重新读取 Genre、文件名信息、时长和封面，并覆盖缓存中的旧 metadata。Spectrum ID、MFCC、Energy、BPM 与收听历史不会改变。":"The current audio files will be reread for Genre, filename metadata, duration and artwork, replacing stale cached metadata. Spectrum ID, MFCC, Energy, BPM and listening history will remain unchanged.","取消":"Cancel","开始扫描":"Start Scan",
     "精选字体":"Curated Fonts","未知艺人":"Unknown Artist","未知":"Unknown","计算中…":"Calculating…","解码中…":"Decoding…","单声道":"Mono","立体声":"Stereo","版本列表":"Version List",
@@ -603,7 +603,7 @@ window.GPModules.register = function register(name,factory){
     "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
     "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
     "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно","随机播放":"Перемешивание","单曲循环":"Повтор одной песни",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.4.3":"Текущая версия 7.4.3","版本 7.4.3":"Версия 7.4.3","HOTFIX BUILD":"СБОРКА HOTFIX","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
+    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
     "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
     "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
   };
@@ -671,6 +671,21 @@ window.GPModules.register = function register(name,factory){
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.5.0", date:"2026-10-02", kind:"minor",
+      summary:"REPLAY ATLAS：带来全新章节式年度音乐报告，全面重构中文字体衬线与等宽回退栈，并优化播放标题与设置排版。",
+      sections:[
+        {title:"年度报告",items:["年度报告新增年度总览、收听节奏、季度与月度变化、重复播放、艺人/专辑/风格版图、Top 12 与本地隐私说明。","下载报告保留独立打开的 HTML，并加入随滚动进入与位移的章节故事长卷。"]},
+        {title:"字体与排版",items:["全面支持中文字体衬线回退，选择 New York（衬线）时中文字体正确匹配宋体/明体，不再被无衬线黑体截断。","根据字体家族（衬线、等宽、无衬线）按语言精准匹配回退栈，补齐 Windows 与 macOS 下的中西文字体渲染。"]},
+        {title:"播放器与设置",items:["FLAC 无损徽标紧随歌曲名右侧，歌曲名严格保持整行居中且不会折叠隐藏。","听歌记录标题与时间范围控件根据实际渲染背景自适应对比度，修复设置界面居中对齐。"]},
+        {title:"引擎身份",items:["Glass Player Gen 7 进入 Replay Atlas 版本；Atlas Runtime、Playlist Flow、Story Scroll、Room、Signal 与 Listening DNA 成为当前引擎显示名。"]}
+      ],english:{summary:"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete serif and monospace CJK font fallback stacks, and centered player title and settings layout.",sections:[
+        {title:"Annual Report",items:["Annual Report gains totals, listening rhythm, seasonal and monthly change, repeat plays, artist/album/genre maps, Top 12 and a local privacy note.","The standalone HTML download remains self-contained and presents a smooth chaptered story scroll."]},
+        {title:"Typography and Fonts",items:["Comprehensive CJK serif fallback: selecting New York (serif) now renders Chinese glyphs with Songti/SimSun serif typefaces rather than falling back to sans-serif.","Language-aware font fallbacks correctly distinguish serif, monospace, and sans-serif stacks on Windows and macOS."]},
+        {title:"Player and Settings",items:["The FLAC lossless badge sits adjacent to the song title while the title remains strictly centered without collapsing.","Listening History title and range controls adapt contrast to the rendered background, and Settings view centers properly."]},
+        {title:"Engine Identity",items:["Glass Player Gen 7 enters the Replay Atlas release; Atlas Runtime, Playlist Flow, Story Scroll, Room, Signal and Listening DNA are the current engine display names."]}
+      ]}
     },
     {
       version:"7.4.3", date:"2026-09-27", kind:"patch",
@@ -3161,6 +3176,7 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.5.0":"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete CJK serif and monospace font fallback stacks, and centered player title and settings layout.",
     "7.4.3":"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",
     "7.4.2":"HOTFIX BUILD fixes playlist starts, legacy listening totals, Annual Report layout and restored settings, and shares audio resources for analysis.",
     "7.4.1":"HOTFIX BUILD fixes Library empty states, Annual Report language, track endings and Settings consistency.",
@@ -4611,7 +4627,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.4.3 — HOTFIX BUILD`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.0 — REPLAY ATLAS`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4626,7 +4642,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.4.3 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.5.0 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -4634,8 +4650,6 @@ window.GPModules.register = function register(name,factory){
     function getRelease(version){if(HIDDEN_RELEASE_VERSIONS.has(version))return null;return cloneRelease(DISPLAY_RELEASES.find(release=>release.version===version)||RELEASES.find(release=>release.version===version));}
     return Object.freeze({getReleases,getRelease,render:renderChangelog,exportLog:exportChangelog});
   })();
-
-
   /* ================= GP Neural Engine 2.1: offline genre graph =================
      Built from broad genre/style hierarchies (Discogs, MusicBrainz and the
      AcousticBrainz multi-label taxonomy). Runtime lookup is deliberately local:
@@ -4868,7 +4882,7 @@ window.GPModules.register = function register(name,factory){
   function refreshPrimaryViewLayout(viewName){
     requestAnimationFrame(()=>{
       fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();
-      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
+      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
       if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();});
     });
   }
@@ -5680,7 +5694,7 @@ window.GPModules.register = function register(name,factory){
   }
   async function extractGenre(file){return (await extractFileMetadata(file)).genre||null;}
   GP.core.metadata=Object.freeze({extractFileMetadata,extractGenre});
-  /* ================= GP Neural Engine 2.2 — Resonance Boost =================
+  /* ================= GP Neural Engine 2.2 — Listening DNA =================
      Preference and recommendation are deliberately separate. Until the model
      passes its evidence/confidence gate, shuffle and Daily Mix remain uniform. */
   const NEURAL_MODEL_VERSION=4;
@@ -6004,7 +6018,6 @@ window.GPModules.register = function register(name,factory){
     pendingSelectionSource="queue";
     loadTrack(firstMixIndex,true);
   });
-
   /* ================= ambient wallpaper (3 modes) ================= */
   const accentPalettes = {
     navy:  ["#2C4870","#5C7FA8","#8FA8C4"],
@@ -6137,10 +6150,10 @@ window.GPModules.register = function register(name,factory){
   }
   function updateAdaptiveTextColors(palette=lastFavoriteBackdropPalette){
     const black=[12,12,14],white=[248,248,250];
-    $$(".view-header h2").forEach(title=>{const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
+    $$(".view-header h2").forEach(title=>{if(!title.offsetParent)return;const surface=sampledAmbientSurface(title),useLight=contrastRatio(white,surface)>=contrastRatio(black,surface),color=useLight?"#f8f8fa":"#0c0c0e";title.style.color=color;title.style.textShadow=useLight?"0 1px 3px rgba(0,0,0,.34)":"0 1px 2px rgba(255,255,255,.28)";});
   }
   function updateContextualControlColors(palette=lastFavoriteBackdropPalette){
-    const selectors="#addFilesBtn,#addFolderBtn,#sortBtn,#playMixBtn,#eqPresetButton,.export-log-btn,.release-tag";
+    const selectors="#addFilesBtn,#addFolderBtn,#sortBtn,#rangeSeg,#playMixBtn,#eqPresetButton,.export-log-btn,.release-tag";
     $$(selectors).forEach(control=>{const surface=elementSurface(control,palette),light=activeTheme()==="light",tone=mixRgb(surface,light?[255,255,255]:[255,255,255],light?.42:.1),accented=mixRgb(tone,currentAccentRgb(),light?.035:.065);control.style.setProperty("--context-control-bg",`rgba(${accented.join(",")},${light?.74:.62})`);control.style.setProperty("--context-control-border",`rgba(${currentAccentRgb().join(",")},${light?.09:.14})`);});
   }
   function updateFavoriteAnswerContrast(palette=lastFavoriteBackdropPalette){
@@ -6501,7 +6514,11 @@ window.GPModules.register = function register(name,factory){
     const scale=Number(getComputedStyle($("#appShell")).zoom)||1;
     if(!lastTitleLayoutScale||Math.abs(scale-lastTitleLayoutScale)>.002)refreshNowTitleMarquee();
   }
-  function setNowPlayingTitle(text){currentNowTitleText=text||"";refreshNowTitleMarquee();}
+  function setNowPlayingTitle(text){
+    const next=String(text??"").trim();
+    currentNowTitleText=next||tr("未命名歌曲","Untitled Track");
+    refreshNowTitleMarquee();
+  }
   function syncNowFormatTag(track){
     const tag=$("#nowFormatTag");if(!tag)return;
     const lossless=String(track?.format||"").toUpperCase()==="FLAC";
@@ -6516,6 +6533,7 @@ window.GPModules.register = function register(name,factory){
     const commit=()=>{
       if(revision!==nowPlayingMetaRevision)return;
       setNowPlayingTitle(title);$("#nowArtist").textContent=artist||"";
+      nodes.forEach(node=>{node.style.opacity="";});
       nowPlayingMetaAnimations=nodes.map(node=>node.animate([{opacity:0},{opacity:1}],{duration:145,easing:"cubic-bezier(.2,.72,.2,1)",fill:"both"}));
       const incoming=[...nowPlayingMetaAnimations];
       Promise.all(incoming.map(animation=>animation.finished.catch(()=>null))).then(()=>{incoming.forEach(animation=>{try{animation.cancel();}catch(error){}});if(revision===nowPlayingMetaRevision)nowPlayingMetaAnimations=[];});
@@ -9062,13 +9080,13 @@ window.GPModules.register = function register(name,factory){
     const insights=buildListeningInsights(store);
     setBatchedScrollHTML($("#dataDashboard"),`<section class="data-card wide"><h3>${tr("过去十天听歌时间","Listening Time · Last Ten Days")}</h3><div class="data-sub">${tr("悬停数据点查看日期与详细时长","Hover a point for the date and listening time")}</div>${svg}</section><section class="data-card"><h3>${tr("过去十二周最爱艺人","Favorite Artists · Twelve Weeks")}</h3><div class="data-sub">${tr("每周以听歌时长计算","Calculated from weekly listening time")}</div>${periodBars(weeks)}</section><section class="data-card"><h3>${tr("过去十二个月最爱艺人","Favorite Artists · Twelve Months")}</h3><div class="data-sub">${tr("悬停条形查看月份、艺人和时长","Hover a bar for month, artist and time")}</div>${periodBars(months)}</section><section class="data-card wide"><div class="neural-insights">${insights.map(text=>`<div class="neural-insight">${text}</div>`).join("")}</div></section>`);
   }
-  /* ============ annual report (7.4.0 典藏更新) ============
+   /* ============ annual report (7.5.0 Replay Atlas) ============
      History Service owns yearly aggregation; History View renders it.
      The report year rolls forward automatically: Dec 31 (year Y) through
      Jan 14 (year Y+1) opens year Y and presents it once per session.
      Completed years stay viewable and downloadable all year. Downloads are
-     standalone interactive HTML (inline style plus <details> expanders and
-     title tooltips; blob: covers are omitted by design). */
+      standalone interactive HTML (inline style, chapters and scroll motion;
+      blob: covers are omitted by design). */
   const ANNUAL_WINDOW_END_DAY=14;
   function annualReportWindow(now=new Date()){
     const month=now.getMonth(),date=now.getDate(),year=now.getFullYear();
@@ -9095,45 +9113,73 @@ window.GPModules.register = function register(name,factory){
       if(genre)genres.set(genre,(genres.get(genre)||0)+item.seconds);
     });
     const topRows=list=>[...list.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const days=Object.entries(store.daily||{}).filter(([key,value])=>String(key).startsWith(`${year}-`)&&(Number(value)||0)>0);
+    const weekdayTotals=Array.from({length:7},()=>0),seasonTotals=new Map([["winter",0],["spring",0],["summer",0],["autumn",0]]);
+    const seasonForMonth=month=>month<2||month===11?"winter":month<5?"spring":month<8?"summer":"autumn";
+    days.forEach(([key,value])=>{const date=new Date(`${key}T12:00:00`),month=date.getMonth();weekdayTotals[date.getDay()]+=Number(value)||0;seasonTotals.set(seasonForMonth(month),(seasonTotals.get(seasonForMonth(month))||0)+(Number(value)||0));});
     const monthly=Array.from({length:12},(_,month)=>{
       const seconds=sumDailyRange(store.daily,{start:new Date(year,month,1),end:new Date(year,month+1,1)});
       const [name]=artistTopForMonth(store,new Date(year,month,1));
       return {label:new Date(year,month,1).toLocaleDateString(uiLanguage==="zh"?"zh-CN":"en-US",{month:"short"}),name:seconds>0?name:tr("—","—"),value:seconds};
     });
-    const activeDays=Object.entries(store.daily||{}).filter(([key,value])=>String(key).startsWith(`${year}-`)&&(Number(value)||0)>0).length;
+    const activeDays=days.length;
     let bestDay=null;
     Object.entries(store.daily||{}).forEach(([key,value])=>{if(String(key).startsWith(`${year}-`)&&(Number(value)||0)>0&&(!bestDay||Number(value)>bestDay.value))bestDay={key,value:Number(value)};});
     const hourTotals=Array.from({length:24},()=>0);
     Object.entries(store.hourly||{}).forEach(([day,hours])=>{if(!String(day).startsWith(`${year}-`))return;Object.entries(hours||{}).forEach(([hour,seconds])=>{const slot=Number(hour);if(slot>=0&&slot<24)hourTotals[slot]+=Number(seconds)||0;});});
     const peakHour=hourTotals.indexOf(Math.max(...hourTotals,0));
-    return {year,total,totalPlays,activeDays,bestDay,songs:songs.slice(0,10),topSong:songs[0]||null,artists:topRows(artists),albums:topRows(albums),genres:topRows(genres),monthly,peakHour:hourTotals[peakHour]>0?peakHour:null};
+    const hourBands=Array.from({length:6},(_,band)=>({label:`${String(band*4).padStart(2,"0")}–${String(band*4+3).padStart(2,"0")}`,value:hourTotals.slice(band*4,band*4+4).reduce((sum,value)=>sum+value,0)}));
+    const weekdayNames=Array.from({length:7},(_,day)=>new Date(2024,0,day+7).toLocaleDateString(uiLanguage==="zh"?"zh-CN":"en-US",{weekday:"long"}));
+    const weekdays=weekdayNames.map((label,day)=>({label,value:weekdayTotals[day]}));
+    const seasons=[...seasonTotals.entries()].map(([key,value])=>({key,label:tr({winter:"冬季",spring:"春季",summer:"夏季",autumn:"秋季"}[key],{winter:"Winter",spring:"Spring",summer:"Summer",autumn:"Autumn"}[key]),value}));
+    const formatTotals=new Map(),losslessFormats=new Set(["FLAC","ALAC","WAV","AIFF"]);
+    songs.forEach(item=>{const format=String(item.track?.format||item.entry.format||"").toUpperCase();if(format)formatTotals.set(format,(formatTotals.get(format)||0)+item.seconds);});
+    const audioProfile={formats:[...formatTotals.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5),losslessSeconds:[...formatTotals.entries()].filter(([format])=>losslessFormats.has(format)).reduce((sum,[,value])=>sum+value,0),sampleRateTracks:songs.filter(item=>Number(item.track?.sampleRate||item.entry.sampleRate)>=48000).length};
+    const artistEvolution=monthly.map(row=>({label:row.label,name:row.name,value:row.value})).filter(row=>row.value>0&&row.name&&row.name!=="—");
+    return {year,total,totalPlays,activeDays,bestDay,songs:songs.slice(0,12),topSong:songs[0]||null,topArtist:topRows(artists)[0]||null,topAlbum:topRows(albums)[0]||null,artists:topRows(artists),albums:topRows(albums),genres:topRows(genres),monthly,weekdays,seasons,hourBands,peakHour:hourTotals[peakHour]>0?peakHour:null,peakWeekday:weekdays.slice().sort((a,b)=>b.value-a.value)[0]||null,peakSeason:seasons.slice().sort((a,b)=>b.value-a.value)[0]||null,artistEvolution,audioProfile,uniqueSongs:songs.length};
   }
   let annualReportYear=null,annualAutoOpenedFor=0;
   function renderAnnualTabs(years,target,win){
     const host=$("#annualYearTabs");if(!host)return;
     host.innerHTML=years.map(year=>`<button type="button" class="${year===target?"active":""}" data-annual-year="${year}">${year}${win.open&&year===win.year?` · ${tr("新","New")}`:""}</button>`).join("");
   }
+  function annualBarRows(rows,max=Math.max(1,...rows.map(row=>row.value))){return rows.map(row=>'<div class="annual-bar-row"><span>'+escapeHtml(row.label||row.name||row.key||'—')+'</span><i><b style="width:'+((row.value/max*100).toFixed(1))+'%"></b></i><em>'+fmtDuration(row.value)+'</em></div>').join('');}
+  function attachAnnualReportMotion(host){
+    host._annualMotionCleanup?.();
+    host.classList.remove('is-ready');
+    const sections=[...host.querySelectorAll('[data-annual-depth]')];
+    const reveal=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add('is-visible');}),{root:host,threshold:.12});
+    sections.forEach(section=>reveal.observe(section));
+    let frame=0;
+    const sync=()=>{if(frame)return;frame=requestAnimationFrame(()=>{frame=0;const box=host.getBoundingClientRect();sections.forEach(section=>{const rect=section.getBoundingClientRect(),center=rect.top+rect.height/2,delta=(box.top+box.height/2-center)/Math.max(1,box.height);section.style.setProperty('--annual-shift',(Math.max(-1,Math.min(1,delta))*Number(section.dataset.annualDepth||0))+'em');});});};
+    host.addEventListener('scroll',sync,{passive:true});
+    addEventListener('resize',sync,{passive:true});
+    host._annualMotionCleanup=()=>{reveal.disconnect();host.removeEventListener('scroll',sync);removeEventListener('resize',sync);if(frame)cancelAnimationFrame(frame);};
+    requestAnimationFrame(()=>{host.classList.add('is-ready');sync();});
+  }
   function renderAnnualBody(store,year){
-    const host=$("#annualReportBody");if(!host)return;
+    const host=$('#annualReportBody');if(!host)return;
     const report=buildAnnualReport(store,year);
-    $("#annualReportTitle").textContent=tr(`${year} 年度报告`,`${year} Annual Report`);
-    if(report.total<=0){setBatchedScrollHTML(host,`<div class="empty-state"><p>${tr(`${year} 年还没有听歌记录`,`No listening history for ${year}`)}</p></div>`);return;}
-    const card=(label,value)=>`<article class="favorite-card annual-stat"><div class="favorite-label">${label}</div><div class="favorite-answer"><strong>${value}</strong></div></article>`;
-    const top=report.topSong;
-    const topSongValue=top?`${escapeHtml(top.track?.title||top.entry.title)} · ${escapeHtml(top.track?.artist||top.entry.artist)}<span>${fmtDuration(top.seconds)}</span>`:"—";
-    const bestDayValue=report.bestDay?`${escapeHtml(report.bestDay.key)} · ${fmtDuration(report.bestDay.value)}`:"—";
-    const peakValue=report.peakHour===null?tr("—","—"):tr(`${report.peakHour}:00 最活跃`,`Most active at ${report.peakHour}:00`);
-    const rankRows=report.songs.map((item,rank)=>{
-      const cover=item.track?.thumbUrl||item.track?.coverUrl;
-      const thumb=cover?`<img src="${cover}" class="track-thumb" loading="lazy" decoding="async">`:`<div class="track-thumb"><span>${escapeHtml((item.track?.title||item.entry.title||"?").trim().slice(0,1))}</span></div>`;
-      return `<div class="top-row"><div class="top-rank">${rank+1}</div><div class="top-row-main">${thumb}<div class="top-info"><div class="t-title">${escapeHtml(item.track?.title||item.entry.title)}</div><div class="t-artist">${escapeHtml(item.track?.artist||item.entry.artist)}</div></div></div><div class="top-row-metrics"><div class="top-bar-wrap"><div class="top-bar-fill" style="width:${(item.seconds/Math.max(1,report.songs[0].seconds)*100).toFixed(0)}%"></div></div><div class="top-meta"><span>${fmtDuration(item.seconds)} · ${item.plays}${tr("次"," plays")}</span></div></div></div>`;
-    }).join("");
-    const dimCard=(label,rows)=>`<section class="data-card"><h3>${label}</h3>${periodBars(rows.map(([name,value])=>({label:"",name,value})))}</section>`;
-    host.innerHTML=`<div class="annual-summary">${card(tr("年度听歌","Listening Time"),fmtDuration(report.total))}${card(tr("年度播放","Plays"),`${report.totalPlays}${tr("次","")}`)}${card(tr("活跃天数","Active Days"),`${report.activeDays}${tr("天","")}`)}${card(tr("年度之歌","Top Song"),topSongValue)}${card(tr("高峰时段","Peak Hour"),peakValue)}</div>`
-      +`<section class="data-card wide"><h3>${tr("月度听歌时间","Monthly Listening")}</h3><div class="data-sub">${tr("条形为当月时长，悬停查看当月最爱艺人","Bars show monthly time; hover for the monthly top artist")}</div>${periodBars(report.monthly)}</section>`
-      +`<section class="data-card wide"><h3>${tr("年度 Top 10","Yearly Top 10")}</h3>${rankRows}</section>`
-      +`<div class="annual-dims">${dimCard(tr("最爱艺人","Favorite Artists"),report.artists)}${dimCard(tr("最爱专辑","Favorite Albums"),report.albums)}${dimCard(tr("最爱风格","Favorite Genres"),report.genres)}</div>`
-      +`<section class="data-card wide"><div class="neural-insights"><div class="neural-insight">${tr(`单日最高 <strong>${escapeHtml(bestDayValue)}</strong>。`,`Peak day: <strong>${escapeHtml(bestDayValue)}</strong>.`)}${report.peakHour===null?"":tr(`你通常在 <strong>${report.peakHour}:00</strong> 进入听歌状态。`,`You usually settle in around <strong>${report.peakHour}:00</strong>.`)}</div></div></section>`;
+    $('#annualReportTitle').textContent=tr(year+' 年度报告',year+' Annual Report');
+    if(report.total<=0){host._annualMotionCleanup?.();host._annualMotionCleanup=null;setBatchedScrollHTML(host,'<div class="empty-state"><p>'+tr(year+' 年还没有听歌记录','No listening history for '+year)+'</p></div>');return;}
+    const card=(label,value,detail)=>'<article class="annual-kpi"><span>'+label+'</span><strong>'+value+'</strong>'+(detail?'<small>'+detail+'</small>':'')+'</article>';
+    const top=report.topSong,bestDayValue=report.bestDay?escapeHtml(report.bestDay.key)+' · '+fmtDuration(report.bestDay.value):'—';
+    const peakValue=report.peakHour===null?tr('—','—'):tr(report.peakHour+':00 最活跃','Most active at '+report.peakHour+':00');
+    const rankRows=report.songs.map((item,rank)=>{const cover=item.track?.thumbUrl||item.track?.coverUrl;const thumb=cover?'<img src="'+cover+'" class="track-thumb" loading="lazy" decoding="async">':'<div class="track-thumb"><span>'+escapeHtml((item.track?.title||item.entry.title||'?').trim().slice(0,1))+'</span></div>';return '<div class="top-row"><div class="top-rank">'+(rank+1)+'</div><div class="top-row-main">'+thumb+'<div class="top-info"><div class="t-title">'+escapeHtml(item.track?.title||item.entry.title)+'</div><div class="t-artist">'+escapeHtml(item.track?.artist||item.entry.artist)+'</div></div></div><div class="top-row-metrics"><div class="top-bar-wrap"><div class="top-bar-fill" style="width:'+((item.seconds/Math.max(1,report.songs[0].seconds)*100).toFixed(0))+'%"></div></div><div class="top-meta"><span>'+fmtDuration(item.seconds)+' · '+item.plays+tr('次',' plays')+'</span></div></div></div>';}).join('');
+    const topSongTitle=top?escapeHtml(top.track?.title||top.entry.title):'—',topArtist=report.topArtist?escapeHtml(report.topArtist[0]):'—',topAlbum=report.topAlbum?escapeHtml(report.topAlbum[0]):'—';
+    const audioLabel=report.audioProfile.losslessSeconds>0?tr('包含无损播放','Includes lossless listening'):tr('未记录无损格式','No lossless format recorded');
+    let html='<div class="annual-report-story">';
+    html+='<section class="annual-chapter annual-hero-chapter" data-annual-depth=".12"><div class="annual-kicker">GLASS PLAYER · '+tr('年度回顾','YEAR IN SOUND')+'</div><div class="annual-year">'+year+'</div><p>'+tr('这一年，你把时间交给了声音。','A year of your time, translated into sound.')+'</p><div class="annual-kpis">'+card(tr('听歌时间','Listening time'),fmtDuration(report.total),report.activeDays+tr('个活跃日',' active days'))+card(tr('播放次数','Plays'),report.totalPlays,report.uniqueSongs+tr('首独立歌曲',' unique songs'))+card(tr('年度之歌','Song of the year'),topSongTitle,top?fmtDuration(top.seconds):'—')+card(tr('年度艺人','Artist of the year'),topArtist)+card(tr('年度专辑','Album of the year'),topAlbum)+'</div></section>';
+    html+='<section class="annual-chapter annual-feature-chapter" data-annual-depth="-.08"><div class="annual-chapter-index">01</div><div><h4>'+tr('年度之歌','THE SONG THAT STAYED')+'</h4><h2>'+topSongTitle+'</h2><p>'+(top?(escapeHtml(top.track?.artist||top.entry.artist||'')+' · '+fmtDuration(top.seconds)+' · '+top.plays+tr('次',' plays')):'—')+'</p></div><div class="annual-feature-number">01</div></section>';
+    html+='<section class="annual-chapter" data-annual-depth=".05"><div class="annual-section-heading"><div><span>'+tr('节奏','RHYTHM')+'</span><h3>'+tr('你的听歌节拍','Your listening rhythm')+'</h3></div><p>'+tr('从日期、时段和季节，看见这一年的习惯。','A year of habits, seen through days, hours and seasons.')+'</p></div><div class="annual-rhythm-grid"><div><h5>'+tr('最活跃星期','Most active weekday')+'</h5><strong>'+escapeHtml(report.peakWeekday?.label||'—')+'</strong>'+annualBarRows(report.weekdays)+'</div><div><h5>'+tr('最常出现的时段','Most active hours')+'</h5><strong>'+peakValue+'</strong>'+annualBarRows(report.hourBands)+'</div><div><h5>'+tr('季节偏好','Seasonal listening')+'</h5><strong>'+escapeHtml(report.peakSeason?.label||'—')+'</strong>'+annualBarRows(report.seasons)+'</div></div></section>';
+    html+='<section class="annual-chapter" data-annual-depth="-.06"><div class="annual-section-heading"><div><span>'+tr('时间线','TIMELINE')+'</span><h3>'+tr('十二个月的起伏','Twelve months in motion')+'</h3></div></div><div class="annual-month-grid">'+annualBarRows(report.monthly)+'</div><div class="annual-evolution">'+report.artistEvolution.map(row=>'<span>'+escapeHtml(row.label)+'<b>'+escapeHtml(row.name)+'</b></span>').join('')+'</div></section>';
+    html+='<section class="annual-chapter annual-ranking-chapter" data-annual-depth=".1"><div class="annual-section-heading"><div><span>'+tr('排行榜','RANKINGS')+'</span><h3>'+tr('重复播放的那些歌','The songs you returned to')+'</h3></div><p>'+tr('按年度听歌时长排序，显示最多 12 首。','Ranked by listening time, up to 12 songs.')+'</p></div><div class="annual-ranking-list">'+rankRows+'</div></section>';
+    const dims=[[tr('最爱艺人','Favorite artists'),report.artists],[tr('最爱专辑','Favorite albums'),report.albums],[tr('最爱风格','Favorite genres'),report.genres]];
+    html+='<section class="annual-chapter" data-annual-depth="-.05"><div class="annual-section-heading"><div><span>'+tr('偏好版图','YOUR MAP')+'</span><h3>'+tr('艺人、专辑与风格','Artists, albums and genres')+'</h3></div></div><div class="annual-dims">'+dims.map(pair=>'<div class="annual-dim"><h5>'+pair[0]+'</h5>'+annualBarRows(pair[1].map(row=>({name:row[0],value:row[1]})))+'</div>').join('')+'</div></section>';
+    html+='<section class="annual-chapter" data-annual-depth=".07"><div class="annual-section-heading"><div><span>'+tr('音质档案','AUDIO PROFILE')+'</span><h3>'+tr('你听到的声音','The sound you chose')+'</h3></div></div><div class="annual-audio-grid"><div><strong>'+audioLabel+'</strong><span>'+fmtDuration(report.audioProfile.losslessSeconds)+' '+tr('无损时长','lossless time')+'</span></div><div><strong>'+tr('高采样率曲目','High sample-rate tracks')+'</strong><span>'+report.audioProfile.sampleRateTracks+'</span></div><div><strong>'+tr('记录到的格式','Formats recorded')+'</strong><span>'+(report.audioProfile.formats.map(row=>escapeHtml(row[0])).join(' · ')||'—')+'</span></div></div></section>';
+    html+='<section class="annual-chapter annual-closing-chapter" data-annual-depth="-.1"><div class="annual-closing-number">'+fmtDuration(report.total)+'</div><h3>'+tr('这一年，感谢你一直在听。','Thanks for listening all year.')+'</h3><p>'+tr('单日最高是 '+bestDayValue+'。所有统计均在本地生成。','Your peak day was '+bestDayValue+'. Every statistic was generated locally.')+'</p><small>'+tr('歌曲文件不会离开设备；本报告只读取现有听歌历史。','Audio files never leave this device; this report reads only existing listening history.')+'</small></section></div>';
+    host.innerHTML=html;
+    attachAnnualReportMotion(host);
   }
   function openAnnualReport(year){
     const store=loadHistoryStore(),win=annualReportWindow();
@@ -9162,41 +9208,29 @@ window.GPModules.register = function register(name,factory){
     button.title=win.open?tr(`${win.year} 年度报告已开放，1 月 14 日截止`,`${win.year} report is open until January 14`):tr("查看往年报告","Browse past yearly reports");
   }
   function buildAnnualReportHTML(report){
-    const esc=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    const style=`*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 50% -8%,#2a2417 0%,#141318 46%,#0e0d12 100%);color:#f2ecdf;font-family:system-ui,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;min-height:100vh}header.cover{max-width:880px;margin:0 auto;padding:64px clamp(16px,5vw,40px) 10px;text-align:center}.kicker{letter-spacing:.42em;font-size:12px;color:#c9a45c;font-weight:600}.year{font-family:Georgia,"Songti SC","SimSun",serif;font-size:clamp(64px,14vw,120px);line-height:1;margin:10px 0 4px;background:linear-gradient(180deg,#f6e7c4 20%,#d9ab55 62%,#9a7430 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.rule{width:120px;height:2px;margin:18px auto;background:linear-gradient(90deg,transparent,#c9a45c,transparent)}.gen{color:#8f8a7c;font-size:13px}.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;max-width:880px;margin:26px auto 0;padding:0 clamp(16px,5vw,40px)}.hero .cell{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:20px 10px;text-align:center;box-shadow:0 18px 44px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}.hero .k{font-size:12px;letter-spacing:.2em;color:#a49d8b}.hero .v{font-family:Georgia,"Songti SC",serif;font-size:34px;margin-top:8px;color:#f6e7c4}main{max-width:880px;margin:0 auto;padding:26px clamp(16px,5vw,40px) 10px}section.card{background:rgba(255,255,255,.038);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:26px 28px;margin:0 0 18px;box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.07)}h2{margin:0 0 4px;font-size:15px;letter-spacing:.28em;color:#c9a45c;font-weight:600}h2 small{display:block;letter-spacing:.06em;color:#6f6a5c;font-size:12px;margin-top:6px;font-weight:400}.topsong{display:flex;align-items:baseline;gap:18px;margin-top:14px}.topsong .no{font-family:Georgia,serif;font-size:54px;color:#c9a45c;line-height:1}.topsong .t{font-size:24px;font-weight:700}.topsong .a{color:#a49d8b;margin-top:4px}.topsong .m{margin-left:auto;text-align:right;color:#a49d8b;font-size:13px;white-space:nowrap}.row{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:11px 2px;border-top:1px solid rgba(255,255,255,.07)}.row:first-of-type{border-top:0}.row .no{font-family:Georgia,serif;font-size:26px;color:#8f8a7c}.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no{color:#e3bd72}.row .t{font-weight:600}.row .a{color:#8f8a7c;font-size:13px;margin-top:2px}.row .m{color:#a49d8b;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.bar{display:grid;grid-template-columns:1fr 2fr 96px;gap:12px;align-items:center;margin:9px 0;font-size:13px}.bar .track{height:8px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.bar .fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8a6a2e,#e3bd72)}.bar .num{text-align:right;color:#a49d8b;font-variant-numeric:tabular-nums}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}h4{margin:2px 0 8px;font-size:13px;letter-spacing:.2em;color:#c9a45c}details{margin-top:14px}summary{cursor:pointer;color:#a49d8b;font-size:13px}svg.chart{display:block;width:100%;height:auto;margin-top:10px}.dot{fill:#e3bd72;stroke:#141318;stroke-width:2}.axis{fill:#8f8a7c;font-size:12px}.rhythm{margin-top:6px;color:#cfc8b4;font-size:14px;line-height:2}footer{max-width:880px;margin:0 auto;padding:14px clamp(16px,5vw,40px) 56px;color:#6f6a5c;font-size:12px;text-align:center}@media(prefers-color-scheme:light){body{background:radial-gradient(1200px 500px at 50% -8%,#f7ecd4 0%,#f3efe6 46%,#ece7d9 100%);color:#2b2620}header .gen{color:#8a7a52}section.card,.hero .cell{background:rgba(255,255,255,.72);border-color:rgba(120,90,30,.16);box-shadow:0 14px 34px rgba(120,90,30,.12)}.hero .v,.topsong .t{color:#4a3a17}.kicker,h2,h4,.row:nth-of-type(1) .no,.row:nth-of-type(2) .no,.row:nth-of-type(3) .no,.topsong .no{color:#8a6a2e}.row{border-color:rgba(120,90,30,.14)}.row .a,.row .m,.bar .num,.topsong .m,.topsong .a,.rhythm{color:#6f6553}.bar .track{background:rgba(120,90,30,.14)}footer{color:#8a7a52}}`;
-    const zh=uiLanguage==="zh",copy=zh?{
-      lang:"zh-CN",title:`Glass Player ${report.year} 年度报告`,kicker:"GLASS PLAYER · 年度报告",generated:"本地生成",listening:"年度听歌",plays:"年度播放",activeDays:"活跃天数",topSongSection:"年度之歌",topSongSub:"年度之歌",monthly:"月度曲线",monthlySub:"月度听歌",yearlyTop:"年度 TOP 10",yearlySub:"年度歌曲排行",expand:"展开 / 收起",favorites:"最爱版图",favoritesSub:"偏好",artists:"艺人",albums:"专辑",genres:"风格",peak:"单日最高",playsUnit:"次",footer:"由 Glass Player 在本地生成，未上传任何数据。",hourText:hour=>`你通常在 ${hour}:00 进入听歌状态。`
-    }:{
-      lang:"en",title:`Glass Player ${report.year} Annual Report`,kicker:"GLASS PLAYER · ANNUAL REPORT",generated:"Generated locally",listening:"Listening Time",plays:"Plays",activeDays:"Active Days",topSongSection:"Top Song of the Year",topSongSub:"TOP SONG OF THE YEAR",monthly:"Monthly Listening",monthlySub:"MONTHLY LISTENING",yearlyTop:"Yearly Top 10",yearlySub:"YEARLY TOP SONGS",expand:"Expand / Collapse",favorites:"Favorites",favoritesSub:"FAVORITES",artists:"Artists",albums:"Albums",genres:"Genres",peak:"Peak day",playsUnit:"plays",footer:"Generated locally by Glass Player. Nothing was uploaded.",hourText:hour=>`You usually settle in around ${hour}:00.`
-    };
-    const formatDuration=seconds=>{const total=Math.round(seconds||0),hours=Math.floor(total/3600),minutes=Math.floor(total%3600/60);if(hours>0)return zh?`${hours}小时${minutes}分钟`:`${hours}h ${minutes}m`;if(minutes>0)return zh?`${minutes}分钟`:`${minutes} min`;return zh?`${total}秒`:`${total} sec`;};
-    const generatedDate=new Date().toLocaleDateString(zh?"zh-CN":"en-US");
-    const W=760,H=230,padX=10,padB=32,padT=18;
-    const maxMonth=Math.max(1,...report.monthly.map(row=>row.value));
-    const pts=report.monthly.map((row,i)=>({x:padX+i*(W-padX*2)/11,y:H-padB-(row.value/maxMonth)*(H-padT-padB),...row}));
-    const linePath="M"+pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L");
-    const areaPath=`${linePath} L${(W-padX).toFixed(1)},${H-padB} L${padX.toFixed(1)},${H-padB} Z`;
-    const chart=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="annualGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3bd72" stop-opacity=".85"/><stop offset="1" stop-color="#e3bd72" stop-opacity=".04"/></linearGradient></defs><path d="${areaPath}" fill="url(#annualGold)"/><path d="${linePath}" fill="none" stroke="#e3bd72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${pts.map(p=>`<circle class="dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5"><title>${esc(p.label)} · ${esc(p.name)} · ${esc(formatDuration(p.value))}</title></circle><text class="axis" x="${p.x.toFixed(1)}" y="${H-10}" text-anchor="middle">${esc(p.label)}</text>`).join("")}</svg>`;
-    const topRows=report.songs.map((item,rank)=>`<div class="row"><span class="no">${String(rank+1).padStart(2,"0")}</span><span><span class="t">${esc(item.track?.title||item.entry.title)}</span><div class="a">${esc(item.track?.artist||item.entry.artist)}</div></span><span class="m">${esc(formatDuration(item.seconds))} · ${item.plays} ${copy.playsUnit}</span></div>`).join("");
-    const dim=(title,list)=>{const max=Math.max(1,...list.map(([,value])=>value));return `<div><h4>${title}</h4>${list.map(([name,value])=>`<div class="bar" title="${esc(formatDuration(value))}"><span>${esc(name)}</span><span class="track"><span class="fill" style="width:${(value/max*100).toFixed(0)}%"></span></span><span class="num">${esc(formatDuration(value))}</span></div>`).join("")||'<div class="a">—</div>'}</div>`;};
-    const top=report.topSong;
-    const peakText=report.bestDay?`${copy.peak} ${esc(`${report.bestDay.key} · ${formatDuration(report.bestDay.value)}`)}${zh?"。":"."}`:`${copy.peak} —`;
-    const rhythm=`${peakText}${report.peakHour===null?"":` ${copy.hourText(report.peakHour)}`}`;
-    return `<!DOCTYPE html><html lang="${copy.lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(copy.title)}</title><style>${style}</style></head><body>`
-      +`<header class="cover"><div class="kicker">${copy.kicker}</div><div class="year">${report.year}</div><div class="rule"></div><div class="gen">${copy.generated} · ${esc(generatedDate)}</div></header>`
-      +`<div class="hero"><div class="cell"><div class="k">${copy.listening}</div><div class="v">${esc(formatDuration(report.total))}</div></div><div class="cell"><div class="k">${copy.plays}</div><div class="v">${report.totalPlays}</div></div><div class="cell"><div class="k">${copy.activeDays}</div><div class="v">${report.activeDays}</div></div></div>`
-      +`<main><section class="card"><h2>${copy.topSongSection}<small>${copy.topSongSub}</small></h2><div class="topsong"><span class="no">01</span><span><span class="t">${esc(top?.track?.title||top?.entry.title||"—")}</span><div class="a">${esc(top?.track?.artist||top?.entry.artist||"")}</div></span><span class="m">${top?esc(formatDuration(top.seconds))+" · "+top.plays+" "+copy.playsUnit:""}</span></div></section>`
-      +`<section class="card"><h2>${copy.monthly}<small>${copy.monthlySub}</small></h2>${chart}</section>`
-      +`<section class="card"><h2>${copy.yearlyTop}<small>${copy.yearlySub}</small></h2><details open><summary>${copy.expand}</summary>${topRows}</details></section>`
-      +`<section class="card"><h2>${copy.favorites}<small>${copy.favoritesSub}</small></h2><div class="cols">${dim(copy.artists,report.artists)}${dim(copy.albums,report.albums)}${dim(copy.genres,report.genres)}</div><div class="rhythm">${rhythm}</div></section></main>`
-      +`<footer>${copy.footer}</footer></body></html>`;
+    const esc=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const fmt=seconds=>{const total=Math.round(seconds||0),hours=Math.floor(total/3600),minutes=Math.floor(total%3600/60);return hours?hours+'h '+minutes+'m':minutes?minutes+' min':total+' sec';};
+    const barRows=rows=>rows.map(row=>'<div class="bar-row"><span>'+esc(row.label||row.name||row.key||'-')+'</span><i><b style="width:'+((row.value/Math.max(1,...rows.map(item=>item.value))*100).toFixed(1))+'%"></b></i><em>'+fmt(row.value)+'</em></div>').join('');
+    const top=report.topSong,topTitle=top?.track?.title||top?.entry.title||'-',topArtist=report.topArtist?.[0]||'-',topAlbum=report.topAlbum?.[0]||'-';
+    const rows=report.songs.map((item,index)=>'<div class="rank"><strong>'+String(index+1).padStart(2,'0')+'</strong><span><b>'+esc(item.track?.title||item.entry.title)+'</b><small>'+esc(item.track?.artist||item.entry.artist||'')+'</small></span><em>'+fmt(item.seconds)+' · '+item.plays+' plays</em></div>').join('');
+    const dims=[['Artists',report.artists],['Albums',report.albums],['Genres',report.genres]].map(pair=>'<div class="dim"><h4>'+pair[0]+'</h4>'+barRows(pair[1].map(row=>({name:row[0],value:row[1]})))+'</div>').join('');
+    const style='*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f0e9;color:#1a2630;font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body:before{content:"";position:fixed;inset:0;background:linear-gradient(120deg,#e8edf2 0%,transparent 40%),radial-gradient(70vw 60vh at 100% 0%,#f7d9c4 0,transparent 65%);pointer-events:none;z-index:-1}.progress{position:fixed;left:0;top:0;height:5px;width:100%;background:#17273318;z-index:4}.progress b{display:block;height:100%;width:0;background:#d65c3e;transform-origin:left}.cover{min-height:88vh;display:grid;place-items:center;text-align:left;padding:10vh 7vw;border-bottom:1px solid #1a263020}.cover-inner{width:min(980px,100%)}.kicker{letter-spacing:.22em;text-transform:uppercase;color:#d65c3e;font-size:12px;font-weight:800}.year{margin:20px 0 10px;font-size:clamp(86px,17vw,210px);line-height:.8;letter-spacing:-.1em;color:#172733}.cover p{max-width:620px;margin:28px 0;color:#53626d;font-size:clamp(18px,2.6vw,29px)}main{width:min(1100px,100%);margin:auto;padding:0 6vw 16vh}.chapter{min-height:72vh;display:flex;flex-direction:column;justify-content:center;padding:10vh 0;opacity:0;transform:translate3d(0,45px,0);transition:opacity .7s ease,transform .85s cubic-bezier(.2,.8,.2,1)}.chapter.visible{opacity:1;transform:translate3d(0,var(--shift,0px),0)}.panel{background:#fff;border:1px solid #17273324;border-radius:10px;padding:clamp(28px,5vw,72px);box-shadow:0 22px 50px #17273314}.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;margin-top:34px;background:#17273324;border:1px solid #17273324}.metric{padding:22px;background:#fff}.metric span,.label{display:block;color:#687783;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:750}.metric b{display:block;margin-top:10px;color:#172733;font-size:clamp(20px,3vw,36px);overflow-wrap:anywhere}.feature{min-height:74vh}.feature .number{font-size:clamp(64px,12vw,140px);line-height:.8;color:#d65c3e22;align-self:flex-end}.eyebrow{color:#d65c3e;letter-spacing:.16em;font-size:12px;text-transform:uppercase;font-weight:800}.feature h2{max-width:13ch;margin:16px 0;font-size:clamp(38px,7vw,92px);line-height:.94;letter-spacing:-.06em;color:#172733}.feature p,.sub{color:#687783}.bars{display:grid;gap:10px}.bar-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,3fr) 90px;gap:12px;align-items:center;font-size:13px}.bar-row i{height:8px;border-radius:2px;background:#17273314;overflow:hidden}.bar-row b{display:block;height:100%;border-radius:inherit;background:#4f7890}.bar-row em{font-style:normal;text-align:right;color:#687783;font-variant-numeric:tabular-nums}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.grid3>div{padding:22px 0;border-top:2px solid #d65c3e}.grid3 h3,.dim h4{margin:0 0 14px;color:#172733}.grid3 strong{display:block;font-size:24px;margin-bottom:16px}.timeline{display:grid;gap:14px}.evolution{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}.evolution span{padding:8px 11px;border:1px solid #1727332e;border-radius:2px;color:#53626d}.evolution b{color:#172733;margin-left:6px}.rankings{display:grid;gap:0}.rank{display:grid;grid-template-columns:48px 1fr auto;gap:16px;align-items:center;padding:18px 0;border-bottom:1px solid #17273320}.rank>strong{font-size:26px;color:#d65c3e}.rank b,.rank small{display:block}.rank small{color:#687783}.rank em{font-style:normal;color:#53626d;font-size:13px}.dims{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.dim{padding:22px 0;border-top:2px solid #4f7890}.audio{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#17273324;border:1px solid #17273324}.audio div{padding:24px;background:#fff}.audio b,.audio span{display:block}.audio span{margin-top:10px;color:#687783}.closing{text-align:center;min-height:72vh}.closing .big{font-size:clamp(44px,8vw,96px);line-height:1;color:#d65c3e;letter-spacing:-.06em}.privacy{color:#7b8991;font-size:13px}footer{padding:5vh 6vw 10vh;text-align:center;color:#7b8991;font-size:12px;border-top:1px solid #17273320}@media(max-width:700px){.grid3,.dims,.audio{grid-template-columns:1fr}.bar-row{grid-template-columns:80px 1fr 70px}.rank{grid-template-columns:38px 1fr}.rank em{grid-column:2;text-align:left}.cover{min-height:78vh;padding:8vh 7vw}}@media(prefers-reduced-motion:reduce){.chapter{transition:none;transform:none!important}.chapter.visible{transform:none!important}}';
+     let html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glass Player Replay Atlas '+report.year+' Annual Report</title><style>'+style+'</style></head><body><div class="progress"><b></b></div><header class="cover chapter visible" data-depth=".04"><div class="cover-inner"><div class="kicker">Glass Player / Replay Atlas / Year in Sound</div><div class="year">'+report.year+'</div><p>A year of your time, translated into sound.</p><div class="hero-grid"><div class="metric"><span>Listening time</span><b>'+fmt(report.total)+'</b></div><div class="metric"><span>Plays</span><b>'+report.totalPlays+'</b></div><div class="metric"><span>Active days</span><b>'+report.activeDays+'</b></div><div class="metric"><span>Unique songs</span><b>'+report.uniqueSongs+'</b></div><div class="metric"><span>Top artist</span><b>'+esc(topArtist)+'</b></div><div class="metric"><span>Top album</span><b>'+esc(topAlbum)+'</b></div></div></div></header><main>';
+    html+='<section class="chapter feature" data-depth="-.08"><div class="panel"><div class="eyebrow">01 / Song of the year</div><h2>'+esc(topTitle)+'</h2><p class="feature p">'+esc(top?.track?.artist||top?.entry.artist||'')+' · '+(top?fmt(top.seconds)+' · '+top.plays+' plays':'-')+'</p><div class="number">01</div></div></section>';
+    html+='<section class="chapter" data-depth=".05"><div class="panel"><div class="eyebrow">02 / Your rhythm</div><h2>When sound found you</h2><div class="grid3"><div><h3>Weekday</h3><strong>'+esc(report.peakWeekday?.label||'-')+'</strong><div class="bars">'+barRows(report.weekdays)+'</div></div><div><h3>Hours</h3><strong>'+esc(report.peakHour===null?'-':report.peakHour+':00')+'</strong><div class="bars">'+barRows(report.hourBands)+'</div></div><div><h3>Season</h3><strong>'+esc(report.peakSeason?.label||'-')+'</strong><div class="bars">'+barRows(report.seasons)+'</div></div></div></div></section>';
+    html+='<section class="chapter" data-depth="-.05"><div class="panel"><div class="eyebrow">03 / The year in motion</div><h2>Twelve months, one listening story</h2><div class="timeline">'+barRows(report.monthly)+'</div><div class="evolution">'+report.artistEvolution.map(row=>'<span>'+esc(row.label)+' <b>'+esc(row.name)+'</b></span>').join('')+'</div></div></section>';
+    html+='<section class="chapter" data-depth=".08"><div class="panel"><div class="eyebrow">04 / Replay list</div><h2>The songs you returned to</h2><p class="sub">Ranked by listening time, up to 12 songs.</p><div class="rankings">'+rows+'</div></div></section>';
+    html+='<section class="chapter" data-depth="-.06"><div class="panel"><div class="eyebrow">05 / Your map</div><h2>Artists, albums and genres</h2><div class="dims">'+dims+'</div></div></section>';
+    html+='<section class="chapter" data-depth=".05"><div class="panel"><div class="eyebrow">06 / Audio profile</div><h2>The sound you chose</h2><div class="audio"><div><b>Lossless listening</b><span>'+fmt(report.audioProfile.losslessSeconds)+'</span></div><div><b>High sample-rate tracks</b><span>'+report.audioProfile.sampleRateTracks+'</span></div><div><b>Formats recorded</b><span>'+esc(report.audioProfile.formats.map(row=>row[0]).join(' · ')||'-')+'</span></div></div></div></section>';
+     html+='<section class="chapter closing" data-depth="-.1"><div class="panel"><div class="big">'+fmt(report.total)+'</div><h2>Thanks for listening all year.</h2><p class="sub">Your peak day was '+esc(report.bestDay?.key||'-')+'. Every statistic was generated locally.</p><p class="privacy">Audio files never leave this device; this report reads existing listening history only.</p></div></section></main><footer>Generated locally by Glass Player Replay Atlas · '+report.year+'</footer><script>(function(){var sections=[].slice.call(document.querySelectorAll(".chapter[data-depth]")),bar=document.querySelector(".progress b"),frame=0;function sync(){if(frame)return;frame=requestAnimationFrame(function(){frame=0;var h=document.documentElement.scrollHeight-innerHeight,scroll=scrollY;bar.style.width=(h?scroll/h*100:0)+"%";sections.forEach(function(s){var r=s.getBoundingClientRect(),p=(innerHeight/2-(r.top+r.height/2))/innerHeight;s.style.setProperty("--shift",(Math.max(-1,Math.min(1,p))*Number(s.dataset.depth||0)*100)+"px");});});}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add("visible");});},{threshold:.14});sections.forEach(function(s){io.observe(s);});addEventListener("scroll",sync,{passive:true});addEventListener("resize",sync);sync();})();</script></body></html>';
+    return html;
   }
   function downloadAnnualReport(year){
     const store=loadHistoryStore(),report=buildAnnualReport(store,year);
     if(report.total<=0){showToast(tr("这一年还没有听歌记录","No listening history for this year"));return;}
     const blob=new Blob(["﻿",buildAnnualReportHTML(report)],{type:"text/html;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download=`Glass Player Annual Report ${year}.html`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+     link.href=url;link.download=`Glass Player Replay Atlas Annual Report ${year}.html`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("年度报告已导出","Annual report exported"));
   }
   $("#annualReportBtn").addEventListener("click",()=>openAnnualReport());
@@ -9492,7 +9526,7 @@ window.GPModules.register = function register(name,factory){
   $("#eqPresetPop").addEventListener("click",event=>{const button=event.target.closest("button[data-p]");if(!button)return;event.stopPropagation();applyEQPreset(button.dataset.p);});
   document.addEventListener("pointerdown",event=>{if(eqPopoverOpen&&!event.target.closest(".eq-preset-wrap,#eqPresetPop"))closeEQPresetPopover();},{passive:true});
   window.addEventListener("resize",()=>{if(eqPopoverOpen)placeEQPresetPopover();},{passive:true});
-  /* ================= GP Spatial Engine 1.1 =================
+  /* ================= GP Spatial Engine 1.1 — Room =================
      Fixed, predictable presets. Playback state, track features, RMS and stereo
      correlation never modify spatial parameters. Only an explicit user mode
      selection can start the 400 ms equal-power A/B bus transition. */
@@ -9589,7 +9623,6 @@ window.GPModules.register = function register(name,factory){
     spatialEngine={input,output,dry,irBank,buses:[],activeIndex:null,transitioning:false,pendingMode:null,transitionTimer:0};spatialEngine.buses=[createSpatialBus(c,irBank,output,0),createSpatialBus(c,irBank,output,1)];requestSpatialMode(spatialEnabled?spatialMode:"none",true);return spatialEngine;
   }
   function applySpatialParameters(immediate=false){if(!spatialEngine)return;requestSpatialMode(spatialEnabled?spatialMode:"none",immediate);}
-
   /* ================= track info card + loudness meter ================= */
   const INFERRED_GENRE_ZH={Pop:"流行",Rock:"摇滚",Metal:"金属",Electronic:"电子", "Hip-Hop":"嘻哈", "R&B/Soul":"R&B / 灵魂乐",Jazz:"爵士",Classical:"古典",Ambient:"氛围", "Folk/Country":"民谣 / 乡村",Soundtrack:"原声配乐",Reggae:"雷鬼",Blues:"蓝调",Mixed:"混合风格"};
   const MFCC_TONE_LABELS={bright:["明亮","Bright"],deep:["厚重","Deep"],warm:["温暖","Warm"]};
@@ -10225,9 +10258,19 @@ window.GPModules.register = function register(name,factory){
   });
 
   const GP_FONT_LANGUAGE_STACKS=Object.freeze({
-    zh:'"PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',
+    zh:'"PingFang SC", "PingFang TC", "PingFang HK", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", Arial, sans-serif',
     en:'"Segoe UI", Arial, "SF Pro Text", sans-serif',
     ru:'"Segoe UI", Arial, "SF Pro Text", sans-serif'
+  });
+  const GP_FONT_SERIF_STACKS=Object.freeze({
+    zh:'"Songti SC", "Songti TC", "Noto Serif SC", "Source Han Serif SC", "SimSun", "STSong", "Times New Roman", serif',
+    en:'Georgia, "Times New Roman", "Songti SC", "SimSun", serif',
+    ru:'Georgia, "Times New Roman", serif'
+  });
+  const GP_FONT_MONO_STACKS=Object.freeze({
+    zh:'Consolas, "Courier New", "PingFang SC", "Microsoft YaHei", monospace',
+    en:'Consolas, "Courier New", monospace',
+    ru:'Consolas, "Courier New", monospace'
   });
   const GP_APPLE_FONT_ROLES=Object.freeze({
     zh:Object.freeze({base:'"SF Pro", "SF Pro Text", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "PingFang SC", "PingFang TC", "Segoe UI", Consolas, monospace'}),
@@ -10236,8 +10279,18 @@ window.GPModules.register = function register(name,factory){
   });
   function fontLanguage(){return uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh";}
   function appendFontLanguageFallback(value,language){
-    const base=String(value||"").replace(/,\s*(?:sans-serif|serif|monospace)\s*$/i,"").trim();
-    return `${base}, ${GP_FONT_LANGUAGE_STACKS[language]}`;
+    const raw=String(value||"").trim();
+    const isMono=/\bmonospace\s*$/i.test(raw);
+    const isSerif=!isMono && /(?:^|[,\s])serif\s*$/i.test(raw);
+    const base=raw.replace(/,\s*(?:sans-serif|serif|monospace)\s*$/i,"").trim();
+    if(isSerif){
+      return `${base}, ${(GP_FONT_SERIF_STACKS[language]||GP_FONT_SERIF_STACKS.zh)}`;
+    }
+    if(isMono){
+      return `${base}, ${(GP_FONT_MONO_STACKS[language]||GP_FONT_MONO_STACKS.zh)}`;
+    }
+    return `${base}, ${(GP_FONT_LANGUAGE_STACKS[language]||GP_FONT_LANGUAGE_STACKS.zh)}`;
+
   }
   function syncTypographyLanguage(){
     const select=$("#fontSelect"),selected=select?.options?.[select.selectedIndex];if(!select||!selected)return;
@@ -10295,9 +10348,9 @@ window.GPModules.register = function register(name,factory){
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · ${runtime.version||"7.4.3"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Replay Atlas · ${runtime.version||"7.5.0"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
-      [tr("引擎","Engines"),engineList||"GP Core 4.2 · GP Fusion Engine 4.1 · GP Motion Engine 4.1 · GP Spatial Engine 1.1 · GP Spectrum Engine 2.3 · GP Neural Engine 2.2 — Resonance Boost"],
+      [tr("引擎","Engines"),engineList||"GP Core 4.2 — Atlas Runtime · GP Fusion Engine 4.1 — Playlist Flow · GP Motion Engine 4.1 — Story Scroll · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
     ];
     aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>`<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div><div class="setting-hint">${escapeHTML(value)}</div></div></div>`).join("");
@@ -10474,7 +10527,6 @@ window.GPModules.register = function register(name,factory){
     setAccent(p.accentKey || "navy");
     applyTheme(); updateVolIcon();
   }
-
   /* ================= stable Edge window fitting ================= */
   const APP_MIN_WIDTH = 1040;
   const APP_MIN_HEIGHT = 800;
@@ -10649,6 +10701,6 @@ window.GPModules.register = function register(name,factory){
   const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
   const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.4.3",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION}`,motion:"GP Motion Engine 4.1",spatial:"GP Spatial Engine 1.1",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION}`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Resonance Boost`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.5.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2 — Atlas Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.1 — Story Scroll",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
 })();

@@ -1,4 +1,4 @@
-  /* ================= GP Neural Engine 2.2 — Resonance Boost =================
+  /* ================= GP Neural Engine 2.2 — Listening DNA =================
      Preference and recommendation are deliberately separate. Until the model
      passes its evidence/confidence gate, shuffle and Daily Mix remain uniform. */
   const NEURAL_MODEL_VERSION=4;
@@ -322,4 +322,3 @@
     pendingSelectionSource="queue";
     loadTrack(firstMixIndex,true);
   });
-
