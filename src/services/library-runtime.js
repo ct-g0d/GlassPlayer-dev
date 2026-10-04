@@ -911,6 +911,7 @@
     GP.performance.lastImport=Object.freeze({...stats});
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
     await settleImportProgress(stats);
+    sweepRetiredArtworkUrls();
     // 7.3.2 aggressive: the dialog is already closed here; heavy spectrum
     // decoding continues in the background slot and refreshes Daily Mix when
     // done, so large imports no longer block the modal.
@@ -918,11 +919,116 @@
   }
 
   let metadataRescanRunning=false;
+  const retiredArtworkUrls=new Set();
+  const MAX_RETIRED_ARTWORK_URLS=256;
+  const MAX_ARTWORK_SWEEP_RETRIES=12;
+  let artworkSweepTimer=0,artworkSweepRetries=0;
+
+  function clearArtworkSweepTimer(){
+    if(artworkSweepTimer){clearTimeout(artworkSweepTimer);artworkSweepTimer=0;}
+  }
+
+  function isArtworkUrlReferenced(url){
+    if(!url||typeof url!=="string")return false;
+    if(Array.isArray(playlist)){
+      for(let i=0;i<playlist.length;i++){
+        const t=playlist[i];
+        if(t&&(t.coverUrl===url||t.thumbUrl===url))return true;
+      }
+    }
+    try{
+      if(typeof artTransitionCopies!=="undefined"&&Array.isArray(artTransitionCopies)){
+        for(let i=0;i<artTransitionCopies.length;i++){
+          const node=artTransitionCopies[i];
+          if(node&&(node.src===url||node.getAttribute?.("src")===url||node.currentSrc===url))return true;
+        }
+      }
+    }catch(error){}
+    if(typeof document!=="undefined"&&document.querySelectorAll){
+      try{
+        const nodes=document.querySelectorAll("img, image, video");
+        for(let i=0;i<nodes.length;i++){
+          const node=nodes[i];
+          if(node&&(node.src===url||node.getAttribute?.("src")===url||node.currentSrc===url))return true;
+        }
+      }catch(error){}
+    }
+    try{
+      if(typeof gpVideoPipCoverSource!=="undefined"&&gpVideoPipCoverSource===url)return true;
+    }catch(error){}
+    return false;
+  }
+
+  function enforceRetiredArtworkBounds(forceOldest=false){
+    if(!retiredArtworkUrls.size)return;
+    for(const url of Array.from(retiredArtworkUrls)){
+      if(!isArtworkUrlReferenced(url)){
+        retiredArtworkUrls.delete(url);
+        try{URL.revokeObjectURL(url);}catch(error){}
+      }
+    }
+    while(retiredArtworkUrls.size>(forceOldest?0:MAX_RETIRED_ARTWORK_URLS)){
+      const oldest=retiredArtworkUrls.values().next().value;
+      if(!oldest)break;
+      retiredArtworkUrls.delete(oldest);
+      try{URL.revokeObjectURL(oldest);}catch(error){}
+    }
+  }
+
+  function sweepRetiredArtworkUrls(){
+    clearArtworkSweepTimer();
+    if(!retiredArtworkUrls.size){artworkSweepRetries=0;return;}
+    for(const url of Array.from(retiredArtworkUrls)){
+      if(!isArtworkUrlReferenced(url)){
+        retiredArtworkUrls.delete(url);
+        try{URL.revokeObjectURL(url);}catch(error){}
+      }
+    }
+    if(retiredArtworkUrls.size>0){
+      scheduleArtworkSweep();
+    }else{
+      artworkSweepRetries=0;
+    }
+  }
+
+  function scheduleArtworkSweep(){
+    if(artworkSweepTimer)return;
+    if(!retiredArtworkUrls.size){artworkSweepRetries=0;return;}
+    if(artworkSweepRetries>=MAX_ARTWORK_SWEEP_RETRIES){
+      artworkSweepRetries=0;
+      enforceRetiredArtworkBounds(true);
+      return;
+    }
+    artworkSweepRetries++;
+    artworkSweepTimer=setTimeout(()=>{
+      artworkSweepTimer=0;
+      sweepRetiredArtworkUrls();
+    },240);
+  }
+
+  function retireArtworkUrl(url){
+    if(typeof url!=="string"||!url.startsWith("blob:"))return;
+    if(!isArtworkUrlReferenced(url)){
+      try{URL.revokeObjectURL(url);}catch(error){}
+      return;
+    }
+    retiredArtworkUrls.add(url);
+    enforceRetiredArtworkBounds();
+    scheduleArtworkSweep();
+  }
+
   function replaceTrackArtwork(track,coverBlob,thumbBlob){
+    if(!track)return;
     const oldUrls=new Set([track.coverUrl,track.thumbUrl].filter(url=>typeof url==="string"&&url.startsWith("blob:")));
-    track.coverUrl=coverBlob?URL.createObjectURL(coverBlob):null;
-    track.thumbUrl=(thumbBlob||coverBlob)?URL.createObjectURL(thumbBlob||coverBlob):null;
-    oldUrls.forEach(url=>URL.revokeObjectURL(url));
+    const nextCoverUrl=coverBlob?URL.createObjectURL(coverBlob):null;
+    const nextThumbUrl=(thumbBlob||coverBlob)?URL.createObjectURL(thumbBlob||coverBlob):null;
+    track.coverUrl=nextCoverUrl;
+    track.thumbUrl=nextThumbUrl;
+    oldUrls.forEach(url=>{
+      if(url!==nextCoverUrl&&url!==nextThumbUrl){
+        retireArtworkUrl(url);
+      }
+    });
   }
   function metadataVersionSnapshot(metadata,fileInfo={},capturedAt=Date.now()){
     const value=metadata||{};
@@ -986,7 +1092,11 @@
         const current=playlist[currentIndex];setNowPlayingTitle(current.title);$("#nowArtist").textContent=current.artist;
         updateTrackInfoCard(current);updateArtDisplay();updateAmbient();applyAdaptiveAccent();
       }
+      sweepRetiredArtworkUrls();
       stats.durationMs=Math.round(performance.now()-startedAt);GP.performance.lastMetadataRescan=Object.freeze({...stats});return stats;
-    }finally{metadataRescanRunning=false;}
+    }finally{
+      metadataRescanRunning=false;
+      scheduleArtworkSweep();
+    }
   }
 
