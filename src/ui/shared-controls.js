@@ -84,7 +84,8 @@
     requestAnimationFrame(()=>{
       fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();
       if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
-      if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();});
+      if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);if(audio.duration)seekProgress=Math.max(0,Math.min(1,audio.currentTime/audio.duration));drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();});
+      else{if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();if(typeof syncMiniEqMeter==="function")syncMiniEqMeter();}
     });
   }
   function switchPrimaryView(viewName){
@@ -542,7 +543,7 @@
       syncProgress();
       if(pointerId===null&&!rangeFrame)targetValue=Number(element.value||0);
     });
-    if(settingsRange){window.addEventListener("resize",syncProgress,{passive:true});document.addEventListener("scroll",syncProgress,true);}
+    if(settingsRange){window.addEventListener("resize",syncProgress,{passive:true});}
     syncProgress();
   }
   GPUIRegistry

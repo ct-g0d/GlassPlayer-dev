@@ -169,7 +169,8 @@
   let playbackMotionFrame=0,playbackMotionLastPaint=0,playbackMotionLastSecond=-1;
   function runPlaybackMotion120(timestamp){
     playbackMotionFrame=0;
-    if(!isPlaying||audio.paused||audio.ended||document.hidden)return;
+    const playerActive=!!$(".view[data-view='player']")?.classList.contains("active");
+    if(!isPlaying||audio.paused||audio.ended||document.hidden||!playerActive)return;
     if(timestamp-playbackMotionLastPaint>=GP_MOTION_FRAME_MS-.35){
       playbackMotionLastPaint=timestamp;
       if(audio.duration){
@@ -184,7 +185,8 @@
     playbackMotionFrame=requestAnimationFrame(runPlaybackMotion120);
   }
   function syncPlaybackMotion120(){
-    if(isPlaying&&!document.hidden){if(!playbackMotionFrame)playbackMotionFrame=requestAnimationFrame(runPlaybackMotion120);}
+    const playerActive=!!$(".view[data-view='player']")?.classList.contains("active");
+    if(isPlaying&&!document.hidden&&playerActive){if(!playbackMotionFrame)playbackMotionFrame=requestAnimationFrame(runPlaybackMotion120);}
     else{if(playbackMotionFrame)cancelAnimationFrame(playbackMotionFrame);playbackMotionFrame=0;playbackMotionLastPaint=0;}
   }
   document.addEventListener("visibilitychange",syncPlaybackMotion120);
