@@ -54,10 +54,54 @@
      derived latest-wins from those events (unlike persists with signal 0). */
   const USER_PLAYLISTS_RECORD_ID="userPlaylists";
   let userPlaylistsCache=null,userPlaylistsLoaded=false;
-  let likedKeys=new Set(),likedKeysLoaded=false;
+  let likedKeys=new Set(),likedKeysLoaded=false,latestLikeEvents=new Map();
   let libraryCollectionMode="all";
   let collectionScopeActive=false;
   function playlistTrackKey(track){try{return neuralTrackId(track);}catch(error){return track?.id||null;}}
+  function trackLikeKeys(track){
+    if(!track||typeof track!=="object")return [];
+    const keys=new Set();
+    const addKey=k=>{if(k!==null&&k!==undefined&&k!=="")keys.add(k);};
+    try{addKey(playlistTrackKey(track));}catch(e){}
+    addKey(track.spectrumId);
+    addKey(track.audioEssenceKey);
+    addKey(track.contentKey);
+    if(Array.isArray(track.legacyContentKeys)){
+      track.legacyContentKeys.forEach(addKey);
+    }
+    if(track.artist||track.title){
+      try{
+        const tk=typeof trackKey==="function"?trackKey(track):`${track.artist||""}||${track.title||""}`;
+        if(tk&&tk!=="||")addKey(tk);
+      }catch(e){}
+    }
+    if(track.metadataVersions?.before?.metadata){
+      const b=track.metadataVersions.before.metadata;
+      if(b.artist||b.title){
+        try{
+          const btk=typeof trackKey==="function"?trackKey(b):`${b.artist||""}||${b.title||""}`;
+          if(btk&&btk!=="||")addKey(btk);
+        }catch(e){}
+      }
+    }
+    return Array.from(keys);
+  }
+  function latestLikeEventForTrack(track){
+    if(!track)return null;
+    const keys=trackLikeKeys(track);
+    let latest=null;
+    for(let i=0;i<keys.length;i++){
+      const event=latestLikeEvents.get(keys[i]);
+      if(event){
+        const eventTime=Number(event.timestamp)||0;
+        const latestTime=Number(latest?.timestamp)||0;
+        if(!latest||eventTime>latestTime){
+          latest=event;
+        }
+      }
+    }
+    return latest;
+  }
   async function loadUserPlaylists(){
     try{
       const record=await GPDatabase.getRecommendations(USER_PLAYLISTS_RECORD_ID);
@@ -105,26 +149,38 @@
   async function addTrackToPlaylist(id,idx){
     const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
     const key=playlistTrackKey(track);if(key===null||key===undefined)return false;
-    if(list.trackKeys.includes(key)){showToast(tr(`「${track.title}」已在歌单「${list.name}」中`,`“${track.title}” is already in “${list.name}”`));return false;}
+    const keys=new Set(trackLikeKeys(track));
+    if(list.trackKeys.some(item=>keys.has(item))){showToast(tr(`「${track.title}」已在歌单「${list.name}」中`,`“${track.title}” is already in “${list.name}”`));return false;}
     list.trackKeys.push(key);list.updatedAt=Date.now();
     if(await saveUserPlaylists()){showToast(tr(`已将「${track.title}」加入「${list.name}」`,`Added “${track.title}” to “${list.name}”`));syncPlaylistUI(true);return true;}
     list.trackKeys=list.trackKeys.filter(item=>item!==key);return false;
   }
   async function removeTrackFromPlaylist(id,idx){
     const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
-    const key=playlistTrackKey(track),before=list.trackKeys.length;
-    list.trackKeys=list.trackKeys.filter(item=>item!==key);
+    const keys=new Set(trackLikeKeys(track));
+    const before=list.trackKeys.length;
+    list.trackKeys=list.trackKeys.filter(item=>!keys.has(item));
     if(list.trackKeys.length===before)return false;
     list.updatedAt=Date.now();
     if(await saveUserPlaylists()){render(searchInputSafe());return true;}
     await loadUserPlaylists();render(searchInputSafe());return false;
   }
   function collectionTrackIndices(){
-    if(libraryCollectionMode==="liked")return playlist.map((track,idx)=>idx).filter(idx=>{const key=playlistTrackKey(playlist[idx]);return key!==null&&likedKeys.has(key);});
+    if(libraryCollectionMode==="liked")return playlist.map((track,idx)=>idx).filter(idx=>isLikedTrack(playlist[idx]));
     const list=activePlaylist();
     if(list){
       const position=new Map();list.trackKeys.forEach((key,order)=>{if(!position.has(key))position.set(key,order);});
-      return playlist.map((track,idx)=>[position.get(playlistTrackKey(track)),idx]).filter(([order])=>order!==undefined).sort((a,b)=>a[0]-b[0]).map(([,idx])=>idx);
+      function trackPlaylistOrder(track){
+        const direct=position.get(playlistTrackKey(track));
+        if(direct!==undefined)return direct;
+        const aliases=trackLikeKeys(track);
+        for(let i=0;i<aliases.length;i++){
+          const pos=position.get(aliases[i]);
+          if(pos!==undefined)return pos;
+        }
+        return undefined;
+      }
+      return playlist.map((track,idx)=>[trackPlaylistOrder(track),idx]).filter(([order])=>order!==undefined).sort((a,b)=>a[0]-b[0]).map(([,idx])=>idx);
     }
     return playlist.map((_,idx)=>idx);
   }
@@ -138,9 +194,19 @@
     if(libraryCollectionMode==="all"){if(collectionScopeActive){overrideQueue=null;collectionScopeActive=false;}return;}
     overrideQueue=collectionTrackIndices();collectionScopeActive=true;
   }
-  function isLikedTrack(track){if(!track)return false;try{const key=playlistTrackKey(track);return key!==null&&likedKeys.has(key);}catch(error){return false;}}
+  function isLikedTrack(track){
+    if(!track)return false;
+    try{
+      const ev=latestLikeEventForTrack(track);
+      if(ev)return ev.context?.liked!==false;
+      const keys=trackLikeKeys(track);
+      return keys.some(k=>likedKeys.has(k));
+    }catch(error){
+      return false;
+    }
+  }
   function syncLikeButtons(){
-    document.querySelectorAll("#trackList .track-like").forEach(button=>{
+    document.querySelectorAll("#trackList .track-like, #recommendList .track-like").forEach(button=>{
       const track=playlist[+button.dataset.idx];if(!track)return;
       const liked=isLikedTrack(track);
       button.classList.toggle("active",liked);button.setAttribute("aria-pressed",String(liked));
@@ -150,18 +216,50 @@
   async function refreshLikedKeys(){
     try{
       const events=await GPDatabase.getBehaviorEvents()||[],latest=new Map();
-      events.forEach(event=>{if(event?.type!=="like"||event.spectrumId===null||event.spectrumId===undefined)return;latest.set(event.spectrumId,event);});
+      events.forEach(event=>{
+        if(event?.type!=="like")return;
+        const key=event.spectrumId!==null&&event.spectrumId!==undefined?event.spectrumId:event.features?.spectrumId;
+        if(key===null||key===undefined||key==="")return;
+        const existing=latest.get(key);
+        const eventTime=Number(event.timestamp)||0;
+        const existingTime=Number(existing?.timestamp)||0;
+        if(!existing||eventTime>=existingTime){
+          latest.set(key,event);
+        }
+      });
+      latestLikeEvents=latest;
       likedKeys=new Set([...latest.entries()].filter(([,event])=>event?.context?.liked!==false).map(([key])=>key));
-    }catch(error){likedKeys=new Set();}
+      if(Array.isArray(playlist)){
+        playlist.forEach(track=>{
+          if(isLikedTrack(track)){
+            const canonical=playlistTrackKey(track);
+            if(canonical!==null&&canonical!==undefined)likedKeys.add(canonical);
+          }else{
+            trackLikeKeys(track).forEach(k=>likedKeys.delete(k));
+          }
+        });
+      }
+    }catch(error){
+      latestLikeEvents=new Map();
+      likedKeys=new Set();
+    }
     likedKeysLoaded=true;syncLikeButtons();
     if(libraryCollectionMode==="liked")render(searchInputSafe());
   }
   async function toggleLike(idx,options={}){
     const track=playlist[idx];if(!track)return;
     const key=playlistTrackKey(track);if(key===null||key===undefined)return;
-    const liked=!likedKeys.has(key);
-    await recordBehaviorEvent("like",track,{liked,source:options.source||"library"});
-    if(liked)likedKeys.add(key);else likedKeys.delete(key);
+    const currentlyLiked=isLikedTrack(track);
+    const liked=!currentlyLiked;
+    const event=await recordBehaviorEvent("like",track,{liked,source:options.source||"library"});
+    const timestamp=Number(event?.timestamp)||Date.now();
+    const eventObj=event||{type:"like",spectrumId:key,timestamp,context:{liked,source:options.source||"library"}};
+    latestLikeEvents.set(key,eventObj);
+    if(liked){
+      likedKeys.add(key);
+    }else{
+      trackLikeKeys(track).forEach(k=>likedKeys.delete(k));
+    }
     syncLikeButtons();
     if(libraryCollectionMode==="liked")render(searchInputSafe());else syncPlaylistUI(true);
     showToast(liked?tr(`已喜欢「${track.title}」`,`Liked “${track.title}”`):tr(`已取消喜欢「${track.title}」`,`Unliked “${track.title}”`));
