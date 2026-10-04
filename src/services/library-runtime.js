@@ -968,7 +968,10 @@
       }
     }
     while(retiredArtworkUrls.size>(forceOldest?0:MAX_RETIRED_ARTWORK_URLS)){
-      const oldest=retiredArtworkUrls.values().next().value;
+      let oldest=null;
+      for(const url of retiredArtworkUrls){
+        if(!isArtworkUrlReferenced(url)){oldest=url;break;}
+      }
       if(!oldest)break;
       retiredArtworkUrls.delete(oldest);
       try{URL.revokeObjectURL(oldest);}catch(error){}

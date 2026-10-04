@@ -66,23 +66,9 @@
     addKey(track.spectrumId);
     addKey(track.audioEssenceKey);
     addKey(track.contentKey);
+    addKey(track.identityLinks?.spectrumId);
     if(Array.isArray(track.legacyContentKeys)){
       track.legacyContentKeys.forEach(addKey);
-    }
-    if(track.artist||track.title){
-      try{
-        const tk=typeof trackKey==="function"?trackKey(track):`${track.artist||""}||${track.title||""}`;
-        if(tk&&tk!=="||")addKey(tk);
-      }catch(e){}
-    }
-    if(track.metadataVersions?.before?.metadata){
-      const b=track.metadataVersions.before.metadata;
-      if(b.artist||b.title){
-        try{
-          const btk=typeof trackKey==="function"?trackKey(b):`${b.artist||""}||${b.title||""}`;
-          if(btk&&btk!=="||")addKey(btk);
-        }catch(e){}
-      }
     }
     return Array.from(keys);
   }
