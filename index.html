@@ -7,7 +7,41 @@
 <link id="faviconLink" rel="icon" type="image/svg+xml" href="">
 <link rel="stylesheet" href="./app.css?v=7.5.1-r1">
 </head>
-<body data-theme="light">
+<body class="gp-theme-prepaint" data-theme="light">
+<script>
+(function(){
+  try {
+    var raw = localStorage.getItem("glassPlayerPrefs"), p = {};
+    if (raw) {
+      try { p = JSON.parse(raw) || {}; } catch (_) {}
+    }
+    var hour = new Date().getHours();
+    var autoTheme = (hour >= 18 || hour < 5) ? "dark" : "light";
+    var mode = p.themeMode;
+    var resolved = (mode === "dark" || mode === "light") ? mode : autoTheme;
+    document.body.setAttribute("data-theme", resolved);
+
+    var palettes = {
+      navy:   [["#2C4870","44,72,112","#ffffff"],  ["#5C7FA8","92,127,168","#000000"]],
+      slate:  [["#4A5560","74,85,96","#ffffff"],   ["#6B7785","107,119,133","#000000"]],
+      forest: [["#3A5A45","58,90,69","#ffffff"],   ["#5C8065","92,128,101","#000000"]],
+      wine:   [["#7A3B42","122,59,66","#ffffff"],  ["#9C5761","156,87,97","#ffffff"]],
+      bronze: [["#8A6A3C","138,106,60","#ffffff"], ["#AD8A55","173,138,85","#000000"]],
+      teal:   [["#2E6B6B","46,107,107","#ffffff"], ["#4E8F8F","78,143,143","#000000"]],
+      mono:   [["#000000","0,0,0","#ffffff"],       ["#ffffff","255,255,255","#000000"]]
+    };
+    var key = (p.accentKey && Object.prototype.hasOwnProperty.call(palettes, p.accentKey)) ? p.accentKey : "navy";
+    var dark = resolved === "dark";
+    var item = palettes[key][dark ? 1 : 0];
+
+    var s = document.documentElement.style;
+    s.setProperty("--accent", item[0]);
+    s.setProperty("--accent-rgb", item[1]);
+    s.setProperty("--accent-contrast", item[2]);
+    s.setProperty("--turntable-accent-rgb", item[1]);
+  } catch (_) {}
+})();
+</script>
 
 <div id="ambient">
   <canvas class="ambient-raster is-visible" id="ambientCanvas" aria-hidden="true"></canvas>

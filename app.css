@@ -1,7 +1,7 @@
 
   :root{
     --radius-xl: 26px; --radius-l: 18px; --radius-m: 14px; --radius-s: 10px;
-    --accent: #0A84FF; --accent-rgb: 10,132,255; --accent-contrast: #ffffff; --turntable-accent-rgb:10,132,255;
+    --accent: #2C4870; --accent-rgb: 44,72,112; --accent-contrast: #ffffff; --turntable-accent-rgb: 44,72,112;
     --font-scale: 1; --font-weight: 450; --font-stroke:0px;
     --font-family: MiSans, Arial, sans-serif;
     --gp-apple-base:"SF Pro", "SF Pro Text", "PingFang SC", "PingFang TC", "PingFang HK", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -19,6 +19,7 @@
     --button-track-bg:rgba(20,20,22,.065);
   }
   [data-theme="light"]{
+    --accent: #2C4870; --accent-rgb: 44,72,112; --accent-contrast: #ffffff; --turntable-accent-rgb: 44,72,112;
     --bg-base:#eef0f4; --glass-bg:rgba(255,255,255,0.58); --glass-bg-strong:rgba(255,255,255,0.78);
     --glass-border:rgba(20,20,22,0.14); --text-primary:#000000; --text-secondary:rgba(28,28,30,0.68);
     --text-tertiary:rgba(28,28,30,0.48); --divider:rgba(20,20,22,0.16); --shadow:0 8px 32px rgba(31,38,54,0.16);
@@ -36,6 +37,7 @@
     --gp-control-surface:rgba(255,255,255,.50);
   }
   [data-theme="dark"]{
+    --accent: #5C7FA8; --accent-rgb: 92,127,168; --accent-contrast: #000000; --turntable-accent-rgb: 92,127,168;
     --bg-base:#000000; --glass-bg:rgba(40,40,44,0.49); --glass-bg-strong:rgba(56,56,60,0.71);
     --glass-border:rgba(255,255,255,0.16); --text-primary:#ffffff; --text-secondary:rgba(235,235,245,0.7);
     --text-tertiary:rgba(235,235,245,0.45); --divider:rgba(255,255,255,0.14); --shadow:0 8px 36px rgba(0,0,0,0.55);
@@ -54,6 +56,15 @@
   :root[data-font-profile="apple"]{ --gp-font-base:var(--gp-apple-base); --gp-font-display:var(--gp-apple-display); --gp-font-text:var(--gp-apple-text); --gp-font-mono:var(--gp-apple-mono); }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; text-rendering:geometricPrecision; }
+
+  /* Startup transition suppression (removed after real theme application) */
+  body.gp-theme-prepaint,
+  body.gp-theme-prepaint *,
+  body.gp-theme-prepaint *::before,
+  body.gp-theme-prepaint *::after{
+    transition:none !important;
+    animation:none !important;
+  }
   body{
     margin:0; font-family:var(--font-family); background:var(--bg-base); color:var(--text-primary);
     transition:background .5s ease,color .3s ease; font-size:calc(15px * var(--font-scale)); font-weight:var(--font-weight);

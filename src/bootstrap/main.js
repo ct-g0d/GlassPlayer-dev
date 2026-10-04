@@ -13,6 +13,15 @@
   if(document.fonts?.ready)document.fonts.ready.then(()=>requestAnimationFrame(initializeSelectionGliders));
   setTimeout(scheduleViewportFit, 60); // re-measure once fonts/layout settle
   setTimeout(scheduleViewportFit, 300); // and once more after async layout settles fully
+  if(typeof requestAnimationFrame==="function"){
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        document.body?.classList.remove("gp-theme-prepaint");
+      });
+    });
+  }else{
+    document.body?.classList.remove("gp-theme-prepaint");
+  }
 
   /* ================= GP Core 4.2 — Peregrine Lake bootstrap =================
      The legacy runtime remains the single implementation while its public
