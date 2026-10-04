@@ -1,0 +1,1676 @@
+﻿Glass Player 完整更新日志
+当前版本: 6.2.2 — HOTFIX BUILD
+
+## Unreleased (待定)
+GP Gen 6–8 产品路线：依次实现音乐时间机器、音乐银河和基于 MFCC + BPM 的智能随机/每日推荐；Electron Lake 与 EXE 迁移正式顺延至 Gen 9+。
+
+### Generation Roadmap & Navigation
+- Gen 6–8 将继续运行于 Harmonic Lake HTML 架构；左侧侧边栏会在“设置”上方依次加入“音乐时间机器”和“音乐银河”两个入口。
+- 这些按钮与界面目前只记录为路线，不在 5.4.1 创建占位页面或未完成交互。
+
+### Gen 6 — 音乐时间机器
+- 歌曲文件导入后读取 metadata，从中提取年份、艺人和专辑，并生成可横向拖拽的音乐时间轴。
+- 时间轴以年份为主坐标，例如 2000 / 2010 / 2020；歌曲和艺人落在对应年份附近，可通过左右拖拽浏览整个音乐库的时间跨度。
+- 基础记录采用 { title, artist, year }，例如《十年》/ 陈奕迅 / 2003；专辑作为补充展示与聚合字段。
+
+### Gen 7 — 音乐银河
+- 把每首歌曲映射为星空中的一个略带雾感的发光点；MFCC 音色距离较近的歌曲在二维空间中彼此靠近，并结合 BPM 与 Genre 形成音乐星系和风格聚类。
+- 歌曲特征经过距离计算和二维降维后交给 Canvas/WebGL 绘制；不同区域上方以轻微发光的边缘字体标注星系名称或风格。
+- Hover或点击只显示精简歌曲信息。指针移动速度过快时暂停hover解析，避免高速扫过大量星点造成卡顿。
+- 视觉目标是高度还原真实银河：星点保持柔和、朦胧和层次感，不把音乐库画成普通散点图。
+
+### Gen 8 — Galaxy-Aware Recommendation
+- 使用音乐银河缓存的 MFCC + BPM 距离重度优化随机播放与每日推荐，使单个推荐歌单在风格、音色和 tempo 上保持合理连贯。
+- 算法仍需保留新鲜度、多样性与随机性，不能因为声学距离接近而无限重复同一艺人或同一小型星系。
+- MFCC、BPM、二维坐标和聚类结果继续写入 IndexedDB，歌曲未变化时不重复分析。
+
+### Gen 9+ — Electron Lake
+- Electron Lake、SQLite和从单文件HTML迁移为桌面EXE的计划由原Gen 5+正式推迟至Gen 9及以后。
+- 届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。
+
+## 6.2.2 (2026-07-20)
+HOTFIX BUILD：GP Spatial Engine 1.1 将八种空间状态重构为完全固定、可预测的调音，并以 400ms equal-power A/B Bus 切换消除播放中的声场漂移、音色跳变和音量呼吸。
+
+### GP Spatial Engine 1.1 — Static Presets
+- 彻底移除播放过程中的 Correlation 定时器、100ms 参数刷新、动态 Width、动态 Reflection / Reverb / Chorus / HRTF 保护、Haas 与自动 Makeup Gain。Genre、BPM、MFCC、Energy、播放/暂停、切歌、Seek 和 Crossfade 均不会触发空间参数更新。
+- Desktop Speakers、Studio Monitors、Wide Stage、Front Binaural、Live Hall、Cinema 与 Dreamscape 全部使用发布时固定参数；关闭开关构成第八种 No Spatial Audio 状态。
+- 同一模式播放期间 Low Side、Mid/High Width、Crossfeed、HRTF、四路 Reflection、Side Reverb、Chorus、Pre Gain 与 Output Trim 不会自行变化。
+
+### 400ms Equal-Power A/B Bus
+- Spatial Engine 预建两套轻量 Bus。正常播放只有当前 Bus 接入；用户主动切换模式时，未使用 Bus 写入全部固定参数并从 0 淡入，旧 Bus 同时以 equal-power 曲线从 1 淡出。
+- 400ms 结束后旧 Bus 输入立即断开，Dreamscape 之外的 Chorus LFO 停止。连续快速选择会只保留最后一个待切换模式，不会在半途重写仍可听见的 Bus。
+- 暂停、恢复、Seek、切歌与双 Deck Crossfade 不重建 Bus、不重新淡入空间模式，也不改变当前参数。
+
+### True Bypass & Stable Output
+- No Spatial Audio 直接使用原有 post-EQ Dry Master 路径；两套 Spatial Bus 输入完全断开，HRTF、Reflection、Convolver、Width 与 Chorus 不再获得音频，Chorus LFO 同步停止。
+- 每套 Spatial Bus 使用固定 0.72 Pre Gain 与每模式固定 Output Trim，不存在实时峰值追踪、自动响度补偿或动态增益。
+- 常驻 Master Compressor 已移除。每套 Bus 末端仅保留 threshold -1dB、knee 0、ratio 12、attack 0.003、release 0.06 的轻量峰值安全器；原始 Dry 路径完全绕过它。
+
+### Deterministic Space
+- 所有模式彻底移除 Haas。Desktop / Studio 只以极轻 Crossfeed 为主且关闭 HRTF；Front 以 HRTF 为主；Wide 主要依靠静态 M/S Width；Hall / Cinema 只使用有限 Reflection 与 Side Reverb；只有 Dreamscape 运行 0.18Hz、1ms Depth 的轻 Chorus。
+- 四路 Early Reflection 固定为 8ms/-0.55、13ms/+0.45、21ms/-0.35、31ms/+0.65，内部 Gain 永不随机变化。
+- 0.55s、0.60s 与 0.75s IR 缓存在引擎初始化时以固定种子一次性生成并由两套 Bus 永久复用；不随歌曲、模式切换、主题或播放状态重新生成。
+
+### UI & Preference Hotfix
+- 空间开关现在记住上一次选择。关闭后再打开会恢复原模式，不再强制跳回 Desktop Speakers。现有七按钮布局、开关、设置存储键与中英文名称保持不变。
+- 倒感叹号说明弹窗提升到页面顶层定位，绕过 Sound 滚动 sector 的嵌套合成限制；它现在直接采样最终页面背景并继续复用 Snooze 的玻璃材质和 Motion 生命周期。
+- EQ、Crossfade、Spectrum、MFCC、BPM、Energy、Queue、推荐、行为模型与听歌记录没有改动，也不会因本次更新重新分析或迁移。
+
+## 6.2.1 (2026-07-20)
+HOTFIX BUILD：修复空间音效说明弹窗未真正接入 GP Motion Engine 公共玻璃材质的问题。
+
+### Spatial Popover Glass
+- 倒感叹号说明弹窗现在直接复用 Snooze、歌单排序与字体选择器的 gp-popover 底层契约，不再维护独立的背景模糊方案。
+- 弹窗统一使用当前主题计算出的半透明表面、8px contextual blur、低强度饱和度、边框与阴影；深浅主题和封面背景变化时会同步更新。
+- 保留原有七条空间模式说明、100ms hover 响应和点击立即显示逻辑，不改动 Spatial Audio Graph、模式参数或用户音频数据。
+
+## 6.2.0 (2026-07-20)
+AUDIO UPDATE：引入 GP Spatial Engine 1.0，在现有双 Deck、Crossfade 与 EQ 之后加入单实例、低负荷、相位受保护的七模式空间声场。
+
+### GP Spatial Engine 1.0
+- 公共音频链更新为 Crossfade Output → Existing EQ → Spatial Engine → Limiter → Master Gain；继续只使用原来的 AudioContext 和两只 Deck，不创建第二套播放、Spectrum、MFCC、BPM 或 Energy 运行时。
+- 所有 Panner、Delay、Filter、Convolver、Gain 与相位检测节点首次播放时只创建一次。模式切换只用 120ms AudioParam Ramp 改变参数，不断线、不重建 Audio Graph。
+- 空间开关关闭时同时绕过 Spatial Wet Bus 与空间输出 Limiter，恢复真正的 EQ 后原始双声道直通；不会用变响制造更沉浸的错觉。
+
+### Seven Spatial Modes
+- 加入桌面音响、监听音箱、宽阔舞台、前置双耳、现场大厅、影院与梦境七种固定方案，分别侧重自然前置、准确中央、左右宽度、头外定位、厅堂距离、影院深度与漂浮氛围。
+- 低频使用 120Hz Mid / Side 约束，中频与高频分段扩宽；Crossfeed、并行 HRTF、四路早期反射、Side-only 短混响以及受限 Chorus / Haas 按模式组合。
+- 开关开启默认选择桌面音响；关闭时隐藏选择滑块但保留七个入口，直接点击任一模式会在原位置淡入滑块并同步开启。
+
+### Phase & Output Protection
+- 播放且页面可见时最多每 100ms 计算一次左右相关性；相关性降低时平滑收窄 High Side、Reflection 与 Reverb，负相关时关闭 Haas / Chorus 并强制低频 Side 归零。
+- 暂停或关闭 Spatial 后停止检测；隐藏页面时检测最高降至每秒两次。四条 Reflection 与一次生成的 0.9 秒 Stereo IR 是固定上限。
+- 轻模式预留约 -3dB、强模式约 -4.5dB 的内部叠加余量，并以 -2dB / 20:1 Limiter 保护峰值。
+
+### Sound UI & Motion
+- EQ 重排为声音与设备两组；通用音色和针对 QC35、QC Earbuds、Poly Sync 40、靠墙显示器音响的设备补偿不再混在同一行。
+- 空间音效位于 EQ 与响度之间。倒感叹号按钮立即播放上下分离再无抽搐回弹的动效，hover 100ms 或点击直接显示七条通俗短说明。
+- 通用 segmented 底层增加按钮间距和文字两侧安全余量，滑块继续依据当前按钮的真实尺寸定位，不强制统一宽度。
+- 选择滑块改为单段连续位移与宽度插值，取消中途拉伸和二次落位；连续切换会从当前视觉位置平滑接续。关闭空间音频会立即清除旧模式的滑块、强调文字和按压残影。
+- 顺序、随机与单曲循环的图标在固定 22px 画布内只做原位 opacity 淡出/淡入，消除路径替换时的上下抽搐。页面与 sector 的 Fade 生命周期统一公开为 GP.motion 底层接口。
+
+### Traditional PiP Clarity
+- Blurred Cover 小窗背景改为复用主界面约 58px 的柔化尺度并向画布外扩采样，不再清晰显示封面细节或露出模糊边缘。
+- 封面绘制边界与前景几何对齐到实际设备像素，改善小尺寸窗口的封面和文字锐度，同时保持固定 1080p 轨道、静态背景缓存与 60fps 动态前景。
+
+## 6.1.0 (2026-07-20)
+SNOW LEOPARD 2.0：在功能、视觉和本地用户数据完全不变的前提下，清理长期迭代留下的不可达旧实现，缩小单文件体积并降低首次解析负担。
+
+### Dead Runtime Removal
+- 移除已被传统视频画中画完全替代的旧 Document PiP 文档、样式、队列镜像与同步生命周期；当前传统 PiP 的 1080p 固定画布、60fps 前景和静态背景缓存保持不变。
+- 移除 return 之后永远不会执行的旧侧边栏 WAAPI 动画分支，以及没有调用者的早期动效辅助函数。
+
+### Parser & History Consolidation
+- 移除已经被统一 metadata 管线替代的独立 ID3 / FLAC Genre 旧解析器；实际导入、重新扫描、封面与文件信息读取继续使用当前完整解析路径。
+- 移除已经被 5.9.0 索引化听歌记录渲染器替代的 renderHistoryLegacy；现行听歌统计、喜好、时段模型和可视化逻辑不变。
+
+### User Data Safety Contract
+- 不清空、不迁移也不重命名任何 localStorage 或 IndexedDB 数据库、对象仓库与键；听歌记录、behaviorEvents、userModel、recommendations 和历史身份映射全部保留。
+- Spectrum ID、MFCC、BPM、Energy、Genre、文件快照和重新扫描前后 identity 兼容路径全部保留；已经分析过的歌曲不会因为本次精简而重新分析。
+
+### Zero Visual Change
+- 保留全部现行 CSS 与层叠覆盖关系，不合并可能改变优先级的重复 selector；SSE、玻璃材质、响应式布局和 Motion Engine 的最终视觉输出不变。
+- 本次只删除经引用审计确认不可达的旧 JavaScript，当前播放、导入、Queue、历史、设置、更新日志和传统 PiP 的用户路径不变。
+
+## 6.0.4 (2026-07-20)
+HOTFIX BUILD：固定传统 PiP 视频轨道尺寸，消除缩放时窗口自放大与右边界抽搐，并将静态背景与高帧率动态内容彻底分层。
+
+### Stable PiP Geometry
+- 视频轨道在整个 PiP 生命周期内固定为 1920 × 1080；拖动窗口只连续调整内部封面与文字比例，不再改变 Canvas 固有分辨率或触发 Edge 重设窗口大小。
+- 移除 440px、320px 等离散布局跳点，改为依据小窗宽度连续插值封面尺寸、位置和字号，右边界不再跨阈值突然位移。
+
+### Layered Rendering
+- 背景、封面取色与 Blurred Cover 缓存为静态层，仅在歌曲、主题、Accent 或背景模式变化时重建；高成本背景滤镜不进入逐帧循环。
+- 前景封面、歌名、播放进度、时间和播放状态在独立动态层合成，视频流从 3fps 恢复为最高 60fps。
+- 固定 1080p 超采样源为小尺寸窗口提供稳定清晰度，同时避免 4K 背景每帧重绘导致播放卡顿。
+
+### Title Marquee
+- 歌名能够完整显示时保持静止；超出可用宽度时先停顿 1.1 秒，再以恒定速度连续循环滚动。
+- 滚动尾部保留间距并接回下一轮标题，不截断为省略号；更换歌曲、字体、粗细或窗口宽度后重新从歌名开头计时。
+
+## 6.0.3 (2026-07-20)
+HOTFIX BUILD：修复传统 PiP 在暂停时冻结设置画面的问题，并为小尺寸窗口加入清晰度优先的紧凑构图与低负荷渲染策略。
+
+### True Live Synchronization
+- 传统 PiP 视频处于暂停时，主题、背景、字体、字号、粗细或 Accent 改动会短暂推送一帧更新后恢复暂停，不会启动主音频，也不需要重新打开小窗。
+- PiP 窗口尺寸变化被直接监听；缩放结束后按照真实宽高重新选择构图和像素输出。
+
+### Compact Clarity
+- 小尺寸 PiP 自动放大封面、歌名与歌手字号，减少次要说明占用，避免把完整桌面构图整体压缩成模糊缩略图。
+- 封面缺失时只保留干净的半透明封面底板，彻底移除封面中心的圆点占位符。
+- Blurred Cover 在紧凑尺寸下降低模糊半径，前景原始封面始终不参与背景滤镜。
+
+### Playback-First Performance
+- Canvas 分辨率按 PiP 窗口实际物理尺寸进行约 2.15 倍超采样：小窗从 1600px 起步，只有真正放大时才逐级提升至 4K。
+- 视频流限制为 3fps，播放进度画面最多约每 480ms 重绘一次；主题和字体等用户操作仍即时刷新，避免 4K 背景滤镜持续争抢 GPU。
+
+## 6.0.2 (2026-07-20)
+HOTFIX BUILD：重构传统 PiP 的实时设置同步、背景分层与像素输出，使主题、字体和背景调整无需关闭小窗即可生效。
+
+### Live Settings Sync
+- 深色/浅色/自动主题、Accent、背景模式、界面语言、字体、字体大小和字体粗细统一进入 PiP 重绘信号；设置变化在当前小窗内直接更新，不再要求重新打开。
+- 自适应封面 Accent 异步完成后也会单独触发同步；同一动画帧内的连续设置更新会合并为一次绘制。
+
+### Distinct Background Modes
+- 灵动光晕使用克制的 Accent 光斑；封面取色使用封面提取的三色空间渐变；封面虚化才绘制真实封面背景，三种模式不再被同一层模糊覆盖。
+- 移除视频画面外围的玻璃面板描边与封闭边界，让封面、文字和背景直接组成一张完整画面。
+
+### Adaptive High Resolution
+- PiP Canvas 按屏幕物理像素自动选择 1920、2K 至最高 3840 × 2160 输出；4K 屏幕不再继续使用固定 1280 × 720 视频源。
+- 高清缩放在设计坐标层统一完成，前景封面保持原始 coverUrl、高质量采样且不应用背景模糊；文字阴影模糊被移除，字体边缘更清楚。
+
+## 6.0.1 (2026-07-20)
+HOTFIX BUILD：悬浮播放器由 Document PiP 改为传统视频画中画，移除文件来源地址栏，并以高清画布重新输出封面与播放信息。
+
+### Borderless Video PiP
+- 停用带页面来源栏的 Document Picture-in-Picture 路径，改用 Edge 原生视频画中画外壳；悬浮窗不再显示 file 地址栏。
+- 上一首、播放/暂停与下一首继续通过浏览器原生 PiP 控件和现有 Media Session 接口控制 GP，音频、Web Audio 与 Spectrum 分析仍只运行一份。
+
+### High-Resolution Visual Surface
+- 使用 1280 × 720 高分辨率 Canvas 生成 PiP 视频画面，前景封面优先读取原始 coverUrl，不再把低分辨率 thumbUrl 放大为主封面。
+- 画面同步当前封面、歌名、歌手、进度、播放状态、深浅色、Accent、字体与字体粗细；只有画面或播放状态变化时才重绘。
+
+### Lifecycle Hotfix
+- 关闭 PiP 后立即停止临时 Canvas 视频轨道、移除隐藏 Video/Canvas 并断开主题观察器，避免后台持续绘制或占用 GPU。
+- 不支持传统画中画、权限被拒绝或创建失败时继续使用 GP 玻璃弹窗说明真实原因。
+
+## 6.0.0 (2026-07-20)
+ACCESSIBILITY UPDATE：Glass Player 进入 Gen 6，以原生 Document Picture-in-Picture 带来真正置顶、可缩放且与主播放器双向同步的悬浮播放器。
+
+### GP Core 2.3 — Multi-Document Runtime
+- 主页面继续作为唯一音频源；悬浮窗不复制 Audio、Web Audio、Spectrum 分析或播放状态，只调用现有上一首、播放/暂停、下一首与歌曲选择接口。
+- 当前歌曲、封面、进度、播放状态、主题、Accent、字体、粗细、语言和队列通过轻量同步层投射到同源 PiP 文档。
+- 窗口关闭、页面退出或浏览器拒绝创建时完整释放 Observer、Resize 计时器和临时引用，不残留第二套运行时。
+
+### GP Fusion Engine 2.0 — Floating Player
+- Snooze 右侧加入无文字圆形悬浮播放器入口；两个错位圆角窗口组成图标，整组控制仍以 Snooze + PiP 的组合宽度保持居中。
+- Document PiP 窗口由 Edge 保持在其他窗口上方，可由用户拖动位置并调整大小；上次宽高会作为下一次打开时的建议尺寸。
+- 静态封面、歌名、歌手、进度和上一首/播放/下一首构成核心界面；足够宽且足够高时才显示最多 5–8 首精简 Up Next，避免队列挤压播放器。
+- 不支持 API、页面环境未开放、权限拒绝或窗口创建失败时显示正式玻璃弹窗，并给出 secure、protocol 或浏览器错误信息。
+
+### GP Motion Engine 3.1 — Responsive PiP Motion
+- 入口图标 hover 300ms 后或点击时触发：后层窗口向右上、前层窗口向左下分离，再沿稳定曲线弹回原位。
+- PiP 播放按钮与上一首/下一首沿用主播放器的圆形层级、Accent 状态和 500ms 微交互，不产生结束帧抽搐。
+- 窗口按真实宽高切换极小、紧凑、纵向、标准、超宽低高和大型队列布局；很窄但很长时封面转为上方静态展示，很宽但很矮时使用低高度横向布局。
+- 背景直接复用当前 Glow、封面取色或 Blurred Cover 状态与主题变量，不重新提取封面颜色，也不启动第二套动态背景。
+
+## 5.9.0 (2026-07-20)
+HOTFIX BUILD：重构听歌记录的数据读取路径，统一五个听歌时段，并确保喜好、时段结论和统计数据随新记录可靠刷新。
+
+### History Performance
+- Spectrum ID、旧歌曲键与歌手/歌名别名在进入听歌记录前一次性建立索引；排行榜、最近最爱和洞察不再为每一条历史记录反复遍历整个歌单。
+- Top 50 行启用浏览器原生的屏外内容跳过，未进入可视区域的歌曲不再持续参与布局和绘制；封面继续按需解码，界面结构与视觉保持不变。
+- 排行榜、最近最爱与听歌数据进行批量 DOM 提交；提交期间跳过 SSE 的中间 Mutation 测量，内容稳定后只重新测量一次。
+
+### Reliable Preference Refresh
+- 听歌历史每次写入仍立即更新内存版本；当听歌记录页处于可见状态时，界面最多每 30 秒在空闲帧刷新一次，避免每 8 秒全量重绘。
+- 最爱歌曲、艺人、专辑、Genre、听歌时段、排行榜、图表与洞察都以同一历史版本签名失效，不会继续显示旧结论。
+- Neural 长期偏好仍由有效行为触发，并限制为最多每分钟重建一次；缓存模型超过六小时或模型版本变化时会自动重建。
+
+### Five Listening Periods
+- 深夜 22:00–04:59、清晨 05:00–09:59、午间 10:00–14:59、下午 15:00–17:59、晚间 18:00–21:59。
+- 听歌记录的时段结论与 Neural Engine 的时间情境使用同一个底层时段函数；旧行为事件会在本版本首次模型重建时按新边界重新归类。
+
+## 5.8.6 (2026-07-18)
+HOTFIX BUILD：重新平衡播放器封面、上下安全留白与独立播放模式按钮间距，并把拖动圆点收紧为可透视滑轴的 Accent 玻璃材质。
+
+### Responsive Player Spacing
+- 完整恢复 5.8.1 及更早版本的播放器内部排版参数：较大的内边距、190–330px 唱片范围以及歌曲信息到进度条的独立间距。
+- 随机播放、上一首、播放和下一首重新作为四项完整控制组居中，与参考截图保持相同的横向节奏。
+- 唱片、歌曲信息、进度、播放控制、音量和 Snooze 作为一个整体按播放器高度垂直居中，顶部与底部自然形成近似对称的空间。
+
+### Transparent Accent Range Thumb
+- 拖动圆点由 18px 收紧至 15px，仅比默认圆点大 1px，并继续保留当前 Accent 色相。
+- 显著降低玻璃填充与背景模糊，使滑轴直线能够真实穿透圆点显示；松手后仍立即恢复默认实心 Accent 圆点。
+
+### Paused Turntable Seam Repair
+- 空唱盘由带角向切线的环形高光改为连续径向亚克力明暗，暂停在任意旋转角度都不会再从圆心射出斜向亮条。
+- 唱针杆的 1px 外边框改为内部亚像素轮廓，避免 Edge 缩放时把斜边重采样成突兀白条；唱针造型、角度与运动时序保持不变。
+
+## 5.8.5 (2026-07-18)
+HOTFIX BUILD：重新校准播放器封面与底部交互区的垂直分配，修正播放控制行的真实视觉中心，并恢复滑轴圆点正确的默认与拖动状态。
+
+### Player Geometry Correction
+- 封面在左侧播放器 sector 内明确下移，同时继续按 sector 的实际宽高自适应缩放；底部进度、控制、音量与 Snooze 仍固定在安全边距内。
+- 上一首、播放与下一首组成真正居中的三按钮主轴；播放模式按钮退出主轴排版并独立定位，其文字标签不再把整行图标向上或向右推偏。
+
+### Range Thumb State Repair
+- 未操作时恢复清晰的 Accent 实心圆点；只有鼠标按住并拖动期间才替换为保留同一 Accent 色相的半透明玻璃圆点。
+- 松开、取消拖动、在控件外松开或失去焦点都会立即销毁临时玻璃层；鼠标移走后不再残留错误的选中状态。
+
+## 5.8.4 (2026-07-18)
+HOTFIX BUILD：重做播放进度右侧四频段显示和设置滑轴选中材质，并重新分配播放器左区的封面与底部交互空间。
+
+### Pixel-Exact Spectrum Meter
+- 四频段指示由四个 2.5px CSS 元素改为单一高 DPI Canvas；每次按实际显示尺寸与 devicePixelRatio 计算整数物理像素。
+- 四根柱在任何页面自适应缩放、Edge 缩放和 DPI 组合下共享同一个整数宽度与间距，并在窗口变化时重新居中绘制；四频段响度逻辑保持不变。
+
+### Persistent Range Glass
+- 时长、字体大小和字体粗细滑轴在聚焦或拖动期间持续保留真正的玻璃圆点，不再在鼠标松开时立即退回黑色 Accent 原生圆点。
+- 失焦后的原生圆点也使用独立半透明渐变、轻边框与阴影；深色背景下仍可辨认，但不会成为实心黑块。
+
+### Responsive Player Rebalance
+- 进度、播放控制、音量和 Snooze 组成固定的底部交互栈并贴近播放器底部安全边距，上方空间交还给封面与歌曲信息。
+- 唱片和静态封面按左侧 sector 自身宽度、高度和剩余控制区空间共同缩放；全屏时放大，窄窗或矮窗时按比例缩小，始终保持正方形与边框余量。
+
+## 5.8.3 (2026-07-18)
+HOTFIX BUILD：清除播放器相邻 sector 的错误阴影叠色，修复设置滑轴的实心圆点，并以可靠的测量与分阶段运动重写长歌名滚动。
+
+### Player Surface Repair
+- 移除播放器左右两个玻璃 sector 各自向外扩散的阴影，只保留固定内边框；中央间隙和四个外角不再因双重投影形成与实时背景不同的暗色区域。
+- 播放器布局、玻璃透明度、圆角、主题色和内部内容保持不变。
+
+### Range Glass Foundation
+- 时长、字体大小和字体粗细滑轴在拖动时强制隐藏原生实心圆点的背景、边框、阴影与缩放，只显示独立覆盖的玻璃圆点。
+- 浅色与深色模式分别使用明确的低透明度表面、轻边框与 9px 背景模糊；滑轴圆点继续与弹窗材质分离。
+
+### Deterministic Title Marquee
+- 每次选歌后先显示歌名开头并短暂停顿；只有真实溢出的标题才建立双副本滚动轨道。滚动全程保持同一速度，并按当前页面缩放比例换算，使全屏与缩小窗口的肉眼速度一致。
+- 副本间距增至 88px，起点与完整一圈后的终点使用同一 14px 内边距；测量和位移统一使用缩放前 CSS 坐标，修复自适应缩放导致的欠移动、前抽和终点偏离。
+- 选歌、首次导入长标题、字体加载、进入播放页和窗口尺寸变化都会生成新的测量版本；旧动画立即取消，隐藏状态下持续重试而不会漏触发。
+
+## 5.8.2 (2026-07-18)
+HOTFIX BUILD：修复播放器响应式边界、Queue 更新抽搐、选择遮罩与标题滚动，重新分离弹窗和滑动圆点材质，并消除缩放时的字体毛刺与重影。
+
+### Player Geometry & Queue
+- 播放器左右区域改为可收缩网格，右栏、Queue 内容和长歌名不再撑宽整个播放器；当前歌曲切换时复用现有 Queue 行，只更新播放状态和位置，避免右边界重建抽搐。
+- 唱片与静态封面按可用宽度、高度及边框余量共同缩放，在非全屏 Edge 窗口中保持居中且不贴边、不溢出。
+- Sound 与其他分段选择器加入尺寸和字体加载监听，窗口缩放、页面缩放或字体变化后立即重测遮罩几何。
+
+### Motion & Typography
+- 页面、面板、Queue、EQ、播放模式和弹窗的淡入淡出按同一比例压缩时长，完整保留原有运动曲线与阶段。
+- 移除整页文字容器的强制 GPU 位图层和人工文字描边；窗口适配缩放对齐设备像素步进，改善特定缩放比例下的字体毛刺、重影和闪烁。
+- 长标题只在真实溢出时滚动；统一起止位置，增加副本间空白，并在完整一圈末端平滑减速后停顿，避免尾字残留和突然跳回。
+
+### Glass Controls
+- 字体弹窗移至页面级玻璃层，真实复用 Snooze 的表面、模糊、边框和阴影，避免设置面板嵌套合成改变材质。
+- 滑动圆点建立独立的高透明材质变量，不再套用较实的弹窗表面；四频段指示器重做为等宽、等距网格。
+
+## 5.8.1 (2026-07-18)
+HOTFIX BUILD：重新校准 FINAL PANTHER REFORM 的切换时序、播放动效与玻璃控件，修复首击延迟、错误标题滚动及唱片/唱针不同步。
+
+### Motion Timing Repair
+- 主页面、播放器右栏、听歌记录与更新日志统一改为完整淡出、短暂露出真实背景、再淡入；不再使用过快的交叠切换。
+- 播放器右侧 Queue / Sound / Daily Mix 的滑块在点击当下立即响应，内容提交只认最后一次选择，修复需要二次点击及落后一个状态的问题。
+- EQ 选中材质拥有独立退场、背景停顿和新按钮入场动画，不再只切换 active 状态。
+
+### Playback Motion Repair
+- Daily Mix 的播放三角形先收缩，再在恢复放大的同时释放三角形雾粒脉冲；主侧边栏 Play 在原有圆形与三角脉冲基础上加入三角形预收缩。
+- 唱片使用 720ms 有限减速曲线，并与唱针返回使用同一开始时刻和结束时刻；移除渐近停止与唱针末端抽搐。
+- 上一首/下一首缩短至 300ms，并将蓄力与撞击提前到动画前段，消除视觉响应延迟；四频段指示重新分配间距。
+
+### Typography & Glass Controls
+- 标题只有在自然文字宽度真实超过容器时才滚动；溢出标题使用双副本无缝循环，以更快速度完整滚动一圈，并在与起点重合后停顿。
+- 字体弹窗强制复用 Snooze / Sort 的同一背景、模糊、边框与阴影变量。
+- 进度与设置滑动轴在拖动时隐藏原生圆点，改用独立的 Snooze 材质玻璃圆点；空唱片移除音乐符号，只保留玻璃拟物轴芯。
+
+## 5.8.0 (2026-07-18)
+FINAL PANTHER REFORM：完成 Queue、页面切换、播放动效与设置交互的系统级收尾，并将重叠淡入淡出升级为 GP Motion Engine 3.1。
+
+### GP Motion Engine 3.1 — Overlap Bridge
+- 主侧边栏、播放器右栏、听歌记录、更新日志与 EQ 统一使用透明度重叠桥接；旧内容尚未完全淡出时新内容已开始淡入，缩短响应等待且不改变落位几何。
+- 清空 Queue 使用相同淡入淡出底层，并在提交帧直接定位当前歌曲，不再从歌单顶部平滑滚动。
+- 播放模式图标与 EQ 选中态采用相同的交叠淡出/淡入节奏；字体选择弹窗接入 Snooze 的标准玻璃材质。
+
+### Queue & Playback Reliability
+- Queue 通过 Spectrum ID / 稳定音频身份统一阻止重复歌曲；再次加入时明确提示“已经在播放队列中”。
+- 顺序、随机和单曲循环状态均使用 Accent；清空手动 Queue 后立即恢复正常播放队列及当前歌曲位置。
+- 唱片暂停改为物理减速并保留最终角度，消除瞬停后的反向抽搐；长歌名加入单次滚动、停顿与循环显示。
+
+### Control & Settings Polish
+- 上一首/下一首在按下瞬间响应：三角形先反向蓄力，再回弹触及竖条；影子距离收敛，四条实时频段指示改为等距。
+- 每日推荐的播放三角形复用播放语义脉冲，文字保持静止；静态封面略微放大并上移至唱片中心。
+- 设置开关支持点击与横向拖动；所有横向滑动轴校正圆心，并在拖动时使用选中滑块同款玻璃状态；左上角 Logo 允许完整溢出，避免底部裁剪。
+
+## 5.7.0 (2026-07-18)
+FOUNDATION UPDATE：GP Core 2.2 与 GP Motion Engine 3.0 将界面能力升级为可声明、可组合、可自动挂载的 UI 底层；新页面可以通过统一 Class 接入 SSE、选择滑块、弹窗材质、按压反馈和页面生命周期。
+
+### GP Core 2.2 — Declarative UI Registry
+- 新增 GP.ui 注册中心，统一提供 register、mount、refresh 与 observe 生命周期；每个组件只挂载一次，并通过幂等状态防止重复事件和重复 Observer。
+- MutationObserver 以动画帧批处理动态加入的 DOM。未来页面或异步生成组件只要使用已知 Class / data contract，就会自动完成初始化，不需要继续扩大固定 ID 数组。
+- 公开 GP.ui.switchView、GP.ui.transitionSector 与 GP.ui.setPopover 接口，同时保留 Galaxy、Timeline 模块边界和现有播放业务调用方式。
+
+### GP Motion Engine 3.0 — Class-composed Motion
+- gp-sse / data-gp-sse 自动接入 Harmonic Reform Shell / Viewport、滚动端点检测、ResizeObserver 与内容变化重测量；自有表面和共享 Panel 两种模式继续保持相同视觉。
+- gp-segmented / data-gp-glider 自动生成并重测选择滑块；gp-action 自动获得全局按住—释放反馈；gp-popover 自动复用 Snooze 的玻璃材质和统一进出生命周期。
+- gp-adaptive-title 与 gp-context-control 为未来页面提供局部背景可读性和控制层取色入口；页面切换和 Sector 切换仍只改变透明度，不触碰几何落位。
+
+### Zero-regression Compatibility
+- 5.6.3 的播放器、Library、Queue、Sound、Listening History、Settings、Changelog、主题与响应式排版继续使用原来的 DOM 和视觉参数，只由注册中心接管初始化。
+- Spectrum ID 仍在导入阶段立即生成；MFCC、BPM、Energy 和 Loudness 继续采用缓存优先的后台分析并写入 IndexedDB。本次更新不改变音频识别算法、推荐权重或播放顺序。
+
+## 5.6.3 (2026-07-17)
+HOTFIX BUILD：彻底移除页面落位阶段的几何位移，并将每日推荐改为基于 Spectrum ID、Genre、MFCC、BPM 与 Energy 的单一风格簇生成。
+
+### Stable View Commit
+- 主页面和可切换 Sector 的进入/退出只改变透明度，不再动画 transform、scale 或文字栅格位置；目标页面先在不可见状态完成高度、缩放和滑块布局，再开始淡入。
+- 动画由真实 animationend 完成收尾，计时器只作为异常兜底，消除动画尾端与静态帧交接时的整体突然位移。
+
+### Feature-clustered Daily Mix
+- 每日推荐先从已有 Spectrum ID、Genre 与 MFCC 证据选择一个核心风格锚点，再以 MFCC 距离为主要声学近邻依据，并用 BPM、Energy 与用户偏好作次级排序。
+- 已知 Genre 不同的歌曲只有在 MFCC 高度相似时才允许跨簇，避免 Electronic / EDM 与无关唱作流行歌曲交错出现。
+- 导入完成后自动生成；后台 Spectrum 分析补齐 MFCC 后会自动重建。移除手动生成按钮，播放控件改为三角形图标加“播放”。推荐列表不再显示左侧原歌单序号。
+
+### Queue Interaction Repair
+- 加入手动 Queue 后立即清除歌单操作按钮遗留的按压、光晕和焦点状态，不再留下上一次操作遮罩。
+- 加入 Queue 的三横杠蓄力后只回弹至 5°；手动 Queue 拖拽浮层复用 Snooze 弹窗的背景、模糊、边框与阴影材质。
+
+## 5.6.2 (2026-07-17)
+HOTFIX BUILD：重建深浅主题与封面 Accent 的往返计算，加入 18:00–05:00 自动深色时段，并稳定页面入场、标题对比、实时四频段波形与列表操作动效。
+
+### Theme-safe Accent Pairing
+- 每套手动主题色拥有独立的浅色与深色版本：保持相同色相，深色界面使用更明亮的 Accent，浅色界面使用更沉稳的 Accent。
+- 封面自适应颜色永久从未经加工的原始调色板重新计算；浅色→深色→浅色不再拿上一次加工结果继续计算，也不再读取主题过渡中的临时背景帧。
+- 自动主题固定为 05:00–18:00 浅色、18:00–05:00 深色，并在边界时间自动切换。生成/播放推荐、导入、排序与更新日志操作控件获得较轻的背景协调。
+
+### Direct Surface Readability
+- 歌单、听歌记录、设置和更新日志标题分别按自身所在坐标估算直接位于其后的封面模糊/色块表面，并独立选择黑色或白色文字。
+- 页面尺寸、主题、背景模式和封面调色板改变后会重新计算，不再把浅色模式一律等同于黑色标题。
+
+### Motion & Live Spectrum
+- 主页面先完成最终高度布局再开始从左淡入；动画终点与静态帧完全一致，移除落位瞬间的整体抽搐。
+- 进度条右侧四条波形分别读取低频、低中频、中高频和高频的实时 Analyser 响度；暂停或页面隐藏时立即停止绘制。
+- 歌单和每日推荐移除删除叉号；下一首、加入 Queue、手动 Queue 删除和拖拽排序手柄加入 300ms 延迟 Hover 与点击动效。
+
+## 5.6.1 (2026-07-17)
+HOTFIX BUILD：修复主题往返后的自适应 accent 对比失真，并稳定唱盘旋转与唱针亚克力合成层，同时移除旋转子树中的实时背景采样。
+
+### Theme-safe Adaptive Accent
+- Accent 写入统一经过单一提交函数，同时刷新 --accent、--accent-rgb、--accent-contrast 与唱盘派生色，避免同一次主题切换产生互相覆盖的中间状态。
+- 每首歌曲缓存最近一次封面调色板；浅色/深色切换时先用该调色板立即按新背景重算可读颜色，再由同一请求代次完成异步校验。旧主题结果不能覆盖新主题。
+- 手动与自适应配色都会重新计算黑白前景对比，不再沿用上一个主题的 --accent-contrast。
+
+### Stable Turntable Composition
+- 唱盘改由一条永久存在的14秒CSS旋转时间线管理；页面切换、主题切换和暂停只改变播放状态，不重建动画，因此角度连续且不会回正或跳帧。
+- 唱盘、轴心与唱针使用同一个稳定派生 accent RGB，主题更新只提交一次颜色，避免透明圆盘先闪亮再跳到最终色。
+- 移除旋转轴心和唱针基座中的实时 backdrop-filter 采样，保留原有渐变、透明度、阴影和饱和视觉；旋转时不再每帧重新采样其后方4K图层，降低3D合成压力。
+
+## 5.6.0 (2026-07-17)
+PANTHER UPDATE：GP Motion Engine 2.4 与 GP Fusion Engine 1.1 统一修复主题自适应、可回溯随机播放、Queue 拖拽落位和并发通知反馈。
+
+### Adaptive Glass & Contrast
+- 浅色模式的添加文件、添加文件夹、排序、听歌记录横栏、导出日志和当前版本控件移除白色内描边；更新日志两个控件统一字号、32px高度与垂直居中。
+- 最近最爱的答案不再退化为纯黑字：系统保留当前 accent 的色相，在真实卡片合成色上动态调整亮度，达到可读对比度。四张卡片和听歌习惯区统一为无侧边色条、无夹层阴影的 accent 玻璃边界。
+- 歌单、听歌记录、设置与更新日志标题在浅色模式下结合封面调色板和背景模式估算真实底色，再智能选择黑色或白色。
+- 主题切换加入异步 accent 请求代次保护；浅色→深色→浅色时，旧主题的封面取色结果不能覆盖新主题计算。唱针轴心圆盘固定在稳定的 accent 亚克力合成层，页面切换不再闪成亮白色。
+
+### GP Motion Engine 2.4
+- 上一首/下一首扩展为600ms方向动画：三角形先向反方向蓄力，再弹向竖片并平滑归位；残影更清晰但只延伸短距离。
+- Queue拖拽期间仅目标区间歌曲让位。松手后取消全列表二次FLIP交换，只让被拖歌曲从浮层落入最终位置，并为序号加入轻微淡入缩放。原位置不再残留半透明影子。
+- 歌单与Queue的删除按钮复用下一首/加入Queue的shader；删除、清空均产生明确通知。
+
+### GP Fusion Engine 1.1
+- Shuffle使用最多21个位置的有界时间线，保留当前歌曲之前最多20首。上一首只沿历史后退；后退后再按下一首会沿原随机路线前进，不会重新抽取歌曲。
+- 通知系统改为可并发的FIFO视觉栈：新通知从右侧进入并位于底部，旧通知平滑上移；每张通知顶部使用accent进度条显示剩余时间，结束后从右侧退出。
+- 通知生命周期不参与Queue添加判定，连续快速加入歌曲不会等待上一条通知离场。
+
+## 5.5.9 (2026-07-17)
+HOTFIX BUILD：校正浅色模式的控制层级与自适应 accent，可读性；收紧 Snooze / 前后切歌动效；并修复 queue 添加与清空后的播放状态残留。
+
+### Light Mode Contrast
+- 浅色模式下，歌单的添加文件、添加文件夹、排序按钮，听歌记录横栏，以及更新日志的导出日志和当前版本标签获得更明确但仍透明的白色底层。
+- 最近最爱的答案颜色根据当前背景调色板、玻璃合成色与卡片 accent 混色估算结果，在黑色或白色之间自动选择对比度更高的一种。
+- 封面自适应 accent 在 OKLab 中限制过高明度与色度，并把选中滑块自身的半透明 accent 背景纳入对比计算；浅色模式不会再产生过浅、刺眼又难读的选中文字。
+
+### Motion Refinement
+- Snooze 的三个 Z 缩短 S 形路径，最终方向由向右30度收敛为垂直偏右15度；横向摆动和旋转幅度降低，使轨迹更温柔并继续保持在按钮边界内。
+- 上一首/下一首取消 hover 触发，只在点击时运行300ms；竖条到达最远点后立即原路收回，残影只移动一小段并在前68%的时间内结束。
+- 全局按钮按下反馈改为按压状态机：pointerdown 到达中间态后保持，只有 pointerup / pointercancel 才执行回弹和淡出，不再按住鼠标时提前跑完。
+
+### Queue Reliability
+- 普通加入 queue 允许同一歌曲形成多个独立排队项；设为下一首仍保持原逻辑，如果歌曲已经排队就移动到队首。
+- 删除最后一个排队项、清空 queue 或从歌单移除最后一个相关项时，会同时释放 playingQueuedTrack 与 queueResumeIndex，下一首立即恢复当前播放模式，不再被已清空的 queue 接管。
+
+## 5.5.8 (2026-07-17)
+HOTFIX BUILD：为 Snooze、上一首与下一首补齐语义微动效，并将 Snooze 的玻璃弹窗材质写入 Motion Engine 底层供歌单排序复用。
+
+### Snooze & Skip Micro-interactions
+- 睡眠定时按钮加入400ms时钟轻摆与三个依次升起的Z；Z沿S形轨迹向右上约30度淡出，悬停300ms后触发，点击立即重播。英文名称由Sleep Timer统一为Snooze。
+- 上一首与下一首加入400ms方向动画：外侧竖条先向目标方向弹出，再沿原路径拉回；最远点留下的克制残影继续向外淡出。
+
+### GP Motion Engine — Shared Popover Material
+- Snooze与歌单排序使用同一gp-motion-popover底层模板、同一透明材质和同一退出清理流程；后续弹窗可直接复用，不再各自维护泛白程度。
+- 弹窗改用更接近当前背景的弱饱和玻璃层，降低不透明度与白色污染，同时保留足够的8px背景模糊和边界分离。
+
+## 5.5.7 (2026-07-16)
+HOTFIX BUILD：GP Motion Engine 2.3 将无抽搐的淡出/淡入生命周期写入通用底层，并覆盖更新日志、听歌记录横栏与睡眠时间弹窗。
+
+### GP Motion Engine 2.3 — Unified Sector Lifecycle
+- 主页面与所有可切换 sector 统一采用退出、内容提交、进入、稳定落点四阶段生命周期；未来新增页面可直接复用同一底层，不再单独拼接动画。
+- 进入动画在 88% 到 100% 保持最终位置，并在移除动画类后额外保留一帧合成层，消除页面进入末端的抽搐、过冲和闪跳。
+- 连续快速点击会保留最终请求并按完整生命周期落位，避免中途撤销 transform 或 opacity 图层。
+
+### Changelog & Listening History
+- 更新日志切换版本时，旧内容先淡出、内容在不可见阶段更新，再由新版本说明稳定淡入。
+- 听歌记录的听歌时间、最近最爱与听歌数据三个横栏接入相同动画；统计渲染与 SSE 刷新只在目标 sector 激活后执行。
+
+### Sleep Timer
+- 睡眠时间弹窗不再从左侧引入，而是从下方轻微上移并淡入；关闭时沿原路径向下淡出。
+- 背景模糊由 10 px / 118% 饱和度回调至 6 px / 110%，在旧版通透感与新版可读性之间取得中和。
+
+## 5.5.6 (2026-07-16)
+STABALIZATION RELEASE：引入 GP Motion Engine 2.2，把主界面切换升级为与 Harmonic Reform SSE 同级的底层动效系统；完整 panel/sector 统一淡出与淡入，同时保持玻璃、SSE和内部交互层稳定。
+
+### GP Motion Engine 2.2 — Primary View Lifecycle
+- Play、Library、Listening History、Settings与Changelog不再由侧边栏点击代码直接display切换，而是统一进入底层Primary View控制器。
+- 当前完整view以130ms淡出并轻微缩小至99.7%，目标view再以280ms从透明、99.4%比例和3px纵向偏移恢复到完整终态。
+- 动画只合成opacity与transform，不对大型玻璃panel执行实时blur，不移动SSE shell，也不逐项动画内部按钮、歌曲行或图表。
+
+### Stable Transition Arbitration
+- 快速连续点击时，淡出阶段只保留最后一次目标；淡入阶段先完成当前落位，再自动切换到最后请求的界面，避免动画层中途撤销产生闪烁或抽搐。
+- 重复点击当前侧边栏入口仍可触发对应图标微交互，但主界面不会重新渲染、重新淡入或重算听歌数据。
+- 每次真正完成切换后才统一执行窗口适配、玻璃滑块定位、SSE状态刷新；Listening History只在成为最终目标后安排按需统计。
+
+### Rendering & Accessibility Contract
+- 转场类只在410ms生命周期内临时启用will-change，结束后立即释放合成提示，避免五个隐藏页面长期占用GPU纹理。
+- prefers-reduced-motion启用时跳过淡出淡入并直接完成底层视图切换，布局与数据刷新路径保持一致。
+- GP运行时引擎标识升级为GP Motion Engine 2.2；播放、队列、SSE、背景、主题、metadata缓存和听歌记录格式均不改变。
+
+## 5.5.5 (2026-07-16)
+HOTFIX BUILD：彻底移除 Edge 原生黑色焦点圈，修复播放雾光在 SVG 四角被裁成方形的问题，并轻度增强睡眠定时弹窗的背景模糊。
+
+### Focus Ring Removal
+- Glass Player 内所有元素的 :focus 与 :focus-visible 均不再显示 Edge 原生 outline；鼠标、键盘、F10媒体控制或上次点击残留焦点都不会出现黑圈。
+- 同时关闭按钮、输入框、选择框、链接与 tabindex 元素的浏览器 tap highlight，避免系统级黑色轮廓重新覆盖玻璃UI。
+- 播放器自己的 active、accent color、玻璃滑块和点击动效保持不变；只移除浏览器额外绘制的黑色焦点层。
+
+### Rounded Play Haze
+- 播放圆环脉冲最大尺寸会超出原24×24 SVG视口；旧版在上下左右四个边界被矩形视口裁切，因此雾光在四角附近呈现方形。
+- 侧边栏SVG现在允许脉冲与blur超出视口渲染，圆形雾光和三角雾光完整扩散，不再出现四角切面。
+- 600ms对称放大与原路返回、三倍三角形面积和静态播放图标均保持不变。
+
+### Sleep Timer Glass
+- 睡眠定时选项弹窗改用更稳定的强玻璃底色，并仅增加10px背景模糊与轻度饱和度融合。
+- 背景穿透感得到收敛，但不使用大面积高强度模糊，不改变弹窗尺寸、选项或点击逻辑。
+
+## 5.5.4 (2026-07-16)
+HOTFIX BUILD：修复部分 MP3 歌名与艺人末尾出现 / 且重新扫描无法清除的问题，并重新校准 GP Motion Engine 2.1 的播放、歌单、听歌记录与 hover 节奏。
+
+### Metadata Terminator Repair
+- ID3 文本帧末尾的 NUL 字节现在被识别为字符串终止符并直接移除，不再错误转换成“ / ”。这覆盖 Where Did U Go、部分毛不易、薛之谦、方大同等 MP3 标签表现。
+- 只有位于字符串内部的 NUL 才继续作为多值分隔符转换为“Artist A / Artist B”；FLAC 中真实存在的多个 ARTIST 字段仍按原顺序保留。
+- Title、Artist、Album、Date 与 Genre 共用同一套尾部分隔符清理，连续斜杠与字段末尾残留斜杠会在写入歌单和 IndexedDB 前统一删除。
+
+### Rescan & History Synchronization
+- 重新扫描全部歌曲会重新解码当前文件的标签，并用清理后的 Title、Artist 与 Album 覆盖 trackCache 中带斜杠的旧 metadata。
+- Spectrum ID、MFCC、Energy、BPM、技术信息、播放次数与听歌时长保持不变；刷新后的显示信息通过 Spectrum ID 同步到现有听歌记录。
+- 旧的带斜杠名称仍保留在身份别名中用于安全回接历史，但不再作为歌单、播放器或听歌记录的当前显示名称。
+
+### Motion Timing Calibration
+- 播放图标与歌单图标动画调整为600ms；听歌记录图标的坐标轴和折线调整为400ms；设置与更新日志保持500ms。
+- 侧边栏 hover 触发门槛由400ms缩短至300ms，移出会取消等待，点击继续立即触发。
+- 动画运行状态统一保留至620ms，确保最长的600ms动画完整结束后再清理，不截断最后一帧。
+
+## 5.5.3 (2026-07-16)
+HOTFIX BUILD：统一侧边栏图标动效为500ms，重做播放雾光脉冲的对称回程并稳定SVG描边；同时修复听歌记录缩放布局与响应延迟、设置产品卡边框，以及播放器右侧sector进入动画的末端抽搐。
+
+### 500ms Motion System
+- 播放、歌单、听歌数据、设置和更新日志五套侧边栏图标动效统一使用500ms完整时间轴；运行class在520ms清理，不提前截断最后一帧。
+- 侧边栏hover改为停留400ms后才触发动效，pointerleave会取消等待；点击仍立即触发并清除hover计时，快速掠过图标不再产生多余动画。
+- 播放三角与外圆脉冲在0–50%沿原路径放大，在50–100%使用镜像关键帧原路缩回，不再在最大尺寸后直接跳回静态状态。
+- 脉冲加入极轻的blur与currentColor drop-shadow，形成柔和雾光边缘；静态播放圆和三角始终保持清晰。
+
+### Stable SVG Stroke
+- 歌单音符与设置齿轮明确锁定1.8px描边，并使用non-scaling-stroke和geometricPrecision，避免动画期间合成描边变粗、结束时突然闪细。
+- 听歌数据的X/Y轴与现有折线全部在500ms内完成；Y轴继续使用dash trace，不恢复会闪烁的scaleY合成层。
+- 更新日志的第一条文字线先显露一小段并继续展开，第二条随后开始，二者都在同一500ms文档时间轴内完成。
+
+### Listening History Responsiveness
+- 缩小窗口时，顶部听歌时间/最近最爱/听歌数据控制栏保持fit-content并左对齐，不再被小屏媒体规则强制拉伸至整页宽度。
+- 歌曲身份与历史metadata同步只在导入和手动重新扫描后运行，不再在每次历史标签点击时遍历整个歌单与历史库。
+- 点击历史标签后先立即切换按钮与pane，再把图表、洞察和排行生成延后两个绘制帧，使视觉反馈先于重计算出现；连续快速点击会取消过期渲染任务。
+
+### Media Key Reliability
+- Edge 支持 Media Session 时只由系统 Media Session 接管 F10 的播放与暂停，不再让同一次按键同时经过 keydown 与系统媒体事件两条路径。
+- 按下与松开不再分别触发一次状态切换，修复 pause → play → pause 的双触发；不支持 Media Session 的浏览器才启用键盘媒体键回退。
+
+### Panel & Build Card Polish
+- 设置顶部产品信息卡把玻璃高光限制在卡片内部，并在最上层使用完全不透明的实时accent color绘制完整圆角边框；左、右、上、下四边不再分别混入黑白底色。
+- 播放器右侧Queue、Sound和Daily Mix进入动画统一返回translate3d(0,0,0)，并让panel body持续留在同一合成层；末尾12%保持稳定终态，消除结束瞬间的抽搐。
+
+## 5.5.2 (2026-07-16)
+HOTFIX BUILD：重建GP Motion Engine 2.1侧边栏图标触发链，修复播放脉冲不可见以及hover/click互相覆盖的问题；五套动画现在由同一个可重复触发的800ms控制器执行。
+
+### Reliable Motion Trigger
+- 删除5.5.1依赖CSS hover状态与SVG克隆的触发链，改为由统一icon-motion-run状态重启纯CSS keyframes；不依赖SVG Web Animations API。
+- pointerenter与click都会移除、强制提交并重新加入运行状态，不再因为指针仍停留在按钮上而无法重播，也不会在结束后留下fill状态。
+- 静态SVG始终保留在DOM中；动画完成或取消后自动显示精确的原始图标。
+
+### Play Pulse Visibility & Area
+- 播放脉冲恢复为明确可见的2.6px圆角三角描边，并在原播放三角形的几何中心向外扩散；静态外圆之外同步加入一层低透明度圆形脉冲。
+- 按最终修订要求，最大三角形面积为原图形的3倍；面积随线性尺寸平方变化，因此使用√3，即1.73205081的线性缩放。
+- 脉冲从透明开始，在800ms序列内出现、扩张、短暂停留并回落至完全透明；静态播放三角形全程不消失。
+
+### True 800ms Graph Trace
+- 听歌数据图标的横轴和纵轴从第0ms同时启动，并在第800ms完成；折线同样从第0ms开始，完整trace耗时调整为1000ms。
+- 折线直接trace现有静态路径M7 15 → L11 11 → L14 14 → L19 8，使用stroke-dashoffset从28降至0，不替换或简化原轨迹。
+- 纵轴改用18单位stroke-dashoffset描画，不再缩放独立合成层，消除第800ms动画结束、图层撤销时的瞬间闪烁。
+- 播放与设置齿轮各自运行完整800ms；歌单音符和更新日志文档按最终修订缩短为500ms，各自的内部描画顺序仍在对应的单一时间轴内完成。
+
+### Fn / Media Key Separation
+- 浏览器不会暴露Fn为可检测修饰键，Fn+F11只会以普通F11到达网页，因此旧逻辑无法可靠区分全屏操作与下一首。
+- 5.5.2不再拦截原始F9、F10和F11，也删除全屏时对这三个按键的Keyboard Lock；Fn+F11现在完整交还Edge执行全屏。
+- 播放器只响应真正的MediaTrackPrevious、MediaPlayPause和MediaTrackNext系统媒体事件，并继续通过Media Session提供上一首、播放、暂停与下一首。
+
+## 5.5.1 (2026-07-16)
+HOTFIX BUILD：恢复经典三柱Glass Player产品图标；将五套侧边栏语义动效统一调整为800ms，并修正播放三角脉冲与听歌数据折线的几何和时间关系。
+
+### Product Icon Rollback
+- 侧边栏品牌区、设置产品信息卡和浏览器标签页全部恢复5.4.1使用的经典三柱圆形图标。
+- 外圆仍实时跟随accent color，三柱使用accent contrast；5.5.0引入的单线音符产品Logo不再显示。
+
+### 800ms Motion Timing
+- 播放、歌单音符、听歌数据、设置齿轮和更新日志文档五套动效的完整周期统一为800ms；click触发状态延长到820ms后清理，避免动画尾帧被提前截断。
+- 歌单音符与文档内部仍保持分段顺序，但最后一个子动作会与第800ms的总周期终点准确对齐。
+
+### Geometry & Trace Corrections
+- 播放按钮外扩三角形改为原三角形面积的2倍。由于面积随线性尺寸平方变化，实际线性缩放采用√2，即1.41421356，而不是5.5.0的1.618。
+- 听歌数据图标的折线直接沿现有d路径 M7 15 → L11 11 → L14 14 → L19 8描画，不生成替代轨迹。
+- 横轴、纵轴和折线全部从第0ms开始，并在同一个第800ms完成；折线trace耗时与axis延长耗时严格相等。
+
+## 5.5.0 (2026-07-16)
+UI UPDATE — GP Motion Engine 2.1：Glass Player采用全新的动态音符标识，并为全部五个侧边栏图标加入与功能语义一致的轻量微交互；Queue自动定位进一步下移当前播放歌曲，完整避开SSE渐隐区域。
+
+### New Glass Player Identity
+- 侧边栏品牌区、设置产品信息卡与浏览器标签页中的旧三柱图标全部替换为新的单线音乐音符标识。
+- 音符始终位于完整圆形载体内；圆形背景继续实时使用当前accent color，音符使用自动计算的accent contrast，兼容浅色、深色与封面取色。
+- 标识使用原生SVG路径，不引入位图背景、额外网络资源或高成本滤镜，因此在4K界面中保持清晰并维持低渲染负荷。
+
+### GP Motion Engine 2.1 — Semantic Icon Motion
+- 播放图标从原三角形向外扩散一层低透明度三角脉冲，最大比例为约1.618，并在440ms内回归静态形状。
+- 歌单音符按下方共鸣圆、连接杆、上方音符的顺序连续描画；听歌记录从坐标原点同步生成两条轴线和数据折线。
+- 设置齿轮只旋转外部机械结构，中心孔保持绝对静止；更新日志文档从左上方展开，达到约75%时两条文字线同步写入。
+- 五个动效均可由hover或click触发，总时长不超过0.5秒；结束或指针离开后恢复到与原始静态SVG完全一致的状态，并遵守系统Reduce Motion设置。
+
+### Queue Now Playing Clearance
+- Library Order仍按原始歌单顺序和原始编号显示，不移动歌曲数据，也不改变手动播放列表与拖拽逻辑。
+- 自动定位时在当前歌曲上方预留超过两个完整歌曲行的空间，使当前项从SSE最浓的边缘继续向下移动，并完整显示封面、标题、艺人、时长与点击区域。
+- 歌单开头仍使用scrollTop 0保护，不会为了预留空间制造空白或破坏第一首歌曲的位置。
+
+## 5.4.1 (2026-07-16)
+HOTFIX BUILD：修复默认播放队列自动定位时，当前播放歌曲占据首个SSE遮罩位置的问题；当前歌曲现在固定下移一个完整可视行。同步规划Gen 6–8的时间机器、音乐银河与Galaxy-Aware Recommendation，并将Electron Lake推迟至Gen 9+。
+
+### Queue Now Playing Visibility
+- 默认Library Order队列仍保持原歌单顺序与原始位置编号，不移动或重排歌曲数据。
+- 自动定位当前歌曲时，顶部预留一条完整歌曲行加6px间距；上一首可以进入SSE渐隐区，当前播放项落在第二个可视位置并保持完整可读。
+- 歌单第一首仍安全停留在scrollTop 0；手动播放列表、拖拽顺序、下一首优先级和点击播放逻辑不变。
+
+### Unreleased Roadmap Revision
+- Gen 6规划音乐时间机器：metadata年份/艺人/专辑驱动的横向可拖拽时间轴。
+- Gen 7规划音乐银河：MFCC、BPM、Genre距离、二维坐标、Canvas/WebGL银河绘制、星系标签与低负荷hover。
+- Gen 8规划使用银河的MFCC+BPM缓存优化随机播放和每日推荐，同时保留新鲜度、多样性与随机性。
+- Electron Lake、SQLite与EXE迁移由Gen 5+顺延至Gen 9+。
+
+## 5.4.0 (2026-07-16)
+HARMONIC REFORM — GP Core 2.1 / GP Motion Engine 2.0：Soft Scroll Edge 完成架构级重设计。固定 panel shell 保留真实玻璃背景，滚动 viewport 只负责移动内容；完整 sector 在接触裁切边缘时逐渐融入外层 panel，不再叠加任何 blur 横条。
+
+### Architecture Reset
+- 物理删除 5.3.3–5.3.10 的全部 SSE 实现，包括 sticky 伪元素、body 级 fixed frame、edge cap、getBoundingClientRect 定位、边界颜色采样、内容副本和 backdrop blur 覆盖层。
+- 5.4.0 只继承播放器功能与数据逻辑；滚动视觉子系统从空白状态重新建立，不在 5.3.10 规则后追加补丁。
+
+### GP Core 2.1 — Shell / Viewport Separation
+- 每个滚动界面拆分为固定 gp-sse-shell 与透明 gp-sse-viewport：shell 独占 panel 的背景、border、圆角与阴影，viewport 独占滚动。
+- 原本自己同时承担 glass 与滚动的听歌排行、设置、更新日志版本栏和详情栏，启动时会建立独立固定 shell，并把原 glass 表面完整迁移到 shell。
+- 播放队列、音效、每日推荐复用 side-panel；歌单复用 library-panel；最近最爱和听歌数据复用各自 history pane，不创建悬浮外框。
+
+### GP Motion Engine 2.0 — Whole-Sector Dissolve
+- mask 作用于整个滚动 viewport 的最终内容画面，因此歌曲行、EQ 区块、设置组、图表和 data-card 会作为完整 sector 一起渐隐，不会出现文字先消失而卡片背景仍停留。
+- 渐隐区域直接露出固定 shell 已经渲染好的真实 panel 背景；没有黑色、白色、主题预设色或额外模糊层覆盖在内容上。
+- 到顶时顶部完整显示，到底时底部完整显示；位于中间时上下两侧独立启用，不可滚动时完全关闭。
+
+### Frame Contact & Performance
+- Library 与 side-panel 的旧外边距被迁入 viewport 内部，使移动内容可以一直经过真实外框边缘，而不是在距离 border 数十像素处提前停止。
+- 新系统不读取每帧几何、不创建额外 DOM 副本、不执行大面积 backdrop-filter；普通滚动只更新两个布尔状态，适合高分辨率界面。
+
+## 5.3.9 (2026-07-16)
+HOTFIX BUILD：依据 Apple iOS 26 Liquid Glass 与 Scroll Edge Effect 官方设计原则，撤销以颜色盖住内容的 SSE 路径，改为内容透明度溶解与窄幅实时可变模糊共同作用。
+
+### Apple Scroll Edge Model
+- Apple 的 Scroll Edge Effect 用于维持浮动 Liquid Glass UI 与动态滚动内容的层级分离；内容进入边缘时应柔和溶解进背景，而不是出现实色渐变块或发光边缘。
+- Queue、Sound 与 Listening Data 现在直接对滚动内容应用 alpha dissolve mask：边界像素完全透明，32px 内分五级恢复至完全不透明。
+- 透明内容自然露出 sector 自己的真实背景，因此主题、封面配色、玻璃透明度和相邻背景无需再由 JavaScript 猜测或复制。
+
+### Variable Blur Layer
+- 在内容溶解之上只保留一层与 viewport 等宽的窄幅实时 backdrop blur，模糊降低为 8px、饱和度为 68%，不包含白色、黑色或主题色填充。
+- blur 层和 alpha mask 使用相同的顶部/底部启停状态：到顶关闭顶部、到底关闭底部、中间同时开启。
+- Queue、Sound、Listening Data 每个视图只拥有一个对应边缘效果，不再把外层播放器面板或单独卡片当成第二层 SSE。
+
+### Geometry & Media Controls
+- 三个核心 SSE 完全采用自身 scroll viewport 的 getBoundingClientRect，frame 宽高、mask 宽高和实际裁切边界保持一致。
+- 功能键继续使用无锁时间戳去抖；Media Session 现在同步播放状态并写入当前歌曲标题、艺人、专辑和封面，使系统媒体按键保持稳定会话。
+
+## 5.3.8 (2026-07-16)
+HOTFIX BUILD：按每个滚动 viewport 的真实边界统一重构 SSE，不再针对任何具体文字或控件；恢复正确的上下端启停、精确宽高和边界外侧实时底色，并修复功能键连续控制。
+
+### Viewport-Level SSE
+- SSE 作用对象是 Queue、Sound、Listening Data 以及其他已启用滚动 sector 的完整 viewport；歌曲行、BPM、图表、文字或控件都只是经过边界的普通内容，不存在单项特判。
+- Queue 与 Sound 不再借用外层播放器面板的宽度和底部位置，Listening Data 也严格采用自身滚动区域矩形，因此 frame 不会比 sector 更宽、更高或延伸到相邻区域。
+- 滚动到顶时关闭顶部 SSE，滚动到底时关闭底部 SSE；位于中间时上下同时显示，不可滚动时全部关闭。
+
+### Boundary Surface Sampling
+- 顶部从 viewport 上方两像素、底部从 viewport 下方两像素读取实际命中的 DOM 表面背景色，并强制转换为不透明 RGB 起点。
+- 边界起点先覆盖被裁切内容，随后在短距离内释放为实时去饱和 backdrop blur，最后平滑过渡到零模糊和完全清晰。
+- 主题、封面背景或 Ambient 颜色变化后会重新采样全部 SSE 边界；不再依赖固定白色光晕或通用预设颜色。
+
+### Continuous Playback Keys
+- 移除可能因 keyup 丢失而锁死的 held-key 集合和 700ms 状态锁，改用只过滤系统自动连发的短时间戳去抖。
+- 每次新的 F9/F10/F11 keydown 都能独立触发上一首、播放/暂停和下一首。
+- 播放与暂停事件同步写入 Media Session playbackState，避免系统媒体键执行一次后状态未更新而停止继续派发。
+
+## 5.3.7 (2026-07-16)
+HOTFIX BUILD：移除导致 SSE 泛白的人工颜色覆盖，改为直接对边界后方的实时画面去饱和并模糊；同时修复滚动端点硬切与 F9/F10/F11 只能触发一次的问题。
+
+### Realtime Boundary Sampling
+- 删除 5.3.6 中由 glass-bg-strong 与 bg-base 混合生成的 frame-opaque 色层；该色层无法等同于屏幕上实际合成后的背景，是深色界面泛白或偏色的根源。
+- SSE 现在只保留接近完全透明的中性激活层，并通过 backdrop-filter 直接采样边界后方的实时像素。
+- 实时画面先降低至 54% 饱和度，再执行 15px 高斯模糊和轻微对比度收敛；封面取色、主题背景和当前 sector 颜色都会自然参与结果。
+
+### Persistent Soft Boundary
+- SSE 被定义为滚动视口边界，而不是剩余滚动方向提示。只要 sector 可以滚动，顶部与底部边缘都会保持启用。
+- 列表到达第一项或最后一项时不再关闭对应模糊层，因此文字、封面和歌曲模块不会在圆角边框处突然被直线裁断。
+- 七段透明 mask 只控制实时模糊的强弱，不再加入白色、黑色或主题预设填充。
+
+### Reusable Function Keys
+- F9/F10/F11 改为 window capture 级别处理，同时识别 event.code、event.key 与三种 Media 键名。
+- 按键使用独立 pressed/released 状态，keyup、窗口失焦和页面隐藏都会清理状态。
+- 加入 700ms 安全释放机制；即使 Edge 或系统拦截了某次 keyup，下一次独立按键仍然可以正常控制播放。
+
+## 5.3.6 (2026-07-16)
+HOTFIX BUILD：收紧并增强 Queue、Sound 与 Listening Data 的 Soft Scroll Edge，校正唱针物理旋转中心，改善缩放字体渲染，修复 Changelog 滑块适配，并加入 F9/F10/F11 播放控制。
+
+### SSE Surface Integration
+- Soft Scroll Edge 的可见深度缩短至此前约六成，避免模糊区域过度侵入 Queue、Sound 和 Listening Data 的正文空间。
+- 边缘最外侧现在由当前 glass surface 与背景实时混合成完全不透明的连续色面，再在较短距离内释放为清晰内容，形成从 sector 背景自然延伸出的效果。
+- 模糊半径调整为 13px；边缘遮蔽、模糊和透明度使用不同但同步的多段曲线，增加渐变感同时消除末端硬切。
+- Queue 与 Sound 继续绑定整个播放器侧面 sector 的真实下边界；Listening Data 使用其完整滚动区域而非单张数据卡片。
+
+### Disk Reader Geometry
+- 唱臂的水平位置、垂直位置和 transform-origin 现在全部由唱针底座直径的一半计算。
+- 唱臂旋转轴精确落在圆形底座中心，不再从底座下方偏移的位置旋转。
+
+### Typography & Changelog Fit
+- Edge 窗口自适应由整层 transform texture 缩放改为 Chromium layout zoom，使字体在缩放后重新参与字形栅格化，减少边缘毛糙。
+- 每次窗口适配结束后统一重新测量主导航、横向滑块、Changelog 版本滑块和 SSE；Changelog 列表自身尺寸变化也由 ResizeObserver 独立校正。
+
+### Playback Function Keys
+- F9、F10、F11 分别控制上一首、播放/暂停和下一首，并拦截按键长按造成的重复触发。
+- 全屏状态下尝试通过 Keyboard Lock 保留三个功能键；同时接入 Media Session 的上一首、播放、暂停和下一首系统控制。
+
+## 5.3.5 (2026-07-16)
+HOTFIX BUILD：修复自适应缩放下 Acrylic Edge Frame 的多处位置、尺寸和圆角比例错位，并重新塑造模糊区域与清晰内容之间的长距离柔和过渡。
+
+### Viewport-Accurate Alignment
+- 确认 5.3.4 错位来自坐标系混用：getBoundingClientRect 返回缩放后的视口坐标，而旧 frame 被放进受缩放的局部父容器，导致位置与大小被重复缩放。
+- 所有 Edge Frame 现在直接挂载到页面根层并使用 fixed 视口坐标，位置和尺寸与目标 sector 的最终屏幕矩形一一对应。
+- 圆角和边缘深度根据元素实际缩放比例重新计算；Queue、Sound 与 Library 使用其真实外层面板作为边界，不再出现主体与模糊层大小不一致。
+
+### Continuous Acrylic Transition
+- 删除边缘处不透明的深色主题混合填充，改用当前玻璃面板的透明 acrylic surface，避免深色主题出现黑色矩形块。
+- 模糊半径提高到 18px，过渡深度扩大约 28%，并用七段 alpha mask 从强模糊逐级衰减至完全清晰。
+- 颜色遮罩同时采用五段低对比度透明梯度；模糊、颜色和透明度在不同位置同步退场，消除原先模糊结束处的硬边界。
+- 隐藏 sector 的 frame 自动关闭，窗口缩放、布局重算与页面切换继续触发重新测量。
+
+## 5.3.4 (2026-07-16)
+HOTFIX BUILD：修复主侧边导航滑块点击后从页面顶部重新飞入的问题，并以绑定真实滚动视口的独立 Acrylic Edge Frame 重构 Soft Scroll Edge。
+
+### Sidebar Navigation
+- 主导航选中块由 CSS 伪元素改为真实 DOM 元素，位置和尺寸直接从当前按钮读取，不再通过可能离散重置的 CSS 自定义属性间接驱动。
+- 快速连续切换时取消上一段未完成动画，并从当前选择位置执行 FLIP transform；不会再把页面顶部当作新动画起点。
+- 保留轻微放大与自然收尾，动画仅改变 transform，且移动结束立即释放 will-change。
+
+### Acrylic Edge Frame
+- 废弃位于滚动内容内部的 sticky 伪元素。每个目标 sector 现在拥有一个独立、绝对定位并按真实边界裁切的边缘 frame。
+- frame 从 getBoundingClientRect 读取真实位置和尺寸，从 computed style 读取实际圆角、深度与主题混合色，因此不会再与外框之间留出空隙。
+- 14px 高斯模糊与多段透明度遮罩由边界向内连续衰减，从完全遮蔽平滑过渡到清晰内容，避免突兀的黑块或白雾断层。
+- ResizeObserver、窗口缩放、界面切换和 Queue/Sound 切换都会重新对齐 frame；不可见页面的 frame 自动停用。
+
+## 5.3.3 (2026-07-16)
+HOTFIX BUILD：修正高分辨率下选择滑块的合成与调度，重做导入阶段比例，并把 Soft Scroll Edge 从悬浮遮罩改为由真实容器边界向内容延伸的自适应渐隐。
+
+### Motion Composition
+- 主导航、横向选择器与 Changelog 滑块改用 compositor-only transform 路径；尺寸变化通过 FLIP 比例吸收，不再逐帧动画 left、top、width 或 height。
+- will-change 只在滑块移动期间启用，动画结束立即释放，避免长期保留额外合成层。
+- 音效波形、每日推荐和听歌记录等较重渲染延后到滑块首帧完成之后，减少点击瞬间与动画争抢主线程。
+
+### Proportional Import Progress
+- 导入进度重新分配为音频身份识别 35%、IndexedDB 与歌曲信息恢复 55%、提交及界面渲染 10%。
+- 歌曲计数完成时进度停在对应阶段末端，随后明确显示保存与界面更新，不再出现 341/341 后进度条突然补满。
+- 提交、渲染与完成之间主动让出绘制帧，使 Edge 能按顺序呈现 93%、97% 与 100% 状态。
+
+### Border-Anchored Soft Scroll Edge
+- 移除悬浮在内容内部、与圆角边框之间留缝的白色遮罩；渐隐现在从 Queue、Sound、Library、Top 50、Settings 与 Changelog 各自真实边界向内延伸。
+- 顶部和底部效果分别只在对应方向仍有内容时显示；首次进入可滚动页面即可显示底部边缘，不再要求先滚动一次。
+- 边缘颜色由当前背景与玻璃面板颜色动态混合，深色或低饱和主题仍有足够可见度，同时避免固定白雾。
+- 各容器的实际 padding 被纳入边缘宽度与偏移，圆角贴合 sector 外缘，滚动内容不会穿过边缘与 border 之间的空隙。
+
+## 5.3.2 (2026-07-16)
+HOTFIX BUILD：引入 GP Motion Engine 1.3，彻底停止全屏背景的持续移动与实时重合成，降低 2K/4K 高刷新率下的 GPU 3D 压力；同时为曲库导入加入不可误关的分阶段进度条，并阻止重复点击当前横向选项触发无意义刷新。
+
+### GP Motion Engine 1.3
+- Ambient Glow、Cover Color 与 Blurred Cover 全部改为静态呈现：删除色块 Wander 动画、背景位置动画、父背景漂移和 Cover Color 的 JavaScript requestAnimationFrame 循环。
+- 背景仍保留封面配色、模糊封面、色彩饱和度与原有层次；文字、按钮、唱片、封面和边框继续使用浏览器原生 4K 分辨率，没有对前景 UI 做降采样。
+- 只有当前选择的背景模式参与渲染。未启用的 Glow / Blurred Cover 使用 display:none，不再依靠 opacity:0 保留合成层。
+- 静态背景外扩由 20–24% 收敛到 12%，足以覆盖 58px 模糊边缘，同时显著缩小 4K 离屏纹理面积。
+
+### 4K Composition Path
+- 大型 Glass 面板不再对已经高度模糊的背景重复执行全尺寸 backdrop-filter；透明底色、边框、阴影和层级保持不变。
+- 主侧边栏、横向选中滑块与 Changelog 滑块移除 38px backdrop-filter，保留原来的透明色、轮廓和移动动画。
+- 软滚动边缘改为纯渐变与 Mask 淡出，不再在滚动过程中持续进行 15px 背景采样。
+- 唱片旋转、唱针、按钮微交互和滑块 Motion 保留；优化对象只限于高成本的全屏/大面积背景合成。
+
+### Blocking Import Progress
+- 文件与文件夹导入现在立即打开与“重新扫描”一致的硬控进度弹窗；导入运行期间无法点击遮罩、Escape、取消按钮或背景界面提前关闭。
+- 前 50% 显示 Spectrum ID / 音频身份识别进度，后 50% 显示 IndexedDB 缓存恢复、metadata、封面和时长读取进度。
+- 完成页汇总处理数量、缓存命中、新增和重复跳过数量；发生异常时保留已经成功导入的歌曲并提供明确关闭状态。
+- Spectrum 后台声学分析仍在列表可用后按原有队列执行，不把首次可播放时间拖到 MFCC、Energy 和 BPM 全部完成之后。
+
+### Idempotent Segmented Controls
+- 横向选择器增加统一的当前项拦截：再次点击已经选中的 Queue、Sound、Daily Mix、主题、背景、封面模式、时间范围、语言、历史模式或 EQ 预设时不重新渲染页面。
+- 点击其他选项后再返回原选项仍执行正常刷新、数据加载与滑块动画；只消除对当前状态没有任何改变的重复点击。
+- 这一规则避免当前页面被重新写入 DOM、滚动位置重置、音效信息重复读取或选中滑块重复启动。
+
+## 5.3.1 (2026-07-16)
+HOTFIX BUILD：修复 Changelog 竖向滑块缩放后上下移动越过目标和收尾抽动的问题，更新设置页 Gen 5 产品信息，校正单曲循环数字角标，并新增面向靠墙显示器音响的清晰度补偿 EQ。
+
+### Changelog Glider
+- Changelog 版本滑块取消会改变可见边界的缩放阶段，只保留位置与尺寸的连续插值，避免向上或向下移动时越过目标版本行。
+- 移动曲线改为无过冲的 360ms ease-out；连续快速点击版本时，浏览器直接从当前插值位置前往新目标，不再经历放大、越界、缩回三段互相打架的动画。
+- 竖向滑块继续保持无外发光规则。主导航原有克制缩放不受本次 Changelog 专项修复影响。
+
+### Product Information & Repeat One
+- 设置页软件名称改为 Glass Player Gen 5，副标题在中文界面显示“版本 3.1”，英文界面显示“Ver. 3.1”。
+- 版本徽章更新为 HOTFIX BUILD，点击后直接进入 5.3.1 对应更新日志。
+- 修复单曲循环右上角数字 1 的容器被脚本切换成 block 后失去居中的问题；角标现在使用固定 14px 网格居中、等宽数字和明确行高。
+
+### Monitor Speakers EQ
+- 音效预设新增“显示器音响 / Monitor Speakers”，用于显示器内置扬声器或小型桌面扬声器贴近后墙时的通用补偿。
+- 60Hz、150Hz 和 400Hz 分别削减 3.5dB、4dB 和 2.5dB，降低墙面边界增益、箱体共振与低中频堆积造成的沉闷感。
+- 1kHz 至 15kHz 逐步补入 0.5–2.5dB，改善对白、人声轮廓和空气感；该预设只改变实时七段 EQ，不修改歌曲 MFCC、BPM、Energy、Spectrum ID 或缓存分析结果。
+- 这是不依赖具体显示器型号的保守起点。房间、桌面和墙距不同，Custom 仍可在此基础上进一步微调。
+
+## 5.3.0 (2026-07-16)
+NEURAL INTERLINK UPDATE：GP Neural Engine 2.0 — Resonance Boost 将本地行为采集、长期偏好、会话偏好、探索判断与推荐评分正式连成一条可持续学习的链路；证据不足时继续使用真正的均匀随机，不让未成熟模型干涉播放。
+
+### GP Neural Engine 2.0 — Resonance Boost
+- behaviorEvents 现已持续写入 IndexedDB：快速或接近结尾的跳过、完整播放、重播、拖动进度、主动搜索、从列表选择、加入队列、循环与 Shuffle 切换、播放模式变化，以及按真实媒体推进量结算的实际播放时长。
+- 每条与歌曲相关的事件携带 Spectrum ID 和当时的 MFCC、BPM、Energy、Genre、Artist、Album 特征快照；模型生成时会优先用当前曲库里同 Spectrum ID 的最新标签补全表面信息。
+- 实际播放时长以媒体时间与墙钟时间双重约束累计，跳转、后台停顿和异常时间跃迁不会被当成正常收听；播放中每 30 秒、暂停、隐藏页面和离开页面时都会提交增量检查点。
+
+### Preference Is Not Recommendation
+- User Preference Model 只表达长期偏好：Artist、Album、Genre 权重，BPM 与 Energy 中心，MFCC 音色中心、分时段 Genre 倾向、歌曲证据和最近播放时间。
+- Recommendation Score 是独立的即时层：长期偏好之外同时计算当前时段、会话短期意图、声学相似度、新鲜度、多样性与有限探索奖励，避免高喜欢度歌手被无限重复。
+- 主动搜索、列表点播、加入队列和重播属于强正反馈；完整播放与真实停留为中等正反馈。跳过惩罚按跳过位置动态变化，5 秒级快速跳过远重于播放到 90% 后离开。
+
+### Evolution, Session & Exploration
+- 长期偏好采用 45 天半衰期，旧兴趣逐渐回到中性，而不是永久累积；当前会话信号以分钟级衰减，只短暂提高同 Artist、Album、Genre 和 MFCC 相似歌曲的概率。
+- 由 Shuffle 或推荐带来的新风格首先进入探索观察：前三次接受和前四次跳过只形成弱证据，不会因一次偶然播放或一次跳过立刻改写长期模型。
+- 主动选择后会短期提高相似歌曲机会，但后续相似推荐必须经过连续反馈才能形成稳定趋势。手动播放队列始终拥有最高优先级，Neural 不会重排用户明确安排的顺序。
+
+### Confidence Gate & Safe Shuffle
+- 模型成熟需要同时满足至少 20 个有效行为证据、5 个活跃日期和 0.56 置信度；置信度由衰减后的证据量、活跃天数及声学特征覆盖率共同生成。
+- 门槛未通过时，Shuffle 和每日推荐明确走 uniform-random-fallback：候选歌曲等概率抽取，旧版按 Genre/Language 直接乘权的隐藏加权不再参与。
+- 模型成熟后使用有上下限的 weighted random，而不是确定性最高分：推荐权重限制在 0.35–3.4，仍保留随机性、新鲜度和风格多样性，并将每日推荐快照、置信度和模型模式写入 IndexedDB。
+
+### Motion & Listening History Fixes
+- 主侧边栏、Changelog 版本侧边栏以及后续竖向导航统一禁止外发光和点击光晕；取消独立 stretch 动画，改用单一位移与尺寸插值，消除抵达终点后的抽回与抽搐。
+- 没有可靠日期的旧累计时长不再被迁移成今天的数据。选中的今天、本周、本月或今年确实没有收听记录时，只显示小字“当前无听歌数据”，也不会虚构默认第一首和四分钟。
+- 本版本不删除旧累计总时长，只把无日期数据隔离为 legacyUndatedSeconds，确保它不能污染任何有日期范围的榜单。
+
+## 5.2.0 (2026-07-15)
+MOTION UPDATE：引入 GP Motion Engine 1.2，统一横向与竖向玻璃滑块的移动、放大和拉伸节奏，降低侧边栏轮廓光；同时恢复基于 Spectrum ID 的改名历史同步，并为每次手动重扫保存前后两版 metadata 身份。
+
+### GP Motion Engine 1.2
+- 主导航竖向滑块在移动中采用更克制的横向放大与轻微纵向拉长，抵达前自然回落；不再出现过强的纵向膨胀。
+- Changelog 版本滑块改用与主导航一致的 430ms 缓动、CSS 位移与伸缩节奏，取消显得过快的独立跳跃路径。
+- 横向分段滑块不再拉成长条覆盖整个移动距离，改为连续位移中明显但克制的整体放大，并平滑适配目标按钮宽度。
+- 主导航和 Changelog 滑块的常驻阴影显著减弱；点击只留下可见但温柔的主题色轮廓，不再向外扩散强光。
+
+### Spectrum Identity Snapshots
+- 每次手动重新扫描后只保留刷新前与刷新后各一版 metadata 身份快照，包括 Title、Artist、Album、Genre、文件身份和时间戳。
+- 快照不复制封面 Blob、MFCC、Energy 或 BPM，因此不会把高成本歌曲缓存扩大一倍。
+- 缓存命中同一 Spectrum ID 后会检查文件名、大小、修改时间和相对路径；表面信息变化时自动刷新标签和封面，声学分析继续直接复用。
+
+### Renamed History Recovery
+- 恢复 5.1.1 问题 2 的稳定身份同步：历史记录可沿 Spectrum ID、audioEssenceKey、legacyContentKeys、Artist 别名、Title 别名及重扫前后快照回接当前歌曲。
+- 历史合并现在同时保留身份别名，不再只合并播放次数和秒数；成功回接后立即显示当前歌名、歌手、专辑、Genre 与当前封面。
+- Spectrum ID 引入前且歌名、歌手均已完全改变的孤立旧记录仍不会被冒险猜测合并，避免把私人听歌数据接到错误歌曲。
+
+### Resonance Boost Confidence
+- 听歌时段尚未达到最低活跃天数或置信度时，只显示“仍在学习你的听歌时段”。
+- 在尚未形成结论的状态下隐藏“Resonance Boost 已形成稳定结论”一行；只有时段结论真实成立后才显示对应置信度说明。
+
+### Compatibility
+- 5.1.2 恢复的原始听歌时长采集、保存周期与统计算法保持不变；本版本没有重新引入 5.1.1 的问题 1 改动。
+- 玻璃机械轴心、播放、队列、EQ、Spectrum 声学缓存、主题和中英文界面继续兼容。
+
+## 5.1.2 (2026-07-15)
+HOTFIX BUILD：完整撤回 5.1.1 对听歌时长、周期统计、历史身份和 metadata 刷新的全部修改，恢复 5.1.0 原始行为；仅保留唱片玻璃机械轴心。
+
+### Complete History Rollback
+- 听歌时长采集、4–5 秒增量保护、8 秒保存周期、每日记录结构与原有统计口径全部恢复为 5.1.0 实现。
+- 撤回自然周/月/年、后台计时重写、Crossfade 单独结算、旧记录未定日期迁移等 5.1.1 改动，避免现有周听歌时长骤减。
+- 撤回双版本 metadataVersions、titleAliases、导入时自动刷新和新增历史合并路径；本版本不再尝试修复灰色旧历史。
+
+### Record Spindle
+- 保留 5.1.1 中唯一确认有效的视觉改动：唱片中心黑点改为更小的玻璃机械轴心。
+- 轴心使用与唱针一致的毛玻璃、扁平与轻拟物材质，仍清楚可见但不再遮挡封面中心。
+
+### Safety
+- 5.1.2 直接基于原始 5.1.0 构建，而不是在 5.1.1 上局部删除，以确保没有残留计时或历史实验代码。
+- 播放、Spectrum 分析、IndexedDB 缓存、队列、EQ、主题与现有 5.1.0 用户数据格式保持不变。
+
+## 5.1.1 (2026-07-15)
+SPECTRUM ID PATCH（已撤回）：曾尝试重写听歌时长与改名历史恢复，但造成现有周期听歌时长回退，相关实现已在 5.1.2 全部撤销。
+
+### Withdrawn
+- 本版本的计时、自然周期、双版本 metadata 快照与历史恢复改动不再作为有效功能。
+- 5.1.2 不继承这些实现，仅在版本历史中保留此条目说明回滚原因。
+
+## 5.1.0 (2026-07-15)
+HOTFIX BUILD：重新实现与背景自然融合的自适应 Soft Scroll Edge，修复改名歌曲的历史身份迁移，并重排最近最爱、十日趋势图与多条可信听歌洞察。
+
+### Adaptive Soft Scroll Edge
+- 移除造成白色蒙层的强玻璃底色，改用透明 backdrop-filter、渐进 mask 与当前卡片背景的低强度动态染色；文字会溶入背景，而不是撞上一条矩形白边。
+- 上下效果完整覆盖滚动区域的全部宽度；专门修复 Grid 容器伪元素只占第一列、导致听歌数据右半边没有 Fade 的问题。
+- 边缘曲率与 Queue、Sound、Library、History、Settings 及 Changelog 各自的容器圆角匹配；效果仍只在用户滚动且对应方向存在内容时出现。
+
+### Identity-safe Listening History
+- 历史迁移现在会依次检查 Spectrum ID、audioEssenceKey、旧 contentKey、历史条目内的稳定身份、艺人别名及文件名标题，不再只比较当前 Artist + Title。
+- 重新扫描 metadata 前先把旧字符串键绑定到 Spectrum ID；扫描完成后统一刷新 Title、Artist、Album 与 Genre，因此旧听歌时长不会留在灰封面的旧名字下。
+- 历史封面查找共享同一套身份解析路径，可从稳定 ID、旧别名或当前播放列表记录恢复正确封面。
+
+### Recent Favorites & Listening Data
+- 最爱歌曲、最爱艺人、最爱专辑与最爱风格固定为真正的 2 × 2 矩阵；听歌习惯移到独立横向摘要，不再制造空白格。
+- 四张卡片的答案升级为更醒目的响应式大字，同时保持长歌名与窄窗口下的安全换行。
+- 折线图改为过去十天，取消会压扁坐标文字的非等比缩放，并降低图表高度，使日期轴更紧凑清晰。
+- 洞察窗口会在 4、6、8、12、16 周中根据有效周、有效天数和总时长选择最短可信范围；最多输出五条有关艺人、专辑、歌曲、时长趋势与活跃星期的本地洞察。
+
+## 5.0.0 (2026-07-15)
+NEURAL UPDATE：正式引入 GP Neural Engine 1.0 — Resonance Boost，把播放队列、稳定歌曲身份与本地收听行为连接成第一代个人音乐洞察，同时为所有主要滚动界面加入 iOS 26 风格的柔和边缘玻璃。
+
+### GP Neural Engine 1.0 — Resonance Boost
+- Resonance Boost 将 Spectrum ID 作为歌曲身份，将逐日听歌时长、播放次数、时段分布与当前 metadata 作为本地行为信号；所有推导均在浏览器本地完成。
+- 最近最爱从歌曲、艺人、专辑、Genre 和听歌时段五个维度生成报告；数据量不足时扩大观察窗口，置信度仍不够则明确保持学习状态，绝不编造结论。
+- 听歌数据新增近一周每日时长折线图、过去五周最爱艺人和过去十二个月最爱艺人，并从最近八周生成可读洞察。
+
+### Liquid Scroll Edges
+- Queue、Sound、Library、Listening History、Settings，以及 Changelog 的版本列表与正文均加入 soft scroll edge effect。
+- 初始静止状态不显示装饰；用户开始滚动后，内容在上下边界以渐变模糊和透明度过渡进入玻璃层，避免文字被硬切。
+- 效果只在内容确实可以继续向对应方向滚动时启用，并避免上下模糊层叠加。
+
+### Queue Intelligence
+- 默认队列重新保持 1 到音乐库末尾的固定真实顺序；当前曲目不再被旋转成列表第一项。
+- 切歌时自动把当前曲目定位到边缘玻璃下方，并保留上一首的局部内容作为位置上下文；用户仍可自由滚动到第 1 首或最后一首。
+- 当播放模式为 Shuffle 且首次导入音乐时，起始曲目从整个音乐库随机选择，不再永远停在第 1 首。
+
+### Listening History Identity
+- 全库重新扫描完成后，历史记录立即按 Spectrum ID 同步最新 Title 与 Artist；改名歌曲不会再显示旧名称。
+- 历史封面也改为优先按 Spectrum ID 关联当前音乐库，Artist 或 Title 改动不会让封面退化为灰色占位图。
+- 新增今天/本周/本月/本年的同期对比，以绿色上箭头或红色下箭头显示相对上一周期的时长变化。
+
+### Performance Contract
+- 报告只聚合 localStorage 中已经记录的秒数，不解码音频、不重跑 MFCC、Energy 或 BPM，也不触碰播放优先级。
+- 图表使用轻量 SVG 与 CSS，只有 hover 时才显示详细信息；时段统计随正常播放增量写入，不扫描旧文件。
+- GP Spectrum 缓存、IndexedDB、Spectrum ID、队列拖拽、EQ、主题和现有播放体验保持兼容。
+
+## 4.4.2 (2026-07-15)
+HOTFIX BUILD：新增全库现存数据重新扫描，在 Spectrum ID 不变的前提下用音频文件里的最新 metadata 覆盖陈旧缓存，并以确认、进度和完成弹窗清楚反馈；MFCC、Energy、BPM 与收听历史完整保留。
+
+### Added
+- 设置页新增“重新扫描全部歌曲”按钮，可对当前已导入的整个音乐库执行一次受控 metadata 刷新。
+- 点击后先显示确认弹窗；扫描期间显示实时歌曲计数与进度条；结束后显示更新数、真实 Genre 命中数和失败数。
+- 重新扫描支持从 MP3 ID3 与 FLAC Vorbis Comment 读取 Title、Artist、Album、日期和一个或多个 Genre。
+
+### Changed
+- 重新扫描会更新文件名、Title、Artist、Album、日期、Genre、时长、封面、缩略图、文件大小和修改时间，并将结果写回现有 trackCache。
+- 文件真实 Genre 会覆盖旧的 spectrum-inference 可见结果；如果文件仍没有 Genre，则继续使用已经缓存的 Spectrum 推断，不重新分析音频。
+- Artist 改名会追加到同一 Spectrum ID 的 artistAliases；当前 genreIds 会跟随文件真实 Genre 刷新，canonicalArtistId 保持不变。
+
+### Preserved
+- Spectrum ID、audioEssenceKey、三枚音频锚点、FLAC PCM MD5 和 legacyContentKeys 全部保持不变。
+- MFCC、Energy、Loudness、BPM、采样率、声道、波形、氛围、推荐数据与播放历史不会删除、重算或迁移到新歌曲身份。
+- 重新扫描最多同时处理两首歌，完成后只统一刷新一次列表与当前歌曲界面，避免大量重复 render。
+
+### Fixed
+- 修复同一音频再次导入时因 Spectrum ID 命中 IndexedDB 而永久显示旧 Genre、旧 Artist 或旧封面的缓存遮蔽问题。
+- 修复仅改变文件夹路径、文件名或标签仍无法让 Glass Player 读取最新文件 metadata 的问题。
+
+## 4.4.1 (2026-07-15)
+SPECTRUM ID UPDATE：将 4.4.0 的音频本体识别正式命名为 GP Spectrum ID 1.0，采用更保守的恢复规则，并为 Artist/Genre/时间维度的个人收听模型建立稳定身份字段；同时完成可永久恢复的 Custom EQ。
+
+### GP Spectrum ID 1.0
+- 每首歌获得 gpsid:v1 Spectrum ID；ID 只由容器中真实音频流的长度、前/中/后三枚 SHA-256 锚点以及可用时的 FLAC PCM MD5 组成。
+- 文件名、Title、Artist、Genre、Album、封面、padding 和文件修改时间不进入 Spectrum ID；这些表层信息以后可以独立修改。
+- audioEssenceKey 继续作为兼容别名，4.4.0 与更早版本的 contentKey 会迁移到 Spectrum ID，不丢失旧识别结果。
+
+### Conservative Match Policy
+- 完整 Spectrum ID 精确一致或 FLAC PCM MD5 一致时才直接确认同一音频。
+- 锚点容错不再接受任意 2/3：必须音频流长度与结构签名完全一致、中段锚点一致，并且前段或尾段至少再一致一个。
+- 无法满足证据门槛时宁可建立待确认的新身份，也不会仅凭歌名、艺人、码率、时长或 Genre 强行合并。
+
+### Personal Listening Foundation
+- track cache 新增 spectrumId 与 identityLinks，预留 canonicalArtistId、artistAliases 和 genreIds；统一艺人名称时可继续绑定原歌曲身份。
+- 播放历史开始优先使用 Spectrum ID，而不是 artist + title 字符串；旧历史会在歌曲再次播放时无损迁移，并保留曾经出现过的 Artist 名称。
+- 为未来 Favorite Artist、按 Artist/Genre/时间统计和高度个人化推荐预留稳定数据关系，本版本暂不添加新的可见页面。
+
+### Persistent Custom EQ
+- Custom 按钮现在始终显示，不需要先拖动频段滑块才出现。
+- 手动调整任意频段会立即保存独立的 customEQGains；切换到 Flat、Bass、Vocal 等预设不会覆盖自定义曲线。
+- 以后点击 Custom 会恢复上次保存的七段频率增益；4.4.0 已保存的自定义 eqGains 会自动迁移。
+
+### Compatibility
+- GP Spectrum Engine 2.0、Spectrum Algorithm 2.1.0、MFCC、Energy、BPM、Genre 与技术信息读取保持不变。
+- IndexedDB 升级到数据库 v5、track cache schema v6，并增加 Spectrum ID 索引；旧缓存继续只加不减。
+- 本版本不处理同曲 Live/Studio 多版本消歧，因为当前音乐库不存在这种并存情况；不同音频流仍自然得到不同 Spectrum ID。
+
+## 4.4.0 (2026-07-15)
+RECOG UPDATE：引入 GP Recognition Engine 1.0，以音频流本体而不是文件名、Artist、Title、Genre、封面或修改时间识别歌曲；旧版 MFCC、Energy、BPM、波形、封面与技术信息会迁移到新的稳定身份。
+
+### Audio-Essence Identity
+- 新增 audioEssenceKey：先定位容器中的真实音频数据区，再以音频流长度和三枚独立 SHA-256 锚点生成稳定歌曲身份。修改文件名或 metadata 不会改变该身份。
+- 三枚锚点分别取自音频流前段、中段与尾段；它们不读取 ID3、FLAC Vorbis Comment、MP4 metadata、WAV LIST 标签或封面。
+- Bitrate、时长、采样率与声道继续保留为技术信息和辅助校验，但不单独充当歌曲主键，避免不同歌曲因参数相同而被误合并。
+
+### Four-Layer FLAC Recognition
+- FLAC 除三枚音频流锚点外，额外读取 STREAMINFO 内的 PCM MD5；Artist、Title、Genre、Album、封面和 padding 改动均不会影响该值。
+- 匹配优先级为完整 audioEssenceKey → FLAC PCM MD5 → 三锚点多数票。即使某一锚点因容器异常漂移，另外两枚一致时仍可恢复原歌曲。
+- 当前音乐库的 328 个 FLAC 与 13 个 MP3 均通过三锚点实文件读取测试，并得到 341 个独立音频身份。
+
+### Container-Aware Recognition
+- MP3 会跳过 ID3v2、ID3v1 与 APE 标签；FLAC 会跳过全部 metadata block；M4A/MP4 只识别 mdat；WAV 只识别 data chunk。
+- Ogg/Opus 会越过识别头与评论头，WMA 会定位 ASF Data Object；无法可靠定位音频区的罕见格式会明确标为 unreliable，而不会冒充稳定识别。
+- 导入只读取容器头和最多三段 64KB 音频数据，不为身份识别解码整首歌曲，也不增加播放启动负担。
+
+### Legacy Cache Migration
+- IndexedDB 升级到数据库 v4、track cache schema v5，并为 audioEssenceKey、三枚锚点与 FLAC PCM MD5 建立索引。旧记录继续只加不减。
+- 首次用 4.4.0 导入未修改的旧文件时，会通过旧 fileIdentity 找回 4.3.1 记录，再把 MFCC、Energy、Loudness、BPM、采样率、声道、波形、封面与 Genre 结果复制到新身份。
+- Spectrum Algorithm 仍为 2.1.0、feature schema 仍为 v4，因此身份迁移不会触发声学特征重算；旧 contentKey 作为 legacyContentKeys 保留以便追溯。
+
+### Future Metadata Safety
+- 为后续批量统一 Artist、写入正式 Genre、修改 Title 与重命名文件预留 recognition 和 legacyContentKeys 字段；metadata 变化与音频身份从此分离。
+- 未来显示信息可被新标签覆盖，但推荐与相似度使用的 MFCC/BPM/Energy 仍绑定 audioEssenceKey，不会因改名丢失。
+- 本版本不改变播放器 UI、动画、播放逻辑或现有 Genre/MFCC 展示；RECOG UPDATE 只替换底层识别与缓存主键体系。
+
+## 4.3.1 (2026-07-15)
+HOTFIX BUILD：撤销 4.3.0 会将不确定歌曲默认归类为 Pop 的错误设计，重建 Genre 为多特征、多类别评分系统，并重写 MFCC 简短摘要，修复《光辉岁月》被判断为 Pop、Dark · Soft 等明显错误。
+
+### Genre Collapse Fix
+- 删除 inferSpectrumProfile 中的默认 Pop 分支；任何类别都必须通过声学证据或明确文本线索获得分数，证据不足时使用 Mixed，而不是伪造 Pop。
+- 分类器同时计算各 Genre 得分、第一名与第二名差距、Top 3 分数及置信度；两个类别接近时允许显示双标签，不再强行隐藏不确定性。
+- 加入固定回归样本：BEYOND /《光辉岁月》必须得到 Rock，MFCC 摘要必须为 Warm · Driving，不允许再次出现 Pop 或 Dark · Soft。
+
+### Expanded Acoustic Evidence
+- MFCC 代表帧上限由 72 增加至 120，并继续均匀覆盖整首歌曲；新增数据仍与 Energy/BPM 共用唯一一次音频解码。
+- 除 13 维 MFCC 均值和标准差外，新增频谱滚降、频谱带宽、过零率、低/中/高频能量比例、频谱通量、峰均比、动态范围和 MFCC 帧间变化。
+- Genre 评分综合 Energy、RMS Loudness、BPM、节奏置信度、MFCC、频段分布、动态与谱变化，不再用单个 centroid/flatness 阈值决定整首歌。
+
+### Multi-Genre Scoring
+- 独立评分 Pop、Rock、Metal、Electronic、Hip-Hop、R&B/Soul、Jazz、Classical、Ambient、Folk/Country、Soundtrack、Reggae、Blues 与 Mixed。
+- Rock 强调中频、动态、谱变化、响度和节奏范围；Electronic 强调稳定节拍、能量与频段结构；Classical 与 Ambient 通过动态范围和节奏稳定度进一步区分。
+- 该轻量模型没有冒充 CNN：它是适合单文件 HTML 的可解释评分器。GTZAN 等开源工作也表明 Genre 分类需要标准化后的多维声学特征，而不是仅靠 MFCC 名称或少量阈值。
+
+### Offline Artist & Title Knowledge
+- 扩充离线艺人/作品线索，覆盖 BEYOND、黄家驹、《光辉岁月》《海阔天空》《真的爱你》以及更多中外 Rock、Metal、Classical、Jazz、Electronic、Hip-Hop、R&B、Ambient、Soundtrack 等艺人。
+- 明确文本线索只为对应类别增加高权重，仍保留声学得分；文件自带真实 Genre 时继续优先使用 metadata，不覆盖用户标签。
+
+### MFCC Summary Semantics
+- 废除 Dark · Soft 这种将音色明暗直接解释为情绪的组合；音色改用 Bright、Warm、Deep，运动/结构改用 Driving、Dynamic、Punchy、Calm、Smooth、Balanced。
+- Rock/Metal 作品会优先显示 Driving 或 Dynamic；Soft 标签已完全删除。MFCC 摘要现在描述声音结构，不再假装判断歌曲情感。
+
+### Cache Migration
+- Spectrum Algorithm 升级至 2.1.0、feature/track cache 升级至 schema v4；4.3.0 的错误 Genre 和缺失特征会执行一次纠正分析。
+- 纠正后的全部新特征、Top 3 Genre 得分、双标签、摘要与置信度继续永久保存到 IndexedDB；后续启动不重复计算。
+
+## 4.3.0 (2026-07-15)
+SPECTRUM UPDATE：GP Spectrum Engine 升级至 2.0，在原有 Energy、Loudness 与 BPM 之外加入本地 MFCC 音色分析、超简短声音摘要、氛围判断和缺失 Genre 推断。所有结果只计算一次并永久写入 IndexedDB。
+
+### GP Spectrum Engine 2.0
+- 将声学特征缓存升级到 schema v3 与 Spectrum Algorithm 2.0.0；旧版本 Energy/BPM 缓存只会为新增 MFCC 执行一次升级分析，此后直接恢复。
+- Energy、RMS Loudness、BPM、MFCC、氛围、推断 Genre、置信度、Sample Rate、Channels 与波形继续共用唯一一次 AudioBuffer 解码。
+- 分析仍在首轮歌单渲染后逐首排队，不并发解码多首音频；计算阶段通过 requestIdleCallback 分片让出主线程。
+
+### MFCC Pipeline
+- 实现 Hann 窗、1024 点 radix-2 FFT、功率谱、40 段 Mel filterbank、log-Mel 与正交 DCT-II，输出 13 维 MFCC。
+- 参数结构参考 librosa 的 Mel spectrogram / MFCC 链路与 Essentia MusicExtractor 的 low-level MFCC 统计方式，但实现为无外部依赖的原生 JavaScript。
+- 每首歌曲最多选择 72 个均匀分布于整首音频的代表帧；保存 13 维均值、标准差、有效帧数、采样率、FFT 大小、Mel 段数、频谱质心和频谱平坦度。
+
+### Mood & Genre Inference
+- 由 Energy、RMS Loudness、BPM、MFCC 统计、频谱质心和频谱平坦度组合判断明亮/温暖/深沉、平静/有活力/强烈等氛围轮廓。
+- Genre 推断先检查艺人、歌名和文件名中的明确本地线索，再用声学特征在 Pop、Rock、Electronic、Hip-Hop、R&B/Soul、Jazz、Classical、Ambient、Folk/Country 与 Soundtrack 中选择。
+- 只有文件本身没有 Genre 时才自动补全；推断结果标记为 spectrum-inference 并保存置信度，不覆盖真实 metadata 标签。
+- 该功能是本地启发式分类而非联网识别或预训练模型，因此提供可复现的合理归类，但不声明达到专业音乐分类模型的准确率。
+
+### Sound UI
+- 在 Energy 与 BPM 下方加入 MFCC 超简短摘要，例如“温暖 · 柔和”或“明亮 · 有活力”；中英文会随界面即时切换。
+- 原本缺失的 Genre 会在分析完成后填入本地推断结果，缓存命中时在第一次列表渲染前直接恢复。
+
+### Persistent & Future-Ready
+- trackFeatures 与完整 trackCache 同时保存 MFCC 向量统计、摘要代码、氛围、Genre、来源、置信度和算法版本；移除歌曲仍不删除结果。
+- 未来学习用户喜好或重做推荐算法可以直接读取已缓存特征向量，不需要重新解码整个音乐库；只有明确升级 Spectrum 算法版本时才会执行一次受控迁移。
+- 固定 72 帧 MFCC 上限使新增 FFT/DCT 工作量与歌曲长度解耦，避免重新出现 Snow Leopard Update 之前随歌单规模失控的初始化计算。
+
+## 4.2.1 (2026-07-15)
+HOTFIX BUILD：将歌曲文件信息、metadata、封面、技术参数、波形、Energy 与 BPM 统一为只读一次的 IndexedDB 完整快照，并彻底移除音效信息栏遗留的重复音频解码；同时重新提高自动封面主题色在背景和玻璃卡片上的可读性。
+
+### Complete IndexedDB Song Snapshot
+- 同一 contentKey 的永久歌曲记录现在同时保存文件名、文件大小、MIME 类型、修改时间、相对路径、格式、时长、估算比特率、标题、艺人、Genre、原始封面和缩略图。
+- 首次 Spectrum 分析完成后，同一记录继续写入 Sample Rate、Channels、160 点轻量波形、Energy、Energy dB、BPM、BPM confidence、算法版本与完成状态。
+- 缓存记录升级为 schema v2，并带有 informationComplete 标记；歌曲从当前歌单移除仍不会删除 IndexedDB 中的完整信息。
+
+### Read Once, Restore Everything
+- 重新启动并再次选择同一文件时，播放器先按 fileIdentity/contentKey 命中缓存，并在首次列表显示前恢复所有可见歌曲信息。
+- 4.2.0 已经生成的 trackFeatures 会在首次命中时自动合并回主 trackCache，完成一次兼容迁移，不需要重新解码音频。
+- 即使 BPM 无法稳定识别，Sample Rate、Channels、Energy 与完成状态仍按真实结果保存；BPM 显示未检测到而不是让整条缓存失效。
+
+### Duplicate Decode Removal
+- 删除旧 loadWaveformFor() 中独立的 AudioContext、整文件 arrayBuffer 和 decodeAudioData 队列。进入音效页面现在只绘制已缓存波形并更新文字，不再读取音频文件。
+- 整个运行时只保留 GP Spectrum Engine 的唯一一次完整解码；同一解码同时产出技术参数、波形、Energy 和 BPM。
+- 格式、时长和比特率均从持久快照显示，Sample Rate 与 Channels 不再因为切换歌曲或重新进入音效页而出现重复解码。
+
+### Accent Readability
+- 自动封面主题色的最低对比度提升至 4.5:1，不再只对页面底色检查，而是同时检查页面背景与实际强玻璃卡片的合成表面。
+- 保留 OKLab 封面调和与低色度限制，因此提高可读性依靠亮度方向的动态求解，不会退回预设色，也不会重新制造高饱和荧光色。
+- 保留约 7.5:1 的高对比度保护线，在清楚可读和视觉柔和之间保留明确边界。
+
+### Compatibility
+- GP Spectrum Engine 1.0 的 Energy/BPM 算法范围不变；本次修复集中于持久化完整性、重复读取和 Accent 可读性。
+- 播放器布局、Glass UI、动画、播放队列、EQ 与原有操作方式保持不变。
+
+## 4.2.0 (2026-07-15)
+SPECTRUM UPDATE：引入 GP Spectrum Engine 1.0，为本地歌曲自动检测 Energy 与 BPM，并将结果持久保存到 IndexedDB。已经分析过的同一音频文件在重启并重新导入后直接恢复结果，不再重复解码。
+
+### GP Spectrum Engine 1.0
+- 建立独立的歌曲声学特征分析流程；当前正式支持 Energy 与 BPM，分析器版本、完成状态和置信度随歌曲 contentKey 一同记录。
+- 分析任务在歌单首次完成显示后才进入后台队列，并且严格逐首执行，避免多首音频同时解码造成初始化卡顿和瞬时内存峰值。
+- 每首歌曲最多分析 180 秒；长歌曲从第 15 秒开始取样，避开部分作品过长的静音或渐入，同时限制单次计算规模。
+
+### Energy Detection
+- 以 100 Hz 时间包络抽样音频，在每个时间块内计算多声道 RMS，再由整段均方能量得到响度强度。
+- RMS 转换为 dB 后映射到 0–100 的 Energy 指标；它描述歌曲整体声能，不使用曲风或文件名作随机猜测。
+- 分析得到的轻量波形峰值可复用到当前会话，避免为同一首歌再启动一次波形解码。
+
+### BPM Detection
+- 从能量包络的正向变化构造 onset flux，再通过 60–200 BPM 范围内的归一化自相关寻找主要节拍周期。
+- 加入二倍频与三倍频校正，减少 120、180 BPM 被误判为 60 BPM 的半速/三分之一速结果，并保存 BPM confidence。
+- 无稳定节拍或分析时长不足时明确显示未检测到，不伪造一个随机 BPM。
+
+### Persistent Feature Cache
+- Energy、原始 dB、BPM、置信度、采样率、声道数、算法版本和完成状态写入 IndexedDB 的 trackFeatures 数据区。
+- 缓存继续采用只加不减的 contentKey 身份：歌曲从当前歌单移除不会删除分析结果；重启后重新选择同一文件即可直接恢复。
+- 特征缓存会在首轮列表渲染前读取，缓存未命中的歌曲才在渲染后排队；单首分析完成只更新正在显示的歌曲信息卡，不重建整个歌单。
+
+### Sound UI
+- 在音效页歌曲信息栏的 Genre 下方加入 Energy 与 BPM 两行，分析中、未检测到和已完成状态均有明确反馈。
+- Energy 显示为 0–100，BPM 显示为整数 BPM；中英文界面同步提供对应标签与状态文本。
+
+### Accent Contrast Hotfix
+- 封面自动取色仍由封面调色板与真实背景动态调和，但主题色与背景的最低对比度从 2.35 提高到 3.25。
+- 继续保留最大对比度限制，避免重新变成刺眼荧光色；结果同时满足可读性下限与视觉柔和上限，而不是改用预设颜色。
+
+### Scope
+- 本版本没有引入 MFCC，也没有启用基于声学特征的推荐；MFCC 将沿用同一 trackFeatures 持久化契约在后续版本实现。
+- 播放器布局、Glass UI、动画参数、播放队列和音频控制逻辑不因 Spectrum Engine 发生改版。
+
+## 4.1.2 (2026-07-15)
+HOTFIX BUILD：重做“UI 主题色跟随当前歌曲封面”的颜色算法。主题色不再强制提高饱和度，也不从预设色中挑选，而是由封面多色调色板与当前真实背景色动态调和。
+
+### Adaptive Accent Harmony
+- 从封面提取最多 5 个主要颜色，不再只使用出现次数最高的单一色块，降低大片纯色背景误导主题色的概率。
+- 将封面颜色转换到 OKLab 感知色彩空间，根据颜色排名与有效色度计算加权中心，使结果保留每张封面独有的色相关系。
+- 读取页面当前实际 background-color，并在 OKLab 中将封面色彩中心与背景色按比例混合；浅色、深色和自动主题因此会得到不同但协调的结果。
+- 算法只限制最终感知色度上限，不替换成任何预设主题色；灰色封面仍可生成中性色，彩色封面则保留经过柔化的自身色相。
+
+### Contrast & Comfort
+- 使用真实相对亮度计算主题色与背景的对比度；不足时沿 OKLab 明度轴逐步调整，直到达到最低可辨识阈值。
+- 高饱和红、蓝、黄、绿等颜色会保留来源色相，但降低感知色度，避免按钮、光晕和版本标签出现荧光感。
+- 按钮前景色改由 WCAG 黑白对比度自动选择，避免柔化后的主题色导致图标或文字不清楚。
+
+### Compatibility
+- 手动 Accent Color 预设保持不变；新算法只在开启 Match UI accent to current cover 时运行。
+- 封面、背景模式、Glass UI、动画和 GP Core 2.0 缓存流程不受影响。
+
+## 4.1.1 (2026-07-15)
+HOTFIX BUILD：正式为 Snow Leopard 架构修订引入新的引擎版本标识——GP Core 2.0 与 GP Motion Engine 1.1，并统一当前构建、运行时信息和更新日志中的版本定义。
+
+### GP Core 2.0
+- 将 4.1.0 建立的 append-only IndexedDB 曲库缓存、有界导入流水线、两级缓存命中与单次 render 提交正式定义为 GP Core 2.0。
+- Core 2.0 的边界覆盖歌曲身份、metadata、封面缩略图、持久缓存与导入调度；播放文件本身仍由用户授权的本地文件提供。
+- 继续保持 Storage Adapter 契约，为未来 Electron Lake 使用 SQLite 替换 IndexedDB 保留稳定接口。
+
+### GP Motion Engine 1.1
+- 将 Motion Engine 升级至 1.1，确认现有 Glass 滑块、队列拖拽、唱片、Disk Reader 与设置开关兼容新的单次渲染生命周期。
+- Motion 1.1 不重新设计视觉风格；它是对 Gen 3 动画系统在 GP Core 2.0 数据流下的兼容性修订。
+- 播放器 CSS、动效参数、响应式布局与交互反馈保持 Snow Leopard Update 的视觉结果。
+
+### Build Identity
+- 当前版本更新为 Glass Player 4.1.1，构建名称为 HOTFIX BUILD。
+- 版本卡、运行时 window.GP.engines、中英文更新日志与 TXT 导出标题已统一使用新的版本和引擎编号。
+- 4.1.0 SNOW LEOPARD UPDATE 作为完整架构更新保留在历史日志中。
+
+## 4.1.0 (2026-07-15)
+SNOW LEOPARD UPDATE：不增加新的可见页面，而是重写本地曲库的导入、缓存与渲染链路。歌曲信息和封面进入只增不减的 IndexedDB 缓存；同一文件夹在重启后重新导入时优先零读取命中，并且每批文件只提交一次完整列表渲染。
+
+### Architecture — 从预留接口到真实缓存主链路
+- 将 4.0.0 Beta 中仅作为边界预留的 IndexedDB 正式接入歌曲导入流程，新增 trackCache 数据区并将数据库升级至 schema v3。
+- trackCache 以 contentKey 为永久主键，保存文件身份、基础 metadata、时长、Genre、原始封面 Blob、192px 缩略图 Blob 与缓存时间。
+- 缓存采用 append-only 语义：歌曲从当前歌单移除时只释放本次会话的音频和图片 URL，不删除 IndexedDB 中已经完成的歌曲信息。
+- 数据库门面只提供 getTrackCache、getTrackCacheByFileIdentity 与 addTrackCache，不向播放器业务暴露删除 trackCache 的路径。
+
+### Two-Level Cache — 重启后的快速命中
+- 第一层使用文件大小、修改时间、类型和文件夹相对路径组成 fileIdentity；重新选择同一文件夹时无需读取音频内容即可命中缓存。
+- 文件被移动、重命名或身份信息变化时，第二层只读取开头、中间和结尾各 64KB，生成 SHA-256 contentKey，再按音频内容恢复原有缓存。
+- 命中缓存后直接恢复 title、artist、duration、genre、封面和缩略图，不再重复解析 ID3、FLAC 或 MP4 metadata。
+- 缓存只保存歌曲信息与图片，不复制整首音频文件；刷新或重启后仍需由用户重新选择本地文件夹，以保持私人本地播放器的权限边界。
+
+### Import Pipeline — 有界并发而不是全量 Promise.all
+- 文件身份和内容指纹最多并行 4 个任务；真正的 metadata、封面与 Genre 解析最多并行 2 首，避免数十个音频文件同时进入内存。
+- 临时 Audio metadata 探针在得到时长、失败或超时后立即暂停、移除 src 并执行 load()，主动释放媒体资源。
+- M4A / MP4 不再执行整文件 arrayBuffer()；现在只扫描顶层 Atom 头，定位 moov 后最多读取 32MB metadata 区块。
+- 单个损坏或不支持的文件只回退到文件名信息，不会中断整批导入，也不会迫使已经完成的歌曲重新处理。
+
+### Rendering Complexity — 删除初始化 O(n²)
+- 旧流程在每首歌曲时长完成和封面完成后分别重建整个歌单与播放队列，导致 n 首歌曲触发约 2n 次 O(n) 列表生成。
+- 4.1.0 在后台完成整批缓存解析后统一提交状态：无论本批加入多少首歌，完整列表只 render 一次。
+- 因此导入阶段的解析工作保持 O(n)，列表渲染提交次数为 O(1)；最终一次生成 n 行仍然是必要的 O(n)，不虚假宣称整个导入为 O(1)。
+- GP.performance.lastImport 会记录 files、cacheHits、cacheMisses、cacheWrites、duplicates、renderCommits 与 durationMs，便于实际验证每次导入只提交一次渲染。
+
+### Cover & Memory — 封面只解析一次
+- 首次解析到的原始封面以 Blob 永久缓存，供唱片和静态封面使用；同时生成独立的 192×192 WebP 缩略图供歌单、播放队列和历史排行使用。
+- 36px 列表图片不再迫使 Edge 为每首歌解码完整的大尺寸封面；缩略图启用 lazy loading 与 async decoding。
+- 同一歌曲下次导入时直接从 IndexedDB 恢复两个图片 Blob，不再扫描音频文件，也不再重新生成缩略图。
+- 删除当前歌单歌曲会撤销本次会话创建的 coverUrl、thumbUrl 与 audioUrl，但持久缓存保持不变。
+
+### On-Demand Audio Analysis — 初始化不再解码整首歌
+- 首次加载歌曲时不再立刻为了响度和声道信息读取并解码整首音频；只有用户打开音效页时才按需启动分析。
+- 音频分析改为单通道顺序队列，快速切歌时过期任务会在读取或解码前退出，避免多首歌曲同时形成 PCM 内存峰值。
+- 移除 decodeAudioData 前的完整 ArrayBuffer 副本，进一步降低单首歌曲分析时的瞬时内存。
+
+### Compatibility & Storage Rules
+- 播放器布局、Glass UI、动效、播放队列、主题、双 Deck、EQ 与 Crossfade 保持原有交互；Snow Leopard Update 的主要变化位于数据和导入层。
+- 缓存记录默认只增不减；从歌单移除、减少本次导入文件数量或切换文件夹都不会清除历史歌曲信息。
+- 只有用户主动清理 Edge 的网站数据或浏览器拒绝 IndexedDB 时缓存才会丢失；播放器会在存储不可用时安全回退到本次会话解析。
+- 这一缓存接口继续遵循 Storage Adapter 边界，未来 Electron Lake 可以用 SQLite 接管相同职责，而不重写上层导入逻辑。
+
+## 4.0.0 Beta (2026-07-15)
+GP Neural 的第一份工程蓝图：Gen 4 将让 Glass Player 从“能够播放与呈现音乐”迈向“能够理解音乐”。本 Beta 先建立可迁移、可缓存、可验证的底层边界；现有播放器 UI、动画、队列与操作手感保持不变。
+
+### Beta Mission — 从播放音乐到理解音乐
+- GP Neural 是 Glass Player Gen 4 的核心方向：以可计算的音频特征取代缺少依据的随机判断，让推荐、聚类与可视化建立在歌曲本身之上。
+- 第一阶段只整理架构与数据契约，不急于把未完成的分析结果暴露给用户；这样可以避免半成品算法污染现有推荐体验。
+- 4.0.0 Beta 的兼容承诺是 Zero-Visual-Change：除版本信息与更新日志外，3.5.3 的 DOM、CSS、布局、主题、动效、队列和播放逻辑均保持原有体验。
+- Gen 4 继续运行于浏览器形态的 Harmonic Lake；它是未来 Electron Lake 的准备层，而不是提前进行一次高风险的整体重写。
+
+### Harmonic Lake — Gen 4 模块边界
+- /src/core/audio.js 作为现有音频运行时的兼容桥梁，继续承接双 Deck、Web Audio、EQ、Crossfade、播放状态与队列调用，不改变上层使用方式。
+- /src/core/database.js 提供统一的数据访问门面；上层模块只表达“读取或保存什么”，不直接依赖 IndexedDB 的具体语法。
+- /src/core/analyzer.js 定义 GP Neural 的 cache-first 分析入口、特征记录格式与分析版本，为后续真正接入音频计算保留稳定契约。
+- /src/storage/indexeddb.js 负责浏览器本地持久化；/src/ui/galaxy.js 与 /src/ui/timeline.js 目前仅保留模块入口，不生成任何新界面。
+- 模块拆分的目标不是增加层级，而是把音频、分析、存储与未来 UI 解耦，使单个模块升级时不牵动整个播放器。
+
+### IndexedDB — 本地数据基础
+- 数据库采用懒加载策略：页面初始化时不立即打开数据库，只有未来模块真正请求数据时才建立连接，避免为当前用户体验增加无意义的启动负担。
+- trackFeatures 以 contentKey 标识音频内容，计划保存 metadata、MFCC、Energy、BPM、分析时间与 schemaVersion；同一首歌再次导入时可以优先命中缓存。
+- behaviorEvents 预留播放完成、跳过、重播、加入队列等行为事件；userModel 用于保存聚合后的偏好，而不是无限堆积原始操作。
+- recommendations 预留可复现的推荐快照，使推荐来源、生成时间和使用的模型版本能够被检查，而不是每次刷新都得到不可解释的随机结果。
+- 所有数据只保存在本机浏览器存储中；本 Beta 不上传歌曲、音频特征或用户行为。
+
+### Analysis Pipeline — 计划中的分析链路
+- 目标流程为：导入歌曲 → 生成稳定 contentKey → 查询本地缓存 → 读取 metadata → 解码必要音频片段 → 计算 Energy / BPM / MFCC → 写入 IndexedDB → 提供给推荐与可视化模块。
+- 缓存命中时跳过重复解码与计算，只恢复已验证的特征记录；缓存未命中或 schemaVersion 变化时才重新分析。
+- 分析任务将与首屏播放能力分离：歌曲应先可见、可搜索、可播放，再在后台分批补齐特征，避免初始化音乐库时阻塞 Edge 主线程。
+- 未来会限制并发分析数量、及时释放 AudioBuffer，并以分段任务让出主线程，目标是在保持界面丝滑的同时降低峰值内存。
+- 错误或不支持的音频不会阻止整批导入；失败记录应可单独重试，并明确区分 metadata 成功与音频特征成功。
+
+### MFCC + Energy + BPM — 三类核心信号
+- Energy 描述歌曲整体响度、密度与动态强弱，为区分舒缓、饱满或高强度段落提供基础，但不会被简单当作音量旋钮。
+- BPM 描述主要节拍速度，并需要置信度与半拍/双拍校正，避免把 70 BPM 与 140 BPM 的同源节奏错误分离。
+- MFCC 描述频谱包络与音色结构，可用于衡量歌曲之间的听感距离；它不是直接输出流派名称的标签器。
+- 三类特征会先标准化再组合为相似度向量，避免单一 BPM 或单一响度支配整个推荐结果。
+- 特征值必须携带分析版本，算法升级后可以选择性重算，而不是让旧数据与新数据无声混用。
+
+### User Model & Recommendations — 推荐方向
+- 计划中的数据流为：歌曲特征 + 用户行为 → 本地用户模型 → 推荐候选 → 日推歌单与随机播放优化。
+- 播放完成、主动重播与加入队列可形成正向信号；快速跳过只能作为弱负向信号，避免一次误触永久降低歌曲权重。
+- 日推歌单将优先维持相近的风格、音色、Energy 与 Tempo，使一组歌曲具有连续氛围，同时保留少量探索位防止推荐越来越窄。
+- 随机播放不会被直接删除，而会升级为受当前歌曲、用户偏好与近期重复惩罚共同约束的可解释选择。
+- 现有手动播放队列仍拥有最高优先级；GP Neural 不得打乱用户明确安排的下一首顺序。
+
+### Performance & Cache Strategy — 性能展望
+- 同一音频只分析一次是首要原则：稳定指纹、特征缓存与 schema 版本共同减少重复工作，并直接缩短再次导入音乐库的等待时间。
+- 分析将采用渐进式调度，优先当前歌曲和即将播放的歌曲，其余曲目在空闲时间处理，避免一次性抢占 CPU。
+- 内存策略将限制同时存在的解码缓冲区数量，分析完成后释放大对象，只长期保存紧凑的特征向量和必要统计。
+- 银河和时间机器未来只读取整理后的坐标或特征摘要，不在每一帧重复计算音频距离；鼠标高速移动时也不会强制生成昂贵详情。
+- 性能优化不得通过移除动画、降低交互完整度或改变现有视觉层级来换取，用户可见的丝滑体验是验收条件之一。
+
+### Electron Lake Readiness — 为 Gen 5+ 铺路
+- 未来桌面版将把 storage/indexeddb.js 替换为 storage/sqlite.js；core/database.js 对外接口保持一致，分析器和 UI 不需要了解底层数据库已经变化。
+- Electron Lake 的目标是从单 HTML 交付转向 EXE、SQLite 与更稳定的后台分析能力，但迁移本身属于 Gen 5+，不计入本 Beta 的已完成功能。
+- 在 Harmonic Lake 阶段先验证数据结构、缓存规则与模块责任，可以显著降低未来桌面迁移时同时改动 UI、算法和存储的风险。
+
+### Beta Scope — 已完成与尚未实现
+- 本 Beta 已完成：Core / UI / Storage 模块契约、现有 Audio Runtime 兼容桥、懒加载 IndexedDB schema、特征记录格式，以及对应的实体 /src 目录骨架。
+- 本 Beta 尚未实现：真实 MFCC、Energy、BPM 计算，导入流程中的缓存命中，用户模型，新推荐算法，音乐银河，音乐时间机器，以及 Electron / SQLite。
+- 未实现项目会继续保留为路线图，不以占位接口冒充可用功能；后续每项能力都需要经过正确性、性能与 UI 无回归验证后再进入正式日志。
+- Beta 的成功标准不是界面看起来更新了，而是未来加入 Neural 能力时不再需要破坏已经成熟的播放器体验。
+
+## GP Gen 4 Pre-Release Update (2026-07-15)
+一份面向 Gen 4 的完整回顾：Glass Player 的前三代并不是互相取代的三套播放器，而是从“建立可靠核心”、到“融合听歌体验”、再到“形成完整设计语言”的连续积累。GP Core、GP Fusion 与 GP Motion 共同构成今天的 Harmonic Lake。
+
+### Why This Retrospective — 为什么在 Gen 4 前回顾
+- 版本号记录改动，Generation 则记录产品能力发生质变的阶段；本篇将 1.x–3.x 的功能清单整理为清晰的产品演进逻辑。
+- Gen 1 回答“本地播放器能否可靠工作”，Gen 2 回答“多个播放能力能否形成连续体验”，Gen 3 回答“所有界面与交互能否说同一种设计语言”。
+- 3.5.3 FINAL HOTFIX RELEASE 为 3.x 收尾：核心播放、沉浸体验和 Motion 设计语言至此形成稳定基线。
+- 进入 Gen 4 后，前三代引擎不会被替换；GP Neural 将建立在它们之上，为音乐理解、缓存和推荐提供第四层能力。
+
+### Glass Player Gen 1 — Foundation Generation
+- Built the foundation of local music experience.
+- Gen 1 从最基本但不可妥协的本地音乐路径开始：导入文件、识别歌曲、显示资料、搜索音乐库、控制播放，并让所有内容留在用户设备中。
+- Playback 建立播放 / 暂停、进度、上一首 / 下一首、音量与播放状态；Music Library 让一批离散文件第一次成为可浏览的歌曲集合。
+- Metadata 与封面读取把文件名提升为歌曲、歌手、专辑等可识别信息；Search 则让本地曲库不再依赖手动翻找。
+- Basic Glass UI 首次确立半透明面板、柔和层次与封面驱动氛围，为后续完整 Glass 语言留下视觉原点。
+- 这一代的价值不是功能数量，而是建立可信的最短闭环：导入一首歌后，用户能够找到它、理解它并稳定播放它。
+
+### GP Core 1.0 — Harmonic Lake 的根基
+- 1.x 正式引入 GP Core 1.0，定义播放器的核心职责与浏览器本地运行方式；Harmonic Lake 由此成为 Glass Player 的基础架构名称。
+- GP Core 负责歌曲对象、播放状态、音乐库、metadata 与界面之间的基本数据流，使核心播放不依赖某一个具体页面。
+- Core 的版本只在底层职责、运行模型或关键数据流发生架构级变化时提升，不与普通 UI 修复或单个功能版本机械同步。
+- Gen 1 的局限也由此显现：播放器已经可用，但音效、队列、统计和推荐仍像彼此分离的功能，尚未形成沉浸而连续的听歌过程。
+
+### Glass Player Gen 2 — Experience Generation
+- Transformed playback into an immersive experience.
+- Web Audio Engine 将播放从单纯的媒体控制扩展为可塑的音频链路；EQ、频谱与 Crossfade 开始真正参与听感和过渡。
+- 双 Deck 与 Crossfade 让歌曲切换可以提前准备并平滑衔接，降低停止、切歌和状态竞争带来的割裂感。
+- Queue 与 Mini Player 把“现在播放什么、接下来播放什么、离开主界面后如何继续控制”连接成同一条操作路径。
+- Listening Statistics 将播放时长、次数和历史转化为可回看的个人记录；Recommendations 开始尝试根据本地行为组织下一批歌曲。
+- 睡眠定时、每日推荐与播放模式等能力逐步补齐，让播放器从工具转向可以长时间停留的音乐环境。
+
+### GP Fusion Engine 1.0 — 多段体验的融合
+- 2.x 引入 GP Fusion Engine 1.0；Fusion 的重点不是把功能堆在一起，而是让音频引擎、队列、过渡、统计和推荐共享一致状态。
+- 一次播放行为可以同时更新当前歌曲、队列位置、听歌记录和推荐信号；一次切歌也需要同时处理双 Deck、Crossfade 与界面反馈。
+- 手动队列逐渐成为用户意图的最高优先级，播放模式则在队列结束后恢复，奠定后来 queue-first 行为的基础。
+- Gen 2 解决了体验割裂，但功能快速增长也暴露出新的问题：不同页面的选择控件、动效、阴影、响应式布局和状态反馈缺少统一标准。
+
+### Glass Player Gen 3 — Design Generation
+- Established the complete Glass design language.
+- Glass UI System 将毛玻璃、光晕、圆角、阴影、前后景层次和 Accent Color 从零散效果整理为统一的视觉体系。
+- Animations & Micro-interactions 为选择滑块、拖拽队列、开关、按钮、唱片与 Disk Reader 建立连续反馈，让状态变化不再突然闪现。
+- Dynamic Themes 让 Color Blob、Blurred Cover 与封面取色参与整个界面的氛围，同时处理 Accent Color 的可读性与控制权冲突。
+- Responsive Layouts 使播放器在 Edge 全屏、普通窗口与缩小窗口中保持完整排版，减少边界挤压、尺寸跳动和依赖浏览器 90% 缩放的问题。
+- Localization & Product Polish 补齐中英文、字体、字体粗细、更新日志、导出功能、设置版本卡片与大量长期存在的细节问题。
+
+### GP Motion Engine 1.0 — 交互成为系统
+- 3.x 引入 GP Motion Engine 1.0，把动画从装饰提升为状态表达：滑块告诉用户选择从哪里移动到哪里，拖拽告诉用户歌曲将落入哪个位置。
+- 统一的 stretch → slide → settle 动势应用到侧边栏、分段选择与更新日志，阴影和毛玻璃随移动产生适度反馈，并在终点恢复稳定。
+- 队列拖拽使用明确手柄、圆角浮起卡片、腾位动画与落位回弹；唱片暂停保留角度，Disk Reader 根据真实播放状态接触或移开。
+- 播放按钮与真实 audio 事件同步，避免快速操作后界面显示播放但音频已经停止；Motion 因而同时承担美感与状态可信度。
+- Gen 3 的最终成果不是动画更多，而是所有可交互界面具有一致的节奏、重量、层次和因果关系。
+
+### Three Generations, One Product — 三代引擎关系
+- Gen 1 / GP Core 1.0 提供稳定的本地音乐核心；Gen 2 / GP Fusion Engine 1.0 连接音频与用户旅程；Gen 3 / GP Motion Engine 1.0 统一可见与可感知的交互。
+- GP Core 决定播放器如何工作，GP Fusion 决定多个能力如何协同，GP Motion 决定协同过程如何被用户看见和理解。
+- 三者共同运行于 Harmonic Lake：Core 是地基，Fusion 是连接层，Motion 是体验层；任何新世代都必须保留已经验证的可靠性。
+- 代际升级不代表删除上一代。Gen 4 的 GP Neural 会消费 Core 提供的歌曲、Fusion 提供的行为与 Motion 保护的体验边界。
+
+### Handoff to Gen 4 — 交棒给 GP Neural
+- 前三代已经解决“播放什么”和“怎样播放得更好”；Gen 4 开始解决“这些歌曲在声音上为什么相似，以及用户此刻可能想听什么”。
+- MFCC、Energy 与 BPM 将为歌曲建立可比较的本地特征，用户行为则补充个人偏好，两者结合后才形成推荐依据。
+- 分析结果需要缓存到 IndexedDB，避免每次导入都重新解码整套音乐库；性能、内存和主线程响应将成为 Gen 4 的核心工程指标。
+- 音乐银河、时间机器和更一致的日推歌单属于 GP Neural 的未来表达层，但必须在特征正确、缓存可靠和性能可控之后逐步开放。
+- Pre-Release Update 在这里结束回顾；4.0.0 Beta 从同一条产品脉络继续向前，同时承诺不以破坏 Gen 3 的成熟 UI 来换取底层升级。
+
+## 3.5.3 (2026-07-14)
+FINAL HOTFIX RELEASE：完成 3.x 最终交互打磨，统一滑块动势，稳定播放状态，并加入与唱片联动的 Disk Reader。
+
+### Added
+- 唱片右上方加入拟物与扁平风格结合的 Disk Reader；播放时接触唱片，暂停时平滑移开。
+
+### Changed
+- 所有横向和纵向毛玻璃滑块在移动中微微放大，接近终点时开始回落并恢复原尺寸。
+- 设置中的 On/Off 开关改为纯水平连续滑动，移除点击时生硬的整体位移。
+
+### Fixed
+- 唱片暂停后保留当前旋转角度，恢复播放时从原位置继续。
+- 以真实音频事件和操作序号同步播放状态，修复快速操作后音频已停但按钮仍显示播放的问题。
+- 暂停时同步清理双 Deck Crossfade 状态，避免残留播放任务干扰下一次操作。
+
+## 3.5.2 (2026-07-14)
+HOTFIX：以实际动画循环重做封面取色背景运动，并恢复左侧栏与更新日志一致的拉伸滑动反馈。
+
+### Fixed
+- 封面取色不再仅依赖难以察觉的 CSS 动画，改由持续动画循环驱动三个独立色块。
+- 修复导航点击后无动画重新测量覆盖滑动过渡的问题。
+- 左侧栏滑块重新加入移动时拉伸、到位后回弹的毛玻璃动画。
+
+## 3.5.1 (2026-07-14)
+HOTFIX：恢复封面取色背景运动和左侧滑块，修复字体变化后的滑块测量，并消除自适应封面配色与手动主题色之间的冲突。
+
+### Fixed
+- 封面取色的三个色块改为可明显辨认但仍缓慢的独立无规则移动。
+- 左侧栏选中滑块改为侧边栏自身的稳定毛玻璃层，不再依赖动态插入元素。
+- 字体粗细或大小变化后重新测量全部滑块，避免文字宽度变化造成错位。
+- 开启封面自适应主题色时将手动 Accent Color 灰化并禁用；关闭后恢复操作。
+
+## 3.5.0 (2026-07-14)
+AESTHETIC UPDATE：强化连续调节、首屏毛玻璃选中态与动态环境背景，并加入完整更新日志导出。
+
+### Added
+- 更新日志版本列表加入毛玻璃滑块。
+- 可将从 1.0.0 至今的完整更新日志导出为 UTF-8 TXT 文件。
+- Color Blob 与 Blurred Cover 背景加入多轨、无规则、慢速环境运动。
+
+### Changed
+- 字体粗细改为真正连续且更明显的视觉变化。
+- Crossfade 过渡时间改为 0.1 秒级连续调节。
+- Blurred Cover 以超出视窗的连续色场移动，避免边缘割裂。
+
+### Fixed
+- 首次打开页面无需点击即可显示当前选中的毛玻璃滑块。
+- 播放历史中的播放次数随中英文界面同步切换。
+
+## 3.4.3 (2026-07-14)
+修复滑块初始缺失与侧边栏错位，统一轻量阴影，并让字体粗细连续可见。
+
+### Fixed
+- 侧边栏滑块建立明确的左上定位基准。
+- 所有毛玻璃滑块使用统一的轻量主题色阴影。
+- 字体粗细改为 1 级步进、可变字体轴和细微合成描边。
+- 页面首次加载及字体完成加载后主动初始化全部滑块。
+
+## 3.4.2 (2026-07-14)
+Mini Tweak：补回语言切换滑动效果，统一 EQ 与侧边栏的主题色毛玻璃选中样式。
+
+### Fixed
+- 修复中英文切换时滑块被提前重定位而没有动画。
+- EQ 预设选中项恢复主题色高亮。
+- 左侧导航改为滑动毛玻璃选中块。
+
+## 3.4.1 (2026-07-14)
+重点修复分段选择器毛玻璃错位，并补齐英文模式的全部界面与更新日志。
+
+### Fixed
+- 滑块改用组件内部坐标，Edge 缩放和窗口自适应时不再偏移。
+- 英文模式覆盖静态文字、小字说明、按钮属性、运行时提示和更新日志。
+
+## 3.4.0 (2026-07-14)
+LANG. & UI UPDATE：加入中英文界面、播放列表优先播放规则与高质感滑动选择器。
+
+### Added
+- 设置页新增中文与 English 切换，并保存语言偏好。
+- 分段选择器新增带 38px 毛玻璃的伸展滑动指示块。
+
+### Changed
+- 手动播放列表始终优先于顺序、随机和单曲循环；播放完后恢复用户原播放模式。
+- 点击下一首时，已在列表中的歌曲移动到最前面。
+
+### Fixed
+- 修复手动播放列表 hover 与拖拽时闪烁抽搐。
+- 修复设置页版本卡片阴影缺失及黑白硬轮廓。
+
+## 3.3.3 (2026-07-14)
+针对实际播放队列重新修复重复加入和拖拽圆角，并精简字体选择。
+
+### Added
+- 重新加入 New York 衬线字体，并为未安装字体提供差异明显的本地备用字体。
+
+### Changed
+- 字体列表仅保留 Mi Sans、Cascadia Code、Trebuchet MS、Quicksand 与 New York。
+- 拖拽改用独立悬浮副本，不再直接放大滚动容器中的原歌曲行。
+
+### Fixed
+- 同一歌曲已在手动播放列表中时，下一首和加入播放列表操作都会被拦截并提示。
+- 修复拖拽歌曲显示为直角白色长条的问题。
+- 修复字体选项看起来相同或选择后没有明显变化的问题。
+
+## 3.3.2 RE (2026-07-14)
+修订重复导入检查、播放器卡片边框、完整默认队列和字体设置。
+
+### Added
+- 加入字体粗细调节，并保存用户选择。
+
+### Changed
+- 设置页软件信息卡片跟随浅色、深色模式与主题色。
+- 默认歌单顺序取消数量上限，可滚动查看整个歌单。
+
+### Fixed
+- 加入导入阶段的歌曲身份与音频内容指纹检查。
+- 播放器左右卡片改用稳定内描边，移除反复尺寸观测。
+
+## 3.3.1 (2026-07-14)
+修复播放队列语义与歌单按钮误播放，并补充排序、反馈提示和带把手的平滑拖拽。
+
+### Added
+- 歌单新增原始顺序、歌手名称 A–Z、歌曲名称 A–Z 三种查看方式。
+- “下一首播放”和“从歌单移除”成功后显示毛玻璃弹出消息。
+- 设置页顶部新增版本卡片，点击 HOTFIX BUILD 可直接打开 3.3.1 更新日志。
+
+### Changed
+- 默认播放队列继续显示歌曲在原歌单中的位置；首次手动加入后切换为独立播放列表。
+- 队列拖拽入口移到歌曲长条最右侧的三横线把手，拖动时加入抬升、让位和落位动画。
+
+### Fixed
+- 修复点击加入播放列表时没有入队、反而将歌曲从头播放的问题。
+- 修复手动播放列表与默认歌单位置显示混合的问题。
+
+## 3.3.0 (2026-07-14)
+加入独立播放队列，让临时点播不再打乱歌单和原有播放模式。
+
+### Added
+- 歌单中的每首歌曲新增“下一首播放”和“加入播放队列”操作。
+- 播放器右侧新增真实播放队列，可查看顺序、拖拽排序、点击立即播放、移除单曲或一键清空。
+- 歌曲自然结束、手动下一首和交叉淡入淡出都会优先读取播放队列。
+
+### Changed
+- 播放队列为空时，继续使用顺序、随机、单曲循环或每日推荐的原有规则。
+- 从歌单删除歌曲时同步清理队列中的对应项目，避免失效条目。
+
+## 3.2.2 (2026-07-14)
+统一各主界面与侧边栏的上下边框基线，并补齐更新日志版本标签的点击光晕。
+
+### Changed
+- 主内容区上下外边距统一为 16px，与侧边栏玻璃边框精确对齐。
+- 提高窗口适配的内部设计高度，缩小普通 Edge 窗口时为播放器内容保留更稳定的纵向空间。
+
+### Fixed
+- 扩大唱片上方和睡眠定时按钮下方的安全留白，避免内容贴近播放器边框。
+- 为更新日志的全部版本选择标签及当前版本标签加入点击光晕。
+
+## 3.2.1 (2026-07-14)
+恢复扩散式点击光晕，并集中修复睡眠定时、EQ、字体选择和更新日志入口的视觉问题。
+
+### Changed
+- 恢复第一版的外扩散 + 内发光点击反馈，取消边界白条。
+- 光晕改用 4 阶低帧动画与更小的模糊范围，保留观感并降低 Edge 合成负担。
+- 字体选择改为与睡眠定时器一致的自定义毛玻璃弹出菜单。
+
+### Fixed
+- 光晕动画结束后立即移除 glow-pulse 状态，修复点击过的按钮持续发光。
+- 增加睡眠定时按钮与播放卡片底边之间的安全距离。
+- EQ 预设改为整齐的四列网格，并恢复每个 EQ 按钮的点击光晕。
+- 修复 Edge 原生字体选择框及下拉列表全白的问题。
+- 修复侧边栏更新日志按钮上方两个角为直角的问题。
+
+## 3.2.0 (2026-07-14)
+降低 Edge 的视觉特效负担，重做窗口自适应，并加入可按版本浏览的内置更新日志。
+
+### Added
+- 侧边栏最底部新增“更新日志”，可以选择 Unreleased 或任意历史版本查看。
+- 新增统一 app shell 缩放器：窗口不足设计尺寸时整套桌面布局按比例缩小。
+
+### Changed
+- 点击光晕由多层模糊阴影改为短促的粗线框反馈，减少合成与重绘。
+- 降低环境光斑、封面虚化和玻璃面板的模糊半径；缩小窗口时暂停光斑漂移动画。
+- 全屏时自然填充可用空间，非全屏时保持完整双栏排版并自动适配窗口边界。
+
+### Fixed
+- 修复 Edge 非 F11 状态下界面被窗口边界裁切、需要手动缩放至 90% 的问题。
+- 修复左右栏在临界宽度换行造成的布局跳动。
+- 固定歌曲标题和艺人信息行高，长文本使用省略号，切歌不再改变播放卡片尺寸。
+- 修复首次打开、尚无本地偏好设置时 7 段 EQ 滑块没有生成的问题。
+
+## 3.1.1 (2026-07-14)
+恢复 16:9 固定布局，收紧 EQ 界面并补充更多实用预设。
+
+### Changed
+- 撤回额外安全滚动层与窗口断点实验，恢复锁死外层滚动。
+- 通用与设备 EQ 合并为紧凑 chip 区，设备说明移动到悬停提示。
+
+### Added
+- 新增古典、电子、播客预设。
+
+### Fixed
+- 移除额外滚动容器引发的 backdrop-filter 色差接缝。
+
+## 3.1.0 (2026-07-13)
+加入三款设备专属 EQ，并尝试处理中等窗口宽度的裁切。
+
+### Added
+- 新增 Bose QC35、Bose QC Earbuds 2024、Poly Sync 40 补偿曲线。
+- 设备预设可继续手动微调并转为自定义状态。
+
+### Notes
+- 设备曲线基于常见声音特征，并非厂商官方测量数据。
+- 本版窗口兜底改动在 3.1.1 撤回。
+
+## 3.0.1 (2026-07-10)
+清理设置界面与原生滚动条的视觉干扰。
+
+### Changed
+- 隐藏各界面和字体选择区域突兀的白色滚动条，同时保留滚动能力。
+
+### Removed
+- 移除“清除听歌记录”和“恢复默认设置”按钮及其事件处理。
+
+## 3.0.0 (2026-07-10)
+重做进度交互、音效系统、设置页和全局视图尺寸管理。
+
+### Added
+- 新增真实 7 段 Web Audio EQ、基础预设、响度表和文件信息卡。
+- 字体扩展到近 20 种并加入实时预览。
+- 新增 ResizeObserver 驱动的活动视图尺寸检测。
+
+### Changed
+- 波形进度条改为 Apple 风格实心细条；可视化页替换为音效页。
+- 每日推荐调整为 10 首，主题色改为更沉稳的方案。
+- 封面取色加入 HSL 可读性约束，各主视图改为内部滚动。
+
+### Fixed
+- 修复 Edge 非全屏窗口变化时视图显示不完整。
+- 修复系统主题切换后封面配色不刷新。
+
+## 2.2.0 (2026-07-09)
+加入一套偏 iOS 的播放交互与快捷操作。
+
+### Added
+- 侧边栏 mini-player、全屏 Now Playing sheet 与 FLIP 封面过渡。
+- 长按歌曲菜单、收藏、下一首播放插播与弹簧反馈。
+
+### Notes
+- 桌面鼠标模拟 iOS 手势的体验有限，后续重点转回桌面可用性。
+
+## 2.1.0 (2026-07-09)
+针对动画、模糊与后台运行进行集中性能优化。
+
+### Performance
+- 修复离开播放页后可视化仍在后台运行的循环泄漏。
+- 降低环境光斑、封面背景与玻璃面板的模糊半径。
+- 窗口最小化或切到后台时暂停背景动画与可视化。
+
+## 2.0.6 (2026-07-09)
+缩短每日推荐，降低列表高度与渲染压力。
+
+### Changed
+- 每日推荐由约 20 首缩短为 12 首。
+
+## 2.0.5 (2026-07-09)
+使用实测像素固定播放区域高度。
+
+### Fixed
+- 加载、resize 和重新进入播放页时由 JavaScript 重新测量可用高度。
+- 进一步隔离左侧播放卡片与右侧推荐列表。
+
+## 2.0.4 (2026-07-09)
+移除导致浏览器高度计算失真的非标准缩放。
+
+### Fixed
+- 移除 zoom: 0.85，让固定高度和内部滚动在正常坐标系生效。
+
+## 2.0.3 (2026-07-09)
+修复 flex 子元素拒绝收缩的问题。
+
+### Fixed
+- 为播放卡片、右侧面板和面板内容补充 min-height: 0。
+
+## 2.0.2 (2026-07-09)
+修复随机播放总是命中最后一首的边界错误。
+
+### Fixed
+- 权重无效或出现 NaN 时改用均匀随机兜底，不再固定返回列表末尾。
+- 为权重计算加入无效数值保护。
+
+## 2.0.1 (2026-07-09)
+限制推荐列表对整个播放页高度的影响。
+
+### Fixed
+- 播放行改为受控高度，推荐内容过长时仅在右侧面板内部滚动。
+
+## 2.0.0 (2026-07-08)
+播放核心升级为双通道 Web Audio 架构，并加入本地推荐系统。
+
+### Added
+- 实时频谱、睡眠定时、交叉淡入淡出、自适应封面配色与波形拖拽。
+- 本地每日推荐和基于跳过/听完、语言、genre 的加权随机。
+
+### Changed
+- 播放核心由单一 audio 元素升级为双通道 Web Audio 引擎。
+
+### Removed
+- 移除歌词界面、LRC 导入、解析、高亮与滚动逻辑。
+
+## 1.2.0 (2026-07-08)
+重做听歌排行并完善播放器品牌图标。
+
+### Added
+- 前三名领奖台与封面，第 4-50 名横向排行。
+- 按歌曲和日期记录实际听歌秒数，新增动态 favicon。
+
+### Changed
+- 排行榜改为按所选时间范围内的听歌时长排序。
+
+### Fixed
+- 加固设置标题可见性，并为单曲循环增加数字 1 角标。
+
+## 1.1.1 (2026-07-08)
+完善本地音频元数据与早期交互细节。
+
+### Added
+- 自动读取 MP3/FLAC 标题、艺人、genre 与内嵌封面。
+
+### Changed
+- 缩小播放卡片，移除外部艺人/歌词搜索按钮。
+
+### Fixed
+- 修复光晕反馈未明显生效。
+
+## 1.1.0 (2026-07-07)
+从单页播放器扩展为带侧边栏的完整桌面音乐应用。
+
+### Added
+- Windows 横屏布局和播放、歌单、听歌记录、设置四个独立视图。
+- 封面静态/旋转模式、ripple 反馈和持久化听歌记录。
+
+### Changed
+- 顺序、随机、单曲循环与列表循环合并为一个多状态按钮。
+- 音量控制改为长方形滑块。
+
+## 1.0.0 (2026-07-07)
+Glass Player 的首个可用版本。
+
+### Added
+- 播放/暂停、上一首/下一首、进度拖拽、音量、静音、随机和循环。
+- 文件、文件夹和拖放导入，按歌名/艺人搜索。
+- 深色/浅色/自动主题、主题色、字体和字体大小设置。
+- iOS 风格玻璃卡片、动态背景光斑和旋转唱片。
+
+### Known limitations
+- 刷新后必须重新导入音频文件。
+- 不显示歌词。
