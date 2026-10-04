@@ -192,6 +192,23 @@
   let adaptiveAccentRequestToken=0;
   let adaptivePaletteCache={trackId:null,colors:null};
   const adaptivePaletteByTrack=new Map();
+  const failedArtworkUrls = new Set();
+  function recordFailedArtworkUrl(url){
+    if(typeof url!=="string"||!url)return;
+    failedArtworkUrls.add(url);
+    if(failedArtworkUrls.size>200){
+      const oldest=failedArtworkUrls.keys().next().value;
+      failedArtworkUrls.delete(oldest);
+    }
+  }
+  function resolveTrackArtwork(track){
+    if(!track)return null;
+    const coverUrl=typeof track.coverUrl==="string"?track.coverUrl.trim():"";
+    const thumbUrl=typeof track.thumbUrl==="string"?track.thumbUrl.trim():"";
+    if(coverUrl&&!failedArtworkUrls.has(coverUrl))return coverUrl;
+    if(thumbUrl&&!failedArtworkUrls.has(thumbUrl))return thumbUrl;
+    return null;
+  }
   function adaptivePaletteKey(track){return track&&(track.spectrumId||track.contentKey||track.id);}
   function refreshAdaptiveAccentForTheme(){
     if(!adaptiveColorOn)return;
@@ -204,8 +221,9 @@
     if(!adaptiveColorOn)return;
     if(requestToken===null)requestToken=++adaptiveAccentRequestToken;
     const themeSnapshot=document.body.getAttribute("data-theme"),t=playlist[currentIndex];
-    if(!t||!t.coverUrl){setAccent(accentKey,{refreshAmbient:false,persist:false});return;}
-    const colors=await getDominantColors(t.coverUrl,5);
+    const coverUrl=resolveTrackArtwork(t);
+    if(!t||!coverUrl){setAccent(accentKey,{refreshAmbient:false,persist:false});return;}
+    const colors=await getDominantColors(coverUrl,5);
     if(!colors?.length||playlist[currentIndex]!==t||requestToken!==adaptiveAccentRequestToken||document.body.getAttribute("data-theme")!==themeSnapshot)return;
     const canonicalColors=colors.map(color=>color.slice(0,3)),key=adaptivePaletteKey(t);
     adaptivePaletteCache={trackId:t.id,colors:canonicalColors};if(key)adaptivePaletteByTrack.set(key,canonicalColors);
@@ -370,7 +388,7 @@
   async function updateAmbient(options={}){
     const myToken = ++ambientToken;
     const track = playlist[currentIndex];
-    const cover = track && track.coverUrl;
+    const cover = track && resolveTrackArtwork(track);
     syncCoverColorMotion(bgMode === "color" && !!cover);
 
     if(bgMode === "blur"){
@@ -406,33 +424,88 @@
   window.addEventListener("resize",scheduleAmbientRasterResize,{passive:true});
 
   /* ================= art / cover ================= */
-  let discAngle=0,discVelocity=0,discTargetVelocity=0,discRotationFrame=0,discRotationStamp=0,discStopStarted=0,discStopVelocity=0;
+  let discAngle=0,discVelocity=0,discTargetVelocity=0,discRotationFrame=0,discRotationStamp=0,discStopStarted=0,discStopVelocity=0,discStopElapsed=0;
   const DISC_CRUISE_VELOCITY=360/14,DISC_SETTLE_MS=720;
+  function isPlayerViewActive(){
+    return Boolean($(".view[data-view='player']")?.classList.contains("active"));
+  }
+  function isStaticCoverMode(){
+    const t=playlist[currentIndex];
+    const cover=t?resolveTrackArtwork(t):null;
+    return (coverDisplayMode==="static"&&Boolean(cover))||Boolean($("#artStage")?.classList.contains("static-mode"));
+  }
+  function shouldDiscRotate(){
+    if(!isPlayerViewActive())return false;
+    if(document.hidden)return false;
+    if(isStaticCoverMode())return false;
+    return true;
+  }
   function drawDiscRotation(){
-    if(!$(".view[data-view='player']")?.classList.contains("active"))return;
+    if(!isPlayerViewActive())return;
     const rotor=$("#discRotor");if(rotor)rotor.style.transform=`rotate(${discAngle.toFixed(3)}deg) translateZ(0)`;
   }
+  function pauseDiscRotation(){
+    if(discRotationFrame){
+      cancelAnimationFrame(discRotationFrame);
+      discRotationFrame=0;
+    }
+    discRotationStamp=0;
+    if(discStopStarted>0){
+      discStopElapsed=Math.min(DISC_SETTLE_MS,Math.max(0,performance.now()-discStopStarted));
+      discStopStarted=0;
+    }
+  }
   function runDiscRotation(now){
-    if(!$(".view[data-view='player']")?.classList.contains("active")){discRotationFrame=0;discRotationStamp=0;return;}
+    if(!shouldDiscRotate()){pauseDiscRotation();return;}
     const dt=Math.min(.05,Math.max(0,(now-(discRotationStamp||now))/1000));discRotationStamp=now;
     if(discTargetVelocity>0){
-      discStopStarted=0;discVelocity+=(discTargetVelocity-discVelocity)*(1-Math.exp(-7.5*dt));
-    }else if(discStopStarted){
+      discStopStarted=0;discStopElapsed=0;discVelocity+=(discTargetVelocity-discVelocity)*(1-Math.exp(-7.5*dt));
+    }else if(discStopStarted>0){
       const progress=Math.min(1,(now-discStopStarted)/DISC_SETTLE_MS);discVelocity=discStopVelocity*Math.pow(1-progress,2.35);
-      if(progress>=1){discVelocity=0;discStopStarted=0;}
+      if(progress>=1){discVelocity=0;discStopStarted=0;discStopElapsed=0;}
     }else discVelocity=0;
     discAngle=(discAngle+discVelocity*dt)%360;drawDiscRotation();
-    if(discTargetVelocity>0||discStopStarted)discRotationFrame=requestAnimationFrame(runDiscRotation);
-    else{discVelocity=0;discRotationFrame=0;discRotationStamp=0;drawDiscRotation();}
+    if(discTargetVelocity>0||discStopStarted>0)discRotationFrame=requestAnimationFrame(runDiscRotation);
+    else{discVelocity=0;discRotationFrame=0;discRotationStamp=0;discStopElapsed=0;drawDiscRotation();}
   }
   function syncDiscRotationTimeline(playing){
-    if(playing){discTargetVelocity=DISC_CRUISE_VELOCITY;discStopStarted=0;}
-    else{discTargetVelocity=0;discStopVelocity=Math.max(0,discVelocity);discStopStarted=discStopVelocity>.001?performance.now():0;}
-    if(!discRotationFrame){discRotationStamp=performance.now();discRotationFrame=requestAnimationFrame(runDiscRotation);}
+    const isPlayingNow=Boolean(playing);
+    if(!shouldDiscRotate()){
+      pauseDiscRotation();
+      if(isPlayingNow){
+        discTargetVelocity=DISC_CRUISE_VELOCITY;
+        discStopStarted=0;
+        discStopElapsed=0;
+      }else{
+        discTargetVelocity=0;
+      }
+      return;
+    }
+    const now=performance.now();
+    if(isPlayingNow){
+      discTargetVelocity=DISC_CRUISE_VELOCITY;
+      discStopStarted=0;
+      discStopElapsed=0;
+    }else{
+      discTargetVelocity=0;
+      if(discStopElapsed>0){
+        discStopStarted=now-discStopElapsed;
+        discStopElapsed=0;
+      }else if(discVelocity>.001&&!discStopStarted){
+        discStopVelocity=discVelocity;
+        discStopStarted=now;
+      }
+    }
+    if(discTargetVelocity>0||discStopStarted>0){
+      if(!discRotationFrame){discRotationStamp=now;discRotationFrame=requestAnimationFrame(runDiscRotation);}
+    }else{
+      pauseDiscRotation();
+      drawDiscRotation();
+    }
   }
   function resetDiscRotationTimeline(){
     if(discRotationFrame)cancelAnimationFrame(discRotationFrame);
-    discRotationFrame=0;discRotationStamp=0;discAngle=0;discVelocity=0;discTargetVelocity=0;discStopStarted=0;discStopVelocity=0;drawDiscRotation();
+    discRotationFrame=0;discRotationStamp=0;discAngle=0;discVelocity=0;discTargetVelocity=0;discStopStarted=0;discStopVelocity=0;discStopElapsed=0;drawDiscRotation();
   }
   let currentNowTitleText="",titleMeasureTimer=0,titleResizeTimer=0,titleMarqueeRevision=0,titleMarqueeAnimation=null,lastTitleLayoutScale=0,nowPlayingMetaRevision=0,nowPlayingMetaAnimations=[];
   function syncTitleLanguage(){
@@ -526,7 +599,7 @@
   }
   window.addEventListener("resize",()=>{clearTimeout(titleResizeTimer);titleResizeTimer=setTimeout(refreshNowTitleMarquee,110);},{passive:true});
   document.fonts?.ready?.then(()=>requestAnimationFrame(refreshNowTitleMarquee));
-  let artDisplayRevision=0,artDisplayAnimations=[],artTransitionCopies=[];
+  let artDisplayRevision=0,artDisplayAnimations=[],artTransitionCopies=[],lastHandledErrorRevision=0;
   function clearArtTransition(){
     artDisplayAnimations.forEach(animation=>{try{animation.cancel();}catch(error){}});
     artDisplayAnimations=[];artTransitionCopies.forEach(node=>node.remove());artTransitionCopies=[];
@@ -537,30 +610,75 @@
     if(rotorCover&&getComputedStyle(rotorCover).display!=="none"&&rotorCover.getAttribute("src"))return rotorCover;
     return null;
   }
-  function updateArtDisplay(){
+  function recoverArtwork(track,revision){
+    if(revision!==artDisplayRevision||playlist[currentIndex]!==track)return;
+    updateArtDisplay({instant:true});
+  }
+  function handleArtworkElementError(imgElement){
+    const t=playlist[currentIndex];
+    if(!t)return;
+    const failedUrl=imgElement.getAttribute("src")||imgElement.src;
+    if(failedUrl)recordFailedArtworkUrl(failedUrl);
+    if(artDisplayRevision!==lastHandledErrorRevision){
+      lastHandledErrorRevision=artDisplayRevision;
+      recoverArtwork(t,artDisplayRevision);
+    }
+  }
+  function updateArtDisplay(options={}){
     const t = playlist[currentIndex];
     const rotorCover = $("#rotorCover"), staticCover = $("#staticCover"), discIcon = $("#discIcon"), discRotor = $("#discRotor");
-    const cover = t && t.coverUrl;
+    const cover = resolveTrackArtwork(t);
     const staticMode = coverDisplayMode === "static" && !!cover;
     const revision=++artDisplayRevision,previous=visibleArtworkNode(rotorCover,staticCover),previousUrl=previous?.getAttribute("src")||"";
     clearArtTransition();
+
+    const targetNode=staticMode?staticCover:(cover?rotorCover:null);
+    const isTargetHealthy=!cover||Boolean(targetNode&&targetNode.getAttribute("src")===cover&&targetNode.complete&&targetNode.naturalWidth>0);
+    const alreadyCorrect=previous===targetNode&&previousUrl===(cover||"")&&isTargetHealthy;
+
+    if(options.resync&&alreadyCorrect){
+      $("#artStage")?.classList.toggle("static-mode",staticMode);
+      if(discRotor)discRotor.style.visibility=staticMode?"hidden":"visible";
+      $("#diskReader")?.classList.toggle("engaged",isPlaying&&!staticMode);
+      if(staticMode){
+        pauseDiscRotation();
+      }else if(isPlaying||(!audio.paused&&!audio.ended)){
+        syncDiscRotationTimeline(true);
+      }
+      return;
+    }
+
     const commitDisplay=()=>{
       if(revision!==artDisplayRevision)return;
-      $("#artStage").classList.toggle("static-mode",staticMode);
+      $("#artStage")?.classList.toggle("static-mode",staticMode);
       if(coverDisplayMode === "static" && cover){
-        discRotor.style.visibility = "hidden";
-        staticCover.style.display = "block"; staticCover.src = cover;
+        if(discRotor)discRotor.style.visibility = "hidden";
+        if(staticCover){staticCover.style.display = "block"; staticCover.src = cover;}
       } else {
-        discRotor.style.visibility = "visible";
-        staticCover.style.display = "none";
-        if(cover){ rotorCover.style.display="block"; rotorCover.src=cover; discIcon.style.display="none"; }
-        else { rotorCover.style.display="none"; discIcon.style.display="flex"; }
+        if(discRotor)discRotor.style.visibility = "visible";
+        if(staticCover)staticCover.style.display = "none";
+        if(cover){
+          if(rotorCover){rotorCover.style.display="block"; rotorCover.src=cover;}
+          if(discIcon)discIcon.style.display="none";
+        } else {
+          if(rotorCover){rotorCover.style.display="none";rotorCover.removeAttribute("src");}
+          if(discIcon)discIcon.style.display="flex";
+        }
       }
-      $("#diskReader").classList.toggle("engaged",isPlaying&&!staticMode);
+      $("#diskReader")?.classList.toggle("engaged",isPlaying&&!staticMode);
+      if(staticMode){
+        pauseDiscRotation();
+      }else if(isPlaying||(!audio.paused&&!audio.ended)){
+        syncDiscRotationTimeline(true);
+      }
       return visibleArtworkNode(rotorCover,staticCover);
     };
     const beginCrossfade=()=>{
       if(revision!==artDisplayRevision)return;
+      if(options.instant){
+        commitDisplay();
+        return;
+      }
       let outgoingCopy=null;
       if(previous&&previousUrl){
         outgoingCopy=previous.cloneNode(false);outgoingCopy.removeAttribute("id");
@@ -579,10 +697,53 @@
       artDisplayAnimations=[incomingFade,outgoingFade];
       Promise.all(artDisplayAnimations.map(animation=>animation.finished.catch(()=>null))).then(()=>{if(revision!==artDisplayRevision)return;clearArtTransition();});
     };
-    if(!cover||cover===previousUrl){beginCrossfade();return;}
+    if(!cover||cover===previousUrl||options.instant){beginCrossfade();return;}
     const preload=new Image();
-    preload.onload=()=>beginCrossfade();preload.onerror=()=>beginCrossfade();preload.src=cover;
+    preload.onload=()=>beginCrossfade();
+    preload.onerror=()=>{
+      if(revision!==artDisplayRevision||playlist[currentIndex]!==t)return;
+      recordFailedArtworkUrl(cover);
+      recoverArtwork(t,revision);
+    };
+    preload.src=cover;
   }
+  const rotorCoverEl = $("#rotorCover");
+  const staticCoverEl = $("#staticCover");
+  if(rotorCoverEl){
+    rotorCoverEl.addEventListener("error",()=>handleArtworkElementError(rotorCoverEl));
+  }
+  if(staticCoverEl){
+    staticCoverEl.addEventListener("error",()=>handleArtworkElementError(staticCoverEl));
+  }
+
+  const playerSection = document.querySelector(".view[data-view='player']");
+  let lastPlayerViewActive = isPlayerViewActive();
+  if(playerSection){
+    const playerViewObserver = new MutationObserver(()=>{
+      const active = isPlayerViewActive();
+      if(active !== lastPlayerViewActive){
+        lastPlayerViewActive = active;
+        if(active){
+          updateArtDisplay({resync:true});
+          syncDiscRotationTimeline(isPlaying||(!audio.paused&&!audio.ended));
+        }else{
+          pauseDiscRotation();
+        }
+      }
+    });
+    playerViewObserver.observe(playerSection,{attributes:true,attributeFilter:["class"]});
+  }
+
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){
+      pauseDiscRotation();
+    }else{
+      if(isPlayerViewActive()){
+        updateArtDisplay({resync:true});
+      }
+      syncDiscRotationTimeline(isPlaying||(!audio.paused&&!audio.ended));
+    }
+  },{passive:true});
   function searchInputSafe(){ const el = $("#search"); return el ? el.value : ""; }
   function showToast(message){
     const lifetime=3000,toast=document.createElement("div");
