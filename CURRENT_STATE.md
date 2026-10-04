@@ -1,8 +1,8 @@
 # Glass Player — Current State
 
-Last documentation update: 2026-10-02 (Pacific/Auckland)
+Last documentation update: 2026-10-05 (Pacific/Auckland)
 
-The 7.5.1 Replay Atlas checkpoint records the annual report redesign, player title geometry,
+The 7.6.0 Kinetic Glass checkpoint records the annual report redesign, player title geometry,
 settings layout, CJK font fallback, and identity updates on 2026-10-02. The feature
 release expands the annual report into a rich chaptered scroll and standalone
 long-form export while preserving v7.4.3 dialog dimensions and button placement,
@@ -19,13 +19,13 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 
 | Field | Current value |
 | --- | --- |
-| Product | Glass Player Gen 7 · Replay Atlas |
-| Version | 7.5.1 |
-| Release name | REPLAY ATLAS |
+| Product | Glass Player Gen 7 · Kinetic Glass |
+| Version | 7.6.0 |
+| Release name | KINETIC GLASS |
 | Architecture | Peregrine Lake |
-| GP Core | 4.2 — Atlas Runtime |
-| GP Fusion Engine | 4.1 — Playlist Flow |
-| GP Motion Engine | 4.1 — Story Scroll |
+| GP Core | 4.3 — Kinetic Runtime |
+| GP Fusion Engine | 4.2 — Playlist Flow |
+| GP Motion Engine | 4.2 — Kinetic Motion |
 | GP Spatial Engine | 1.1 — Room |
 | GP Spectrum Engine | 2.3 — Signal |
 | GP Neural Engine | 2.2 — Listening DNA |
@@ -435,3 +435,21 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
   toggles, plus a reset preferences action.
 - NOT RUN — Edge/file:// interaction with real local music, audible-device
   verification, 4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 22. 7.6.0 KINETIC GLASS — 2026-10-05
+
+- PASS — Startup prepaint now applies the saved theme and accent before the
+  first visible frame; player, artwork and PiP motion stop when their surfaces
+  are hidden or playback is idle.
+- PASS — Artwork replacement keeps referenced Blob URLs alive through rescans
+  and transitions; favorites and playlist membership continue to use stable
+  recognition fields after metadata refreshes.
+- PASS — Runtime identity is synchronized as `Glass Player Gen 7 · KINETIC
+  GLASS`, version `7.6.0`; GP Core is 4.3, GP Fusion Engine is 4.2 and GP
+  Motion Engine is 4.2. Spatial, Spectrum and Neural engine versions remain
+  unchanged.
+- PASS — `build.ps1` regenerated `build/app.js`; architecture validation,
+  contract tests, generated syntax and whitespace checks passed.
+- NOT RUN — Edge/file:// interaction, startup/artwork/favorites/PiP behavior
+  with real media, audible-device verification, 4K/110% visual comparison and
+  120 Hz hardware profiling.

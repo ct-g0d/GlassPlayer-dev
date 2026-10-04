@@ -15,6 +15,19 @@
       ]
     },
     {
+      version:"7.6.0", date:"2026-10-05", kind:"minor",
+      summary:"KINETIC GLASS：修复启动闪白、封面生命周期、播放动效、收藏识别与悬浮播放器空闲状态，并更新 GP Core 4.3、GP Fusion Engine 4.2 与 GP Motion Engine 4.2。",
+      sections:[
+        {title:"启动与动效",items:["启动阶段先应用已保存的主题与强调色，消除首次绘制的白蓝闪烁。","播放器与画廊动效只在可见且需要时运行，暂停、切换视图与隐藏页面后不会继续空转。"]},
+        {title:"封面与悬浮播放器",items:["重扫或替换歌曲封面时保留仍被界面、过渡副本或悬浮播放器使用的 Blob URL，避免旧封面提前失效。","播放空闲时暂停传统悬浮播放器的封面动效，恢复播放后继续同步。"]},
+        {title:"收藏与识别",items:["收藏和歌单匹配继续使用稳定音频识别字段，识别刷新后的标题或艺人变化不会串联到另一首歌。"]}
+      ],english:{summary:"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",sections:[
+        {title:"Startup and Motion",items:["Saved theme and accent settings are applied before the first paint, removing the startup white-blue flash.","Player and artwork motion runs only while visible and needed, so hidden or paused views do not keep spinning."]},
+        {title:"Artwork and PiP",items:["Rescans and artwork replacement retain Blob URLs still used by the interface, transitions, or PiP instead of revoking live covers.","Traditional PiP artwork motion pauses while playback is idle and resumes with playback."]},
+        {title:"Favorites and Recognition",items:["Favorites and playlist membership continue to use stable audio recognition fields, so metadata refreshes do not cross-link different recordings."]}
+      ]}
+    },
+    {
       version:"7.5.1", date:"2026-10-02", kind:"patch",
       summary:"HOTFIX BUILD：全面重做独立年度报告长卷，修复听歌时间选择栏底色，完善字体弹窗尺寸并解决歌曲名居中与无损标识排版。",
       sections:[
@@ -2531,6 +2544,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.6.0":"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",
     "7.5.1":"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",
     "7.5.0":"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete CJK serif and monospace font fallback stacks, and centered player title and settings layout.",
     "7.4.3":"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",
@@ -3983,7 +3997,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.1 — REPLAY ATLAS`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.0 — KINETIC GLASS`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -3998,7 +4012,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.5.1 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.6.0 KINETIC GLASS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}

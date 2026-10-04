@@ -14,7 +14,7 @@ window.GPModules.register = function register(name,factory){
   const GP_TRACK_CACHE_SCHEMA_VERSION = 7;
   const GP_RECOGNITION_SCHEMA_VERSION = 2;
   const GP_SPECTRUM_ALGORITHM_VERSION = "2.1.0";
-  const GP_FUSION_ENGINE_VERSION = "4.1";
+  const GP_FUSION_ENGINE_VERSION = "4.2";
   const GP_SPECTRUM_ENGINE_VERSION = "2.3";
   const GP_NEURAL_ENGINE_VERSION = "2.2";
   const GP_MOTION_TARGET_FPS = 120;
@@ -447,9 +447,9 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.5.1",
+    version:"7.6.0",
     architecture:"Peregrine Lake",
-    engines:{core:"GP Core 4.2 — Atlas Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.1 — Story Scroll",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
+    engines:{core:"GP Core 4.3 — Kinetic Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
     core:{audio:GPAudioCore,database:GPDatabase,analyzer:GPAnalyzer},
     ui:GPUIModules,
@@ -570,7 +570,7 @@ window.GPModules.register = function register(name,factory){
     "可变字体会获得最平滑的粗细变化；普通字体会自动匹配最接近的字重。":"Variable fonts provide the smoothest weight changes; standard fonts use the closest available weight.",
     "还没有音乐":"No music yet","点击上方按钮导入，或直接把歌曲/文件夹拖进窗口":"Import above, or drop songs and folders into the window","封面会自动从 MP3/FLAC/M4A 中识别":"Artwork is read automatically from MP3, FLAC and M4A files",
     "歌曲文件不会保存到磁盘外，刷新页面需要重新导入；听歌记录会保留。":"Audio files never leave your device. Reimport after refresh; listening history is retained.",
-    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.5.1 — Replay Atlas":"Current Version 7.5.1 — Replay Atlas","版本 7.5.1 — Replay Atlas":"Ver. 7.5.1 — Replay Atlas","当前版本 7.5.0 — Replay Atlas":"Current Version 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Ver. 7.5.0 — Replay Atlas","REPLAY ATLAS":"REPLAY ATLAS","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
+    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.6.0 — KINETIC GLASS":"Current Version 7.6.0 — KINETIC GLASS","版本 7.6.0 — KINETIC GLASS":"Ver. 7.6.0 — KINETIC GLASS","当前版本 7.5.0 — Replay Atlas":"Current Version 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Ver. 7.5.0 — Replay Atlas","REPLAY ATLAS":"REPLAY ATLAS","KINETIC GLASS":"KINETIC GLASS","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
     "音乐库数据":"Library Data","重新扫描歌曲库":"Rescan Music Library","重新读取当前导入歌曲的 Genre、文件名信息、时长与封面；保留 Spectrum ID、MFCC、Energy、BPM 和收听历史。":"Reread Genre, filename metadata, duration and artwork from imported songs while preserving Spectrum ID, MFCC, Energy, BPM and listening history.",
     "重新扫描歌曲库？":"Rescan Music Library?","将从当前导入的音频文件重新读取 Genre、文件名信息、时长和封面，并覆盖缓存中的旧 metadata。Spectrum ID、MFCC、Energy、BPM 与收听历史不会改变。":"The current audio files will be reread for Genre, filename metadata, duration and artwork, replacing stale cached metadata. Spectrum ID, MFCC, Energy, BPM and listening history will remain unchanged.","取消":"Cancel","开始扫描":"Start Scan",
     "精选字体":"Curated Fonts","未知艺人":"Unknown Artist","未知":"Unknown","计算中…":"Calculating…","解码中…":"Decoding…","单声道":"Mono","立体声":"Stereo","版本列表":"Version List",
@@ -603,7 +603,7 @@ window.GPModules.register = function register(name,factory){
     "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
     "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
     "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно","随机播放":"Перемешивание","单曲循环":"Повтор одной песни",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.5.1 — Replay Atlas":"Текущая версия 7.5.1 — Replay Atlas","版本 7.5.1 — Replay Atlas":"Версия 7.5.1 — Replay Atlas","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
+    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.6.0 — KINETIC GLASS":"Текущая версия 7.6.0 — KINETIC GLASS","版本 7.6.0 — KINETIC GLASS":"Версия 7.6.0 — KINETIC GLASS","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","KINETIC GLASS":"KINETIC GLASS","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
     "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
     "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
   };
@@ -671,6 +671,19 @@ window.GPModules.register = function register(name,factory){
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.6.0", date:"2026-10-05", kind:"minor",
+      summary:"KINETIC GLASS：修复启动闪白、封面生命周期、播放动效、收藏识别与悬浮播放器空闲状态，并更新 GP Core 4.3、GP Fusion Engine 4.2 与 GP Motion Engine 4.2。",
+      sections:[
+        {title:"启动与动效",items:["启动阶段先应用已保存的主题与强调色，消除首次绘制的白蓝闪烁。","播放器与画廊动效只在可见且需要时运行，暂停、切换视图与隐藏页面后不会继续空转。"]},
+        {title:"封面与悬浮播放器",items:["重扫或替换歌曲封面时保留仍被界面、过渡副本或悬浮播放器使用的 Blob URL，避免旧封面提前失效。","播放空闲时暂停传统悬浮播放器的封面动效，恢复播放后继续同步。"]},
+        {title:"收藏与识别",items:["收藏和歌单匹配继续使用稳定音频识别字段，识别刷新后的标题或艺人变化不会串联到另一首歌。"]}
+      ],english:{summary:"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",sections:[
+        {title:"Startup and Motion",items:["Saved theme and accent settings are applied before the first paint, removing the startup white-blue flash.","Player and artwork motion runs only while visible and needed, so hidden or paused views do not keep spinning."]},
+        {title:"Artwork and PiP",items:["Rescans and artwork replacement retain Blob URLs still used by the interface, transitions, or PiP instead of revoking live covers.","Traditional PiP artwork motion pauses while playback is idle and resumes with playback."]},
+        {title:"Favorites and Recognition",items:["Favorites and playlist membership continue to use stable audio recognition fields, so metadata refreshes do not cross-link different recordings."]}
+      ]}
     },
     {
       version:"7.5.1", date:"2026-10-02", kind:"patch",
@@ -3189,6 +3202,7 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.6.0":"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",
     "7.5.1":"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",
     "7.5.0":"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete CJK serif and monospace font fallback stacks, and centered player title and settings layout.",
     "7.4.3":"HOTFIX BUILD continues the consistency fixes for playlist playback, legacy listening totals, Annual Report layout, restored settings and background audio analysis.",
@@ -4641,7 +4655,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.5.1 — REPLAY ATLAS`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.0 — KINETIC GLASS`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4656,7 +4670,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.5.1 REPLAY ATLAS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.6.0 KINETIC GLASS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -4897,7 +4911,8 @@ window.GPModules.register = function register(name,factory){
     requestAnimationFrame(()=>{
       fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();
       if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
-      if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();});
+      if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);if(audio.duration)seekProgress=Math.max(0,Math.min(1,audio.currentTime/audio.duration));drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();});
+      else{if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();if(typeof syncMiniEqMeter==="function")syncMiniEqMeter();}
     });
   }
   function switchPrimaryView(viewName){
@@ -5355,7 +5370,7 @@ window.GPModules.register = function register(name,factory){
       syncProgress();
       if(pointerId===null&&!rangeFrame)targetValue=Number(element.value||0);
     });
-    if(settingsRange){window.addEventListener("resize",syncProgress,{passive:true});document.addEventListener("scroll",syncProgress,true);}
+    if(settingsRange){window.addEventListener("resize",syncProgress,{passive:true});}
     syncProgress();
   }
   GPUIRegistry
@@ -6226,6 +6241,23 @@ window.GPModules.register = function register(name,factory){
   let adaptiveAccentRequestToken=0;
   let adaptivePaletteCache={trackId:null,colors:null};
   const adaptivePaletteByTrack=new Map();
+  const failedArtworkUrls = new Set();
+  function recordFailedArtworkUrl(url){
+    if(typeof url!=="string"||!url)return;
+    failedArtworkUrls.add(url);
+    if(failedArtworkUrls.size>200){
+      const oldest=failedArtworkUrls.keys().next().value;
+      failedArtworkUrls.delete(oldest);
+    }
+  }
+  function resolveTrackArtwork(track){
+    if(!track)return null;
+    const coverUrl=typeof track.coverUrl==="string"?track.coverUrl.trim():"";
+    const thumbUrl=typeof track.thumbUrl==="string"?track.thumbUrl.trim():"";
+    if(coverUrl&&!failedArtworkUrls.has(coverUrl))return coverUrl;
+    if(thumbUrl&&!failedArtworkUrls.has(thumbUrl))return thumbUrl;
+    return null;
+  }
   function adaptivePaletteKey(track){return track&&(track.spectrumId||track.contentKey||track.id);}
   function refreshAdaptiveAccentForTheme(){
     if(!adaptiveColorOn)return;
@@ -6238,8 +6270,9 @@ window.GPModules.register = function register(name,factory){
     if(!adaptiveColorOn)return;
     if(requestToken===null)requestToken=++adaptiveAccentRequestToken;
     const themeSnapshot=document.body.getAttribute("data-theme"),t=playlist[currentIndex];
-    if(!t||!t.coverUrl){setAccent(accentKey,{refreshAmbient:false,persist:false});return;}
-    const colors=await getDominantColors(t.coverUrl,5);
+    const coverUrl=resolveTrackArtwork(t);
+    if(!t||!coverUrl){setAccent(accentKey,{refreshAmbient:false,persist:false});return;}
+    const colors=await getDominantColors(coverUrl,5);
     if(!colors?.length||playlist[currentIndex]!==t||requestToken!==adaptiveAccentRequestToken||document.body.getAttribute("data-theme")!==themeSnapshot)return;
     const canonicalColors=colors.map(color=>color.slice(0,3)),key=adaptivePaletteKey(t);
     adaptivePaletteCache={trackId:t.id,colors:canonicalColors};if(key)adaptivePaletteByTrack.set(key,canonicalColors);
@@ -6404,7 +6437,7 @@ window.GPModules.register = function register(name,factory){
   async function updateAmbient(options={}){
     const myToken = ++ambientToken;
     const track = playlist[currentIndex];
-    const cover = track && track.coverUrl;
+    const cover = track && resolveTrackArtwork(track);
     syncCoverColorMotion(bgMode === "color" && !!cover);
 
     if(bgMode === "blur"){
@@ -6440,33 +6473,88 @@ window.GPModules.register = function register(name,factory){
   window.addEventListener("resize",scheduleAmbientRasterResize,{passive:true});
 
   /* ================= art / cover ================= */
-  let discAngle=0,discVelocity=0,discTargetVelocity=0,discRotationFrame=0,discRotationStamp=0,discStopStarted=0,discStopVelocity=0;
+  let discAngle=0,discVelocity=0,discTargetVelocity=0,discRotationFrame=0,discRotationStamp=0,discStopStarted=0,discStopVelocity=0,discStopElapsed=0;
   const DISC_CRUISE_VELOCITY=360/14,DISC_SETTLE_MS=720;
+  function isPlayerViewActive(){
+    return Boolean($(".view[data-view='player']")?.classList.contains("active"));
+  }
+  function isStaticCoverMode(){
+    const t=playlist[currentIndex];
+    const cover=t?resolveTrackArtwork(t):null;
+    return (coverDisplayMode==="static"&&Boolean(cover))||Boolean($("#artStage")?.classList.contains("static-mode"));
+  }
+  function shouldDiscRotate(){
+    if(!isPlayerViewActive())return false;
+    if(document.hidden)return false;
+    if(isStaticCoverMode())return false;
+    return true;
+  }
   function drawDiscRotation(){
-    if(!$(".view[data-view='player']")?.classList.contains("active"))return;
+    if(!isPlayerViewActive())return;
     const rotor=$("#discRotor");if(rotor)rotor.style.transform=`rotate(${discAngle.toFixed(3)}deg) translateZ(0)`;
   }
+  function pauseDiscRotation(){
+    if(discRotationFrame){
+      cancelAnimationFrame(discRotationFrame);
+      discRotationFrame=0;
+    }
+    discRotationStamp=0;
+    if(discStopStarted>0){
+      discStopElapsed=Math.min(DISC_SETTLE_MS,Math.max(0,performance.now()-discStopStarted));
+      discStopStarted=0;
+    }
+  }
   function runDiscRotation(now){
-    if(!$(".view[data-view='player']")?.classList.contains("active")){discRotationFrame=0;discRotationStamp=0;return;}
+    if(!shouldDiscRotate()){pauseDiscRotation();return;}
     const dt=Math.min(.05,Math.max(0,(now-(discRotationStamp||now))/1000));discRotationStamp=now;
     if(discTargetVelocity>0){
-      discStopStarted=0;discVelocity+=(discTargetVelocity-discVelocity)*(1-Math.exp(-7.5*dt));
-    }else if(discStopStarted){
+      discStopStarted=0;discStopElapsed=0;discVelocity+=(discTargetVelocity-discVelocity)*(1-Math.exp(-7.5*dt));
+    }else if(discStopStarted>0){
       const progress=Math.min(1,(now-discStopStarted)/DISC_SETTLE_MS);discVelocity=discStopVelocity*Math.pow(1-progress,2.35);
-      if(progress>=1){discVelocity=0;discStopStarted=0;}
+      if(progress>=1){discVelocity=0;discStopStarted=0;discStopElapsed=0;}
     }else discVelocity=0;
     discAngle=(discAngle+discVelocity*dt)%360;drawDiscRotation();
-    if(discTargetVelocity>0||discStopStarted)discRotationFrame=requestAnimationFrame(runDiscRotation);
-    else{discVelocity=0;discRotationFrame=0;discRotationStamp=0;drawDiscRotation();}
+    if(discTargetVelocity>0||discStopStarted>0)discRotationFrame=requestAnimationFrame(runDiscRotation);
+    else{discVelocity=0;discRotationFrame=0;discRotationStamp=0;discStopElapsed=0;drawDiscRotation();}
   }
   function syncDiscRotationTimeline(playing){
-    if(playing){discTargetVelocity=DISC_CRUISE_VELOCITY;discStopStarted=0;}
-    else{discTargetVelocity=0;discStopVelocity=Math.max(0,discVelocity);discStopStarted=discStopVelocity>.001?performance.now():0;}
-    if(!discRotationFrame){discRotationStamp=performance.now();discRotationFrame=requestAnimationFrame(runDiscRotation);}
+    const isPlayingNow=Boolean(playing);
+    if(!shouldDiscRotate()){
+      pauseDiscRotation();
+      if(isPlayingNow){
+        discTargetVelocity=DISC_CRUISE_VELOCITY;
+        discStopStarted=0;
+        discStopElapsed=0;
+      }else{
+        discTargetVelocity=0;
+      }
+      return;
+    }
+    const now=performance.now();
+    if(isPlayingNow){
+      discTargetVelocity=DISC_CRUISE_VELOCITY;
+      discStopStarted=0;
+      discStopElapsed=0;
+    }else{
+      discTargetVelocity=0;
+      if(discStopElapsed>0){
+        discStopStarted=now-discStopElapsed;
+        discStopElapsed=0;
+      }else if(discVelocity>.001&&!discStopStarted){
+        discStopVelocity=discVelocity;
+        discStopStarted=now;
+      }
+    }
+    if(discTargetVelocity>0||discStopStarted>0){
+      if(!discRotationFrame){discRotationStamp=now;discRotationFrame=requestAnimationFrame(runDiscRotation);}
+    }else{
+      pauseDiscRotation();
+      drawDiscRotation();
+    }
   }
   function resetDiscRotationTimeline(){
     if(discRotationFrame)cancelAnimationFrame(discRotationFrame);
-    discRotationFrame=0;discRotationStamp=0;discAngle=0;discVelocity=0;discTargetVelocity=0;discStopStarted=0;discStopVelocity=0;drawDiscRotation();
+    discRotationFrame=0;discRotationStamp=0;discAngle=0;discVelocity=0;discTargetVelocity=0;discStopStarted=0;discStopVelocity=0;discStopElapsed=0;drawDiscRotation();
   }
   let currentNowTitleText="",titleMeasureTimer=0,titleResizeTimer=0,titleMarqueeRevision=0,titleMarqueeAnimation=null,lastTitleLayoutScale=0,nowPlayingMetaRevision=0,nowPlayingMetaAnimations=[];
   function syncTitleLanguage(){
@@ -6560,7 +6648,7 @@ window.GPModules.register = function register(name,factory){
   }
   window.addEventListener("resize",()=>{clearTimeout(titleResizeTimer);titleResizeTimer=setTimeout(refreshNowTitleMarquee,110);},{passive:true});
   document.fonts?.ready?.then(()=>requestAnimationFrame(refreshNowTitleMarquee));
-  let artDisplayRevision=0,artDisplayAnimations=[],artTransitionCopies=[];
+  let artDisplayRevision=0,artDisplayAnimations=[],artTransitionCopies=[],lastHandledErrorRevision=0;
   function clearArtTransition(){
     artDisplayAnimations.forEach(animation=>{try{animation.cancel();}catch(error){}});
     artDisplayAnimations=[];artTransitionCopies.forEach(node=>node.remove());artTransitionCopies=[];
@@ -6571,30 +6659,75 @@ window.GPModules.register = function register(name,factory){
     if(rotorCover&&getComputedStyle(rotorCover).display!=="none"&&rotorCover.getAttribute("src"))return rotorCover;
     return null;
   }
-  function updateArtDisplay(){
+  function recoverArtwork(track,revision){
+    if(revision!==artDisplayRevision||playlist[currentIndex]!==track)return;
+    updateArtDisplay({instant:true});
+  }
+  function handleArtworkElementError(imgElement){
+    const t=playlist[currentIndex];
+    if(!t)return;
+    const failedUrl=imgElement.getAttribute("src")||imgElement.src;
+    if(failedUrl)recordFailedArtworkUrl(failedUrl);
+    if(artDisplayRevision!==lastHandledErrorRevision){
+      lastHandledErrorRevision=artDisplayRevision;
+      recoverArtwork(t,artDisplayRevision);
+    }
+  }
+  function updateArtDisplay(options={}){
     const t = playlist[currentIndex];
     const rotorCover = $("#rotorCover"), staticCover = $("#staticCover"), discIcon = $("#discIcon"), discRotor = $("#discRotor");
-    const cover = t && t.coverUrl;
+    const cover = resolveTrackArtwork(t);
     const staticMode = coverDisplayMode === "static" && !!cover;
     const revision=++artDisplayRevision,previous=visibleArtworkNode(rotorCover,staticCover),previousUrl=previous?.getAttribute("src")||"";
     clearArtTransition();
+
+    const targetNode=staticMode?staticCover:(cover?rotorCover:null);
+    const isTargetHealthy=!cover||Boolean(targetNode&&targetNode.getAttribute("src")===cover&&targetNode.complete&&targetNode.naturalWidth>0);
+    const alreadyCorrect=previous===targetNode&&previousUrl===(cover||"")&&isTargetHealthy;
+
+    if(options.resync&&alreadyCorrect){
+      $("#artStage")?.classList.toggle("static-mode",staticMode);
+      if(discRotor)discRotor.style.visibility=staticMode?"hidden":"visible";
+      $("#diskReader")?.classList.toggle("engaged",isPlaying&&!staticMode);
+      if(staticMode){
+        pauseDiscRotation();
+      }else if(isPlaying||(!audio.paused&&!audio.ended)){
+        syncDiscRotationTimeline(true);
+      }
+      return;
+    }
+
     const commitDisplay=()=>{
       if(revision!==artDisplayRevision)return;
-      $("#artStage").classList.toggle("static-mode",staticMode);
+      $("#artStage")?.classList.toggle("static-mode",staticMode);
       if(coverDisplayMode === "static" && cover){
-        discRotor.style.visibility = "hidden";
-        staticCover.style.display = "block"; staticCover.src = cover;
+        if(discRotor)discRotor.style.visibility = "hidden";
+        if(staticCover){staticCover.style.display = "block"; staticCover.src = cover;}
       } else {
-        discRotor.style.visibility = "visible";
-        staticCover.style.display = "none";
-        if(cover){ rotorCover.style.display="block"; rotorCover.src=cover; discIcon.style.display="none"; }
-        else { rotorCover.style.display="none"; discIcon.style.display="flex"; }
+        if(discRotor)discRotor.style.visibility = "visible";
+        if(staticCover)staticCover.style.display = "none";
+        if(cover){
+          if(rotorCover){rotorCover.style.display="block"; rotorCover.src=cover;}
+          if(discIcon)discIcon.style.display="none";
+        } else {
+          if(rotorCover){rotorCover.style.display="none";rotorCover.removeAttribute("src");}
+          if(discIcon)discIcon.style.display="flex";
+        }
       }
-      $("#diskReader").classList.toggle("engaged",isPlaying&&!staticMode);
+      $("#diskReader")?.classList.toggle("engaged",isPlaying&&!staticMode);
+      if(staticMode){
+        pauseDiscRotation();
+      }else if(isPlaying||(!audio.paused&&!audio.ended)){
+        syncDiscRotationTimeline(true);
+      }
       return visibleArtworkNode(rotorCover,staticCover);
     };
     const beginCrossfade=()=>{
       if(revision!==artDisplayRevision)return;
+      if(options.instant){
+        commitDisplay();
+        return;
+      }
       let outgoingCopy=null;
       if(previous&&previousUrl){
         outgoingCopy=previous.cloneNode(false);outgoingCopy.removeAttribute("id");
@@ -6613,10 +6746,53 @@ window.GPModules.register = function register(name,factory){
       artDisplayAnimations=[incomingFade,outgoingFade];
       Promise.all(artDisplayAnimations.map(animation=>animation.finished.catch(()=>null))).then(()=>{if(revision!==artDisplayRevision)return;clearArtTransition();});
     };
-    if(!cover||cover===previousUrl){beginCrossfade();return;}
+    if(!cover||cover===previousUrl||options.instant){beginCrossfade();return;}
     const preload=new Image();
-    preload.onload=()=>beginCrossfade();preload.onerror=()=>beginCrossfade();preload.src=cover;
+    preload.onload=()=>beginCrossfade();
+    preload.onerror=()=>{
+      if(revision!==artDisplayRevision||playlist[currentIndex]!==t)return;
+      recordFailedArtworkUrl(cover);
+      recoverArtwork(t,revision);
+    };
+    preload.src=cover;
   }
+  const rotorCoverEl = $("#rotorCover");
+  const staticCoverEl = $("#staticCover");
+  if(rotorCoverEl){
+    rotorCoverEl.addEventListener("error",()=>handleArtworkElementError(rotorCoverEl));
+  }
+  if(staticCoverEl){
+    staticCoverEl.addEventListener("error",()=>handleArtworkElementError(staticCoverEl));
+  }
+
+  const playerSection = document.querySelector(".view[data-view='player']");
+  let lastPlayerViewActive = isPlayerViewActive();
+  if(playerSection){
+    const playerViewObserver = new MutationObserver(()=>{
+      const active = isPlayerViewActive();
+      if(active !== lastPlayerViewActive){
+        lastPlayerViewActive = active;
+        if(active){
+          updateArtDisplay({resync:true});
+          syncDiscRotationTimeline(isPlaying||(!audio.paused&&!audio.ended));
+        }else{
+          pauseDiscRotation();
+        }
+      }
+    });
+    playerViewObserver.observe(playerSection,{attributes:true,attributeFilter:["class"]});
+  }
+
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){
+      pauseDiscRotation();
+    }else{
+      if(isPlayerViewActive()){
+        updateArtDisplay({resync:true});
+      }
+      syncDiscRotationTimeline(isPlaying||(!audio.paused&&!audio.ended));
+    }
+  },{passive:true});
   function searchInputSafe(){ const el = $("#search"); return el ? el.value : ""; }
   function showToast(message){
     const lifetime=3000,toast=document.createElement("div");
@@ -6682,10 +6858,40 @@ window.GPModules.register = function register(name,factory){
      derived latest-wins from those events (unlike persists with signal 0). */
   const USER_PLAYLISTS_RECORD_ID="userPlaylists";
   let userPlaylistsCache=null,userPlaylistsLoaded=false;
-  let likedKeys=new Set(),likedKeysLoaded=false;
+  let likedKeys=new Set(),likedKeysLoaded=false,latestLikeEvents=new Map();
   let libraryCollectionMode="all";
   let collectionScopeActive=false;
   function playlistTrackKey(track){try{return neuralTrackId(track);}catch(error){return track?.id||null;}}
+  function trackLikeKeys(track){
+    if(!track||typeof track!=="object")return [];
+    const keys=new Set();
+    const addKey=k=>{if(k!==null&&k!==undefined&&k!=="")keys.add(k);};
+    try{addKey(playlistTrackKey(track));}catch(e){}
+    addKey(track.spectrumId);
+    addKey(track.audioEssenceKey);
+    addKey(track.contentKey);
+    addKey(track.identityLinks?.spectrumId);
+    if(Array.isArray(track.legacyContentKeys)){
+      track.legacyContentKeys.forEach(addKey);
+    }
+    return Array.from(keys);
+  }
+  function latestLikeEventForTrack(track){
+    if(!track)return null;
+    const keys=trackLikeKeys(track);
+    let latest=null;
+    for(let i=0;i<keys.length;i++){
+      const event=latestLikeEvents.get(keys[i]);
+      if(event){
+        const eventTime=Number(event.timestamp)||0;
+        const latestTime=Number(latest?.timestamp)||0;
+        if(!latest||eventTime>latestTime){
+          latest=event;
+        }
+      }
+    }
+    return latest;
+  }
   async function loadUserPlaylists(){
     try{
       const record=await GPDatabase.getRecommendations(USER_PLAYLISTS_RECORD_ID);
@@ -6733,26 +6939,38 @@ window.GPModules.register = function register(name,factory){
   async function addTrackToPlaylist(id,idx){
     const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
     const key=playlistTrackKey(track);if(key===null||key===undefined)return false;
-    if(list.trackKeys.includes(key)){showToast(tr(`「${track.title}」已在歌单「${list.name}」中`,`“${track.title}” is already in “${list.name}”`));return false;}
+    const keys=new Set(trackLikeKeys(track));
+    if(list.trackKeys.some(item=>keys.has(item))){showToast(tr(`「${track.title}」已在歌单「${list.name}」中`,`“${track.title}” is already in “${list.name}”`));return false;}
     list.trackKeys.push(key);list.updatedAt=Date.now();
     if(await saveUserPlaylists()){showToast(tr(`已将「${track.title}」加入「${list.name}」`,`Added “${track.title}” to “${list.name}”`));syncPlaylistUI(true);return true;}
     list.trackKeys=list.trackKeys.filter(item=>item!==key);return false;
   }
   async function removeTrackFromPlaylist(id,idx){
     const list=findUserPlaylist(id),track=playlist[idx];if(!list||!track)return false;
-    const key=playlistTrackKey(track),before=list.trackKeys.length;
-    list.trackKeys=list.trackKeys.filter(item=>item!==key);
+    const keys=new Set(trackLikeKeys(track));
+    const before=list.trackKeys.length;
+    list.trackKeys=list.trackKeys.filter(item=>!keys.has(item));
     if(list.trackKeys.length===before)return false;
     list.updatedAt=Date.now();
     if(await saveUserPlaylists()){render(searchInputSafe());return true;}
     await loadUserPlaylists();render(searchInputSafe());return false;
   }
   function collectionTrackIndices(){
-    if(libraryCollectionMode==="liked")return playlist.map((track,idx)=>idx).filter(idx=>{const key=playlistTrackKey(playlist[idx]);return key!==null&&likedKeys.has(key);});
+    if(libraryCollectionMode==="liked")return playlist.map((track,idx)=>idx).filter(idx=>isLikedTrack(playlist[idx]));
     const list=activePlaylist();
     if(list){
       const position=new Map();list.trackKeys.forEach((key,order)=>{if(!position.has(key))position.set(key,order);});
-      return playlist.map((track,idx)=>[position.get(playlistTrackKey(track)),idx]).filter(([order])=>order!==undefined).sort((a,b)=>a[0]-b[0]).map(([,idx])=>idx);
+      function trackPlaylistOrder(track){
+        const direct=position.get(playlistTrackKey(track));
+        if(direct!==undefined)return direct;
+        const aliases=trackLikeKeys(track);
+        for(let i=0;i<aliases.length;i++){
+          const pos=position.get(aliases[i]);
+          if(pos!==undefined)return pos;
+        }
+        return undefined;
+      }
+      return playlist.map((track,idx)=>[trackPlaylistOrder(track),idx]).filter(([order])=>order!==undefined).sort((a,b)=>a[0]-b[0]).map(([,idx])=>idx);
     }
     return playlist.map((_,idx)=>idx);
   }
@@ -6766,9 +6984,19 @@ window.GPModules.register = function register(name,factory){
     if(libraryCollectionMode==="all"){if(collectionScopeActive){overrideQueue=null;collectionScopeActive=false;}return;}
     overrideQueue=collectionTrackIndices();collectionScopeActive=true;
   }
-  function isLikedTrack(track){if(!track)return false;try{const key=playlistTrackKey(track);return key!==null&&likedKeys.has(key);}catch(error){return false;}}
+  function isLikedTrack(track){
+    if(!track)return false;
+    try{
+      const ev=latestLikeEventForTrack(track);
+      if(ev)return ev.context?.liked!==false;
+      const keys=trackLikeKeys(track);
+      return keys.some(k=>likedKeys.has(k));
+    }catch(error){
+      return false;
+    }
+  }
   function syncLikeButtons(){
-    document.querySelectorAll("#trackList .track-like").forEach(button=>{
+    document.querySelectorAll("#trackList .track-like, #recommendList .track-like").forEach(button=>{
       const track=playlist[+button.dataset.idx];if(!track)return;
       const liked=isLikedTrack(track);
       button.classList.toggle("active",liked);button.setAttribute("aria-pressed",String(liked));
@@ -6778,18 +7006,50 @@ window.GPModules.register = function register(name,factory){
   async function refreshLikedKeys(){
     try{
       const events=await GPDatabase.getBehaviorEvents()||[],latest=new Map();
-      events.forEach(event=>{if(event?.type!=="like"||event.spectrumId===null||event.spectrumId===undefined)return;latest.set(event.spectrumId,event);});
+      events.forEach(event=>{
+        if(event?.type!=="like")return;
+        const key=event.spectrumId!==null&&event.spectrumId!==undefined?event.spectrumId:event.features?.spectrumId;
+        if(key===null||key===undefined||key==="")return;
+        const existing=latest.get(key);
+        const eventTime=Number(event.timestamp)||0;
+        const existingTime=Number(existing?.timestamp)||0;
+        if(!existing||eventTime>=existingTime){
+          latest.set(key,event);
+        }
+      });
+      latestLikeEvents=latest;
       likedKeys=new Set([...latest.entries()].filter(([,event])=>event?.context?.liked!==false).map(([key])=>key));
-    }catch(error){likedKeys=new Set();}
+      if(Array.isArray(playlist)){
+        playlist.forEach(track=>{
+          if(isLikedTrack(track)){
+            const canonical=playlistTrackKey(track);
+            if(canonical!==null&&canonical!==undefined)likedKeys.add(canonical);
+          }else{
+            trackLikeKeys(track).forEach(k=>likedKeys.delete(k));
+          }
+        });
+      }
+    }catch(error){
+      latestLikeEvents=new Map();
+      likedKeys=new Set();
+    }
     likedKeysLoaded=true;syncLikeButtons();
     if(libraryCollectionMode==="liked")render(searchInputSafe());
   }
   async function toggleLike(idx,options={}){
     const track=playlist[idx];if(!track)return;
     const key=playlistTrackKey(track);if(key===null||key===undefined)return;
-    const liked=!likedKeys.has(key);
-    await recordBehaviorEvent("like",track,{liked,source:options.source||"library"});
-    if(liked)likedKeys.add(key);else likedKeys.delete(key);
+    const currentlyLiked=isLikedTrack(track);
+    const liked=!currentlyLiked;
+    const event=await recordBehaviorEvent("like",track,{liked,source:options.source||"library"});
+    const timestamp=Number(event?.timestamp)||Date.now();
+    const eventObj=event||{type:"like",spectrumId:key,timestamp,context:{liked,source:options.source||"library"}};
+    latestLikeEvents.set(key,eventObj);
+    if(liked){
+      likedKeys.add(key);
+    }else{
+      trackLikeKeys(track).forEach(k=>likedKeys.delete(k));
+    }
     syncLikeButtons();
     if(libraryCollectionMode==="liked")render(searchInputSafe());else syncPlaylistUI(true);
     showToast(liked?tr(`已喜欢「${track.title}」`,`Liked “${track.title}”`):tr(`已取消喜欢「${track.title}」`,`Unliked “${track.title}”`));
@@ -8297,6 +8557,7 @@ window.GPModules.register = function register(name,factory){
     GP.performance.lastImport=Object.freeze({...stats});
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
     await settleImportProgress(stats);
+    sweepRetiredArtworkUrls();
     // 7.3.2 aggressive: the dialog is already closed here; heavy spectrum
     // decoding continues in the background slot and refreshes Daily Mix when
     // done, so large imports no longer block the modal.
@@ -8304,11 +8565,119 @@ window.GPModules.register = function register(name,factory){
   }
 
   let metadataRescanRunning=false;
+  const retiredArtworkUrls=new Set();
+  const MAX_RETIRED_ARTWORK_URLS=256;
+  const MAX_ARTWORK_SWEEP_RETRIES=12;
+  let artworkSweepTimer=0,artworkSweepRetries=0;
+
+  function clearArtworkSweepTimer(){
+    if(artworkSweepTimer){clearTimeout(artworkSweepTimer);artworkSweepTimer=0;}
+  }
+
+  function isArtworkUrlReferenced(url){
+    if(!url||typeof url!=="string")return false;
+    if(Array.isArray(playlist)){
+      for(let i=0;i<playlist.length;i++){
+        const t=playlist[i];
+        if(t&&(t.coverUrl===url||t.thumbUrl===url))return true;
+      }
+    }
+    try{
+      if(typeof artTransitionCopies!=="undefined"&&Array.isArray(artTransitionCopies)){
+        for(let i=0;i<artTransitionCopies.length;i++){
+          const node=artTransitionCopies[i];
+          if(node&&(node.src===url||node.getAttribute?.("src")===url||node.currentSrc===url))return true;
+        }
+      }
+    }catch(error){}
+    if(typeof document!=="undefined"&&document.querySelectorAll){
+      try{
+        const nodes=document.querySelectorAll("img, image, video");
+        for(let i=0;i<nodes.length;i++){
+          const node=nodes[i];
+          if(node&&(node.src===url||node.getAttribute?.("src")===url||node.currentSrc===url))return true;
+        }
+      }catch(error){}
+    }
+    try{
+      if(typeof gpVideoPipCoverSource!=="undefined"&&gpVideoPipCoverSource===url)return true;
+    }catch(error){}
+    return false;
+  }
+
+  function enforceRetiredArtworkBounds(forceOldest=false){
+    if(!retiredArtworkUrls.size)return;
+    for(const url of Array.from(retiredArtworkUrls)){
+      if(!isArtworkUrlReferenced(url)){
+        retiredArtworkUrls.delete(url);
+        try{URL.revokeObjectURL(url);}catch(error){}
+      }
+    }
+    while(retiredArtworkUrls.size>(forceOldest?0:MAX_RETIRED_ARTWORK_URLS)){
+      let oldest=null;
+      for(const url of retiredArtworkUrls){
+        if(!isArtworkUrlReferenced(url)){oldest=url;break;}
+      }
+      if(!oldest)break;
+      retiredArtworkUrls.delete(oldest);
+      try{URL.revokeObjectURL(oldest);}catch(error){}
+    }
+  }
+
+  function sweepRetiredArtworkUrls(){
+    clearArtworkSweepTimer();
+    if(!retiredArtworkUrls.size){artworkSweepRetries=0;return;}
+    for(const url of Array.from(retiredArtworkUrls)){
+      if(!isArtworkUrlReferenced(url)){
+        retiredArtworkUrls.delete(url);
+        try{URL.revokeObjectURL(url);}catch(error){}
+      }
+    }
+    if(retiredArtworkUrls.size>0){
+      scheduleArtworkSweep();
+    }else{
+      artworkSweepRetries=0;
+    }
+  }
+
+  function scheduleArtworkSweep(){
+    if(artworkSweepTimer)return;
+    if(!retiredArtworkUrls.size){artworkSweepRetries=0;return;}
+    if(artworkSweepRetries>=MAX_ARTWORK_SWEEP_RETRIES){
+      artworkSweepRetries=0;
+      enforceRetiredArtworkBounds(true);
+      return;
+    }
+    artworkSweepRetries++;
+    artworkSweepTimer=setTimeout(()=>{
+      artworkSweepTimer=0;
+      sweepRetiredArtworkUrls();
+    },240);
+  }
+
+  function retireArtworkUrl(url){
+    if(typeof url!=="string"||!url.startsWith("blob:"))return;
+    if(!isArtworkUrlReferenced(url)){
+      try{URL.revokeObjectURL(url);}catch(error){}
+      return;
+    }
+    retiredArtworkUrls.add(url);
+    enforceRetiredArtworkBounds();
+    scheduleArtworkSweep();
+  }
+
   function replaceTrackArtwork(track,coverBlob,thumbBlob){
+    if(!track)return;
     const oldUrls=new Set([track.coverUrl,track.thumbUrl].filter(url=>typeof url==="string"&&url.startsWith("blob:")));
-    track.coverUrl=coverBlob?URL.createObjectURL(coverBlob):null;
-    track.thumbUrl=(thumbBlob||coverBlob)?URL.createObjectURL(thumbBlob||coverBlob):null;
-    oldUrls.forEach(url=>URL.revokeObjectURL(url));
+    const nextCoverUrl=coverBlob?URL.createObjectURL(coverBlob):null;
+    const nextThumbUrl=(thumbBlob||coverBlob)?URL.createObjectURL(thumbBlob||coverBlob):null;
+    track.coverUrl=nextCoverUrl;
+    track.thumbUrl=nextThumbUrl;
+    oldUrls.forEach(url=>{
+      if(url!==nextCoverUrl&&url!==nextThumbUrl){
+        retireArtworkUrl(url);
+      }
+    });
   }
   function metadataVersionSnapshot(metadata,fileInfo={},capturedAt=Date.now()){
     const value=metadata||{};
@@ -8372,8 +8741,12 @@ window.GPModules.register = function register(name,factory){
         const current=playlist[currentIndex];setNowPlayingTitle(current.title);$("#nowArtist").textContent=current.artist;
         updateTrackInfoCard(current);updateArtDisplay();updateAmbient();applyAdaptiveAccent();
       }
+      sweepRetiredArtworkUrls();
       stats.durationMs=Math.round(performance.now()-startedAt);GP.performance.lastMetadataRescan=Object.freeze({...stats});return stats;
-    }finally{metadataRescanRunning=false;}
+    }finally{
+      metadataRescanRunning=false;
+      scheduleArtworkSweep();
+    }
   }
 
   /* ================= playback engine ================= */
@@ -8547,7 +8920,8 @@ window.GPModules.register = function register(name,factory){
   let playbackMotionFrame=0,playbackMotionLastPaint=0,playbackMotionLastSecond=-1;
   function runPlaybackMotion120(timestamp){
     playbackMotionFrame=0;
-    if(!isPlaying||audio.paused||audio.ended||document.hidden)return;
+    const playerActive=!!$(".view[data-view='player']")?.classList.contains("active");
+    if(!isPlaying||audio.paused||audio.ended||document.hidden||!playerActive)return;
     if(timestamp-playbackMotionLastPaint>=GP_MOTION_FRAME_MS-.35){
       playbackMotionLastPaint=timestamp;
       if(audio.duration){
@@ -8562,7 +8936,8 @@ window.GPModules.register = function register(name,factory){
     playbackMotionFrame=requestAnimationFrame(runPlaybackMotion120);
   }
   function syncPlaybackMotion120(){
-    if(isPlaying&&!document.hidden){if(!playbackMotionFrame)playbackMotionFrame=requestAnimationFrame(runPlaybackMotion120);}
+    const playerActive=!!$(".view[data-view='player']")?.classList.contains("active");
+    if(isPlaying&&!document.hidden&&playerActive){if(!playbackMotionFrame)playbackMotionFrame=requestAnimationFrame(runPlaybackMotion120);}
     else{if(playbackMotionFrame)cancelAnimationFrame(playbackMotionFrame);playbackMotionFrame=0;playbackMotionLastPaint=0;}
   }
   document.addEventListener("visibilitychange",syncPlaybackMotion120);
@@ -10176,23 +10551,34 @@ window.GPModules.register = function register(name,factory){
     GP.pipRenderer.roundedRect(ctx,barX,barY,barW,8,4);ctx.fillStyle=dark?"rgba(255,255,255,.18)":"rgba(20,28,38,.15)";ctx.fill();if(ratio>0){GP.pipRenderer.roundedRect(ctx,barX,barY,Math.max(8,barW*ratio),8,4);ctx.fillStyle=accent;ctx.fill();}ctx.fillStyle=secondary;ctx.font=`500 ${21*fontScale}px ${font}`;ctx.fillText(fmtTime(current),barX,barY+43);const end=fmtTime(duration),endWidth=ctx.measureText(end).width;ctx.fillText(end,barX+barW-endWidth,barY+43);ctx.fillStyle=text;ctx.font=`${weight} ${(25+5*compactness)*fontScale}px ${font}`;ctx.fillText(isPlaying?tr("正在播放","Now Playing"):tr("已暂停","Paused"),barX,526+10*compactness);if(compactness<.72){ctx.fillStyle=secondary;ctx.font=`500 ${20*fontScale}px ${font}`;ctx.fillText(tr("使用画中画控制播放","Use Picture-in-Picture controls"),barX,567);}ctx.restore();
     try{gpVideoPipTrack?.requestFrame?.();}catch(error){}
   }
+  function stopTraditionalPiPMotion(){
+    if(gpVideoPipMotionFrame){cancelAnimationFrame(gpVideoPipMotionFrame);gpVideoPipMotionFrame=0;}
+    gpVideoPipLastMotionFrame=0;
+  }
+  function startTraditionalPiPMotion(){
+    if(gpVideoPipMotionFrame||document.pictureInPictureElement!==gpVideoPipVideo||!isPlaying||gpVideoPipVideo.paused)return;
+    gpVideoPipLastMotionFrame=0;gpVideoPipMotionFrame=requestAnimationFrame(runTraditionalPiPMotion);
+  }
   function runTraditionalPiPMotion(timestamp){
-    if(document.pictureInPictureElement!==gpVideoPipVideo)return;if(!gpVideoPipVideo.paused&&timestamp-gpVideoPipLastMotionFrame>=GP_PIP_FRAME_MS-.35){gpVideoPipLastMotionFrame=timestamp;renderTraditionalPiPFrame(false);}gpVideoPipMotionFrame=requestAnimationFrame(runTraditionalPiPMotion);
+    gpVideoPipMotionFrame=0;
+    if(document.pictureInPictureElement!==gpVideoPipVideo||!isPlaying||gpVideoPipVideo.paused)return;
+    if(timestamp-gpVideoPipLastMotionFrame>=GP_PIP_FRAME_MS-.35){gpVideoPipLastMotionFrame=timestamp;renderTraditionalPiPFrame(false);}
+    gpVideoPipMotionFrame=requestAnimationFrame(runTraditionalPiPMotion);
   }
   function ensureTraditionalPiPVideo(){
     if(gpVideoPipVideo)return gpVideoPipVideo;
     gpVideoPipCanvas=document.createElement("canvas");gpVideoPipCanvas.hidden=true;gpVideoPipCanvas.setAttribute("aria-hidden","true");configureTraditionalPiPCanvas();
     const stream=gpVideoPipCanvas.captureStream(GP_PIP_TARGET_FPS);gpVideoPipTrack=stream.getVideoTracks()[0];gpVideoPipVideo=document.createElement("video");gpVideoPipVideo.hidden=true;gpVideoPipVideo.muted=true;gpVideoPipVideo.playsInline=true;gpVideoPipVideo.disablePictureInPicture=false;gpVideoPipVideo.srcObject=stream;gpVideoPipVideo.setAttribute("aria-hidden","true");document.body.append(gpVideoPipCanvas,gpVideoPipVideo);
-    gpVideoPipVideo.addEventListener("play",()=>{if(gpVideoPipOpening||gpVideoPipFramePulse)return;if(!gpVideoPipTargetPlayback){gpVideoPipTargetPlayback=true;if(!isPlaying)playAudio();}});
-    gpVideoPipVideo.addEventListener("pause",()=>{if(gpVideoPipFramePulse)return;if(document.pictureInPictureElement===gpVideoPipVideo&&gpVideoPipTargetPlayback){gpVideoPipTargetPlayback=false;if(isPlaying)pauseAudio();}});
-    gpVideoPipVideo.addEventListener("enterpictureinpicture",event=>{gpVideoPipWindow=event.pictureInPictureWindow||null;gpVideoPipResizeHandler=()=>scheduleTraditionalPiPRefresh(false);gpVideoPipWindow?.addEventListener("resize",gpVideoPipResizeHandler);$("#pipLaunchBtn").classList.add("active");gpVideoPipOpening=false;syncTraditionalPiP(true);cancelAnimationFrame(gpVideoPipMotionFrame);gpVideoPipLastMotionFrame=0;gpVideoPipMotionFrame=requestAnimationFrame(runTraditionalPiPMotion);});
+    gpVideoPipVideo.addEventListener("play",()=>{if(gpVideoPipOpening||gpVideoPipFramePulse)return;if(!gpVideoPipTargetPlayback){gpVideoPipTargetPlayback=true;if(!isPlaying)playAudio();}startTraditionalPiPMotion();});
+    gpVideoPipVideo.addEventListener("pause",()=>{stopTraditionalPiPMotion();if(gpVideoPipFramePulse)return;if(document.pictureInPictureElement===gpVideoPipVideo&&gpVideoPipTargetPlayback){gpVideoPipTargetPlayback=false;if(isPlaying)pauseAudio();}});
+    gpVideoPipVideo.addEventListener("enterpictureinpicture",event=>{gpVideoPipWindow=event.pictureInPictureWindow||null;gpVideoPipResizeHandler=()=>scheduleTraditionalPiPRefresh(false);gpVideoPipWindow?.addEventListener("resize",gpVideoPipResizeHandler);$("#pipLaunchBtn").classList.add("active");gpVideoPipOpening=false;syncTraditionalPiP(true);});
     gpVideoPipVideo.addEventListener("leavepictureinpicture",cleanupTraditionalPiP,{once:true});
     gpVideoPipThemeObserver=new MutationObserver(()=>scheduleTraditionalPiPRefresh(true));[document.documentElement,document.body,$("#ambientGlow"),$("#ambientBlur"),$("#blob1"),$("#blob2"),$("#blob3")].filter(Boolean).forEach(element=>gpVideoPipThemeObserver.observe(element,{attributes:true,attributeFilter:["style","class","data-theme"]}));
     return gpVideoPipVideo;
   }
   function syncTraditionalPiP(forceTheme=false){
     if(!gpVideoPipCanvas)return;const track=playlist[currentIndex]||null,source=track?.coverUrl||track?.thumbUrl||"",shouldRender=forceTheme||!isPlaying;gpPipLoadCover(source);if(shouldRender){renderTraditionalPiPFrame(forceTheme);gpVideoPipLastRender=performance.now();}
-    if(document.pictureInPictureElement===gpVideoPipVideo){gpVideoPipTargetPlayback=!!isPlaying;if(isPlaying&&gpVideoPipVideo.paused)gpVideoPipVideo.play().catch(()=>{});else if(!isPlaying&&!gpVideoPipVideo.paused&&!gpVideoPipFramePulse)gpVideoPipVideo.pause();else if(!isPlaying&&gpVideoPipVideo.paused&&shouldRender)pulseTraditionalPiPFrame();}
+    if(document.pictureInPictureElement===gpVideoPipVideo){gpVideoPipTargetPlayback=!!isPlaying;if(isPlaying&&gpVideoPipVideo.paused)gpVideoPipVideo.play().catch(()=>{});else if(isPlaying)startTraditionalPiPMotion();else{stopTraditionalPiPMotion();if(!gpVideoPipVideo.paused&&!gpVideoPipFramePulse)gpVideoPipVideo.pause();else if(gpVideoPipVideo.paused&&shouldRender)pulseTraditionalPiPFrame();}}
   }
   function cleanupTraditionalPiP(){
     gpVideoPipOpening=false;gpVideoPipTargetPlayback=false;gpVideoPipFramePulse=false;gpVideoPipLastRender=0;clearTimeout(gpVideoPipPulseTimer);gpVideoPipPulseTimer=0;cancelAnimationFrame(gpVideoPipRefreshFrame);gpVideoPipRefreshFrame=0;cancelAnimationFrame(gpVideoPipMotionFrame);gpVideoPipMotionFrame=0;gpVideoPipLastMotionFrame=0;gpVideoPipThemeObserver?.disconnect();gpVideoPipThemeObserver=null;if(gpVideoPipWindow&&gpVideoPipResizeHandler)gpVideoPipWindow.removeEventListener("resize",gpVideoPipResizeHandler);gpVideoPipWindow=null;gpVideoPipResizeHandler=null;try{gpVideoPipTrack?.stop();}catch(error){}if(gpVideoPipVideo){gpVideoPipVideo.srcObject=null;gpVideoPipVideo.remove();}gpVideoPipCanvas?.remove();gpVideoPipCanvas=null;gpVideoPipContext=null;gpVideoPipVideo=null;gpVideoPipTrack=null;gpVideoPipCover=null;gpVideoPipCoverSource="";gpVideoPipPalette=null;gpVideoPipBackgroundCanvas=null;gpVideoPipBackgroundContext=null;gpVideoPipBackgroundKey="";gpVideoPipMarqueeKey="";gpVideoPipMarqueeStart=0;$("#pipLaunchBtn").classList.remove("active");
@@ -10211,23 +10597,23 @@ window.GPModules.register = function register(name,factory){
 
   /* ================= audio events (bound to both decks) ================= */
   decks.forEach(d => {
-    d.addEventListener("play",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);}});
-    d.addEventListener("playing",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);}});
+    d.addEventListener("play",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);syncTraditionalPiP();}});
+    d.addEventListener("playing",()=>{if(d===audio&&wantsPlayback){resetBehaviorMediaClock();setPlaybackVisualState(true);syncTraditionalPiP();}});
     d.addEventListener("pause",()=>{
       if(d!==audio)return;
       // A native pause may arrive at the terminal media time before `ended`.
       // Keep the intent across that ordering window; ordinary pauses still
       // clear it immediately below.
-      if(d.ended||crossfading){setPlaybackVisualState(false);return;}
+      if(d.ended||crossfading){setPlaybackVisualState(false);syncTraditionalPiP();return;}
       const atNaturalEnd=Number.isFinite(d.duration)&&d.duration>0&&Number.isFinite(d.currentTime)&&d.currentTime>=d.duration-.05&&wantsPlayback&&isPlaying;
-      if(atNaturalEnd){deferNativeEndPause(d);setPlaybackVisualState(false);return;}
+      if(atNaturalEnd){deferNativeEndPause(d);setPlaybackVisualState(false);syncTraditionalPiP();return;}
       emitListeningCheckpoint("pause");
-      setPlaybackVisualState(false);
+      setPlaybackVisualState(false);syncTraditionalPiP();
       if(!pendingPlayToken)wantsPlayback=false;
     });
     d.addEventListener("error",()=>{
       if(d!==audio||d.ended)return;
-      pendingPlayToken=0;wantsPlayback=false;setPlaybackVisualState(false);
+      pendingPlayToken=0;wantsPlayback=false;setPlaybackVisualState(false);syncTraditionalPiP();
     });
     d.addEventListener("timeupdate", () => {
       if(d !== audio || !audio.duration) return;
@@ -10763,9 +11149,9 @@ window.GPModules.register = function register(name,factory){
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Replay Atlas · ${runtime.version||"7.5.1"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Kinetic Glass · ${runtime.version||"7.6.0"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
-      [tr("引擎","Engines"),engineList||"GP Core 4.2 — Atlas Runtime · GP Fusion Engine 4.1 — Playlist Flow · GP Motion Engine 4.1 — Story Scroll · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
+      [tr("引擎","Engines"),engineList||"GP Core 4.3 — Kinetic Runtime · GP Fusion Engine 4.2 — Playlist Flow · GP Motion Engine 4.2 — Kinetic Motion · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
     ];
     aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>`<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div><div class="setting-hint">${escapeHTML(value)}</div></div></div>`).join("");
@@ -11062,8 +11448,17 @@ window.GPModules.register = function register(name,factory){
   if(document.fonts?.ready)document.fonts.ready.then(()=>requestAnimationFrame(initializeSelectionGliders));
   setTimeout(scheduleViewportFit, 60); // re-measure once fonts/layout settle
   setTimeout(scheduleViewportFit, 300); // and once more after async layout settles fully
+  if(typeof requestAnimationFrame==="function"){
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        document.body?.classList.remove("gp-theme-prepaint");
+      });
+    });
+  }else{
+    document.body?.classList.remove("gp-theme-prepaint");
+  }
 
-  /* ================= GP Core 4.2 — Peregrine Lake bootstrap =================
+  /* ================= GP Core 4.3 — Kinetic Runtime bootstrap =================
      The legacy runtime remains the single implementation while its public
      capabilities are exposed through explicit factories, ports and services.
      No second AudioContext, queue, playlist, persistence path or listener set
@@ -11123,6 +11518,6 @@ window.GPModules.register = function register(name,factory){
   const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
   const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.5.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.2 — Atlas Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.1 — Story Scroll",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.6.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
 })();
