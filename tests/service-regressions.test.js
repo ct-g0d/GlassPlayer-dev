@@ -64,6 +64,12 @@ function testLegacyUndatedSecondsStayInAllTimeTotals() {
   assert.equal(sandbox.songRange(entry, {start: new Date("2020-01-01T00:00:00"), end: new Date("2020-01-02T00:00:00")}), 30, "finite calendar ranges remain limited to dated seconds");
 }
 
+function testNaturalEndPauseWaitsForEnded() {
+  const playback = source("src/services/pip-runtime.js");
+  assert.match(playback, /if\(d\.ended\|\|crossfading\)\{if\(d\.ended\)deferNativeEndPause\(d\);setPlaybackVisualState\(false\);syncTraditionalPiP\(\);return;\}/, "natural-end pause must defer state clearing until ended advances the queue");
+}
+
 testCollectionConsumesSelectedTrackAndKeepsQueueMode();
 testLegacyUndatedSecondsStayInAllTimeTotals();
+testNaturalEndPauseWaitsForEnded();
 console.log("PASS service regression tests");

@@ -10604,7 +10604,7 @@ window.GPModules.register = function register(name,factory){
       // A native pause may arrive at the terminal media time before `ended`.
       // Keep the intent across that ordering window; ordinary pauses still
       // clear it immediately below.
-      if(d.ended||crossfading){setPlaybackVisualState(false);syncTraditionalPiP();return;}
+      if(d.ended||crossfading){if(d.ended)deferNativeEndPause(d);setPlaybackVisualState(false);syncTraditionalPiP();return;}
       const atNaturalEnd=Number.isFinite(d.duration)&&d.duration>0&&Number.isFinite(d.currentTime)&&d.currentTime>=d.duration-.05&&wantsPlayback&&isPlaying;
       if(atNaturalEnd){deferNativeEndPause(d);setPlaybackVisualState(false);syncTraditionalPiP();return;}
       emitListeningCheckpoint("pause");
