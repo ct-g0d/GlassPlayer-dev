@@ -39,6 +39,7 @@
     shell.style.zoom = scale;
     document.documentElement.style.setProperty("--ui-scale", scale.toFixed(4));
     document.body.classList.toggle("compact-window", scale < .999);
+    window.dispatchEvent(new CustomEvent("gp:viewport-fit",{detail:{width:Math.round(width*pageZoom),height:Math.round(height*pageZoom)}}));
     fitActiveView();
     requestAnimationFrame(()=>{
       updateNavGlider(false);updateAllGliders(false);
@@ -56,6 +57,7 @@
   window.addEventListener("load",()=>requestAnimationFrame(initializeSelectionGliders),{once:true});
   document.addEventListener("fullscreenchange", scheduleViewportFit);
   if(window.visualViewport) window.visualViewport.addEventListener("resize", scheduleViewportFit, {passive:true});
+  scheduleViewportFit();
   /* Window and visualViewport events are sufficient here. Observing main-area itself
      created a resize feedback loop that made the two facing glass borders shimmer. */
 

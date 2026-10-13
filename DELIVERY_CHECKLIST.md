@@ -685,3 +685,23 @@ could not support.
 - PASS — `node --check build/app.js`; `tests/service-regressions.test.js`; `tests/audio-context-regression.test.js`; `git diff --check` passed.
 - NOT RUN — Edge/file:// interaction, real audio device verification, 4K/110%
   visual comparison and 120 Hz hardware profiling.
+
+## 24. 7.6.1 HOTFIX BUILD — 2026-10-13
+
+- PASS — Scope is limited to width-aware compact-window Sidebar recovery.
+  Focus Mode and the other requested interaction changes were explicitly
+  deferred for user review.
+- PASS — Current identity is synchronized as 7.6.1 HOTFIX BUILD across
+  index.html, the bootstrap facade, the early Spectrum facade, Settings
+  fallback text, bilingual i18n and release/export data.
+- PASS — Compact viewport fitting emits one shared viewport-fit event based on
+  the width of the fitted viewport; the Sidebar collapses without overwriting
+  glassPlayerSidebarCollapsed and restores the saved preference when width
+  recovers.
+- PASS — build.ps1 regenerated build/app.js; SHA-256:
+  1024A1D3E8128B2FD1BA9AF466CE19F6F711D08A7813B74C8068D823982DDB7D.
+- PASS — validate-architecture.ps1: 55 sources / 22 modules.
+- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 261.
+- PASS — Generated build JavaScript syntax and git diff whitespace checks.
+- NOT RUN — Edge/file:// interaction with real narrow and wide windows, real
+  audio devices, 4K/110% comparison and 120 Hz hardware profiling.

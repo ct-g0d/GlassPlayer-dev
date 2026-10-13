@@ -1,8 +1,9 @@
 # Glass Player — Current State
 
-Last documentation update: 2026-10-05 (Pacific/Auckland)
+Last documentation update: 2026-10-13 (Pacific/Auckland)
 
-The 7.6.0 Kinetic Glass checkpoint records the annual report redesign, player title geometry,
+The 7.6.1 HOTFIX BUILD checkpoint records width-aware Sidebar recovery. The
+7.6.0 Kinetic Glass checkpoint records the annual report redesign, player title geometry,
 settings layout, CJK font fallback, and identity updates on 2026-10-02. The feature
 release expands the annual report into a rich chaptered scroll and standalone
 long-form export while preserving v7.4.3 dialog dimensions and button placement,
@@ -20,8 +21,8 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 · Kinetic Glass |
-| Version | 7.6.0 |
-| Release name | KINETIC GLASS |
+| Version | 7.6.1 |
+| Release name | HOTFIX BUILD |
 | Architecture | Peregrine Lake |
 | GP Core | 4.3 — Kinetic Runtime |
 | GP Fusion Engine | 4.2 — Playlist Flow |
@@ -272,6 +273,9 @@ mapping. The full SSE contract is in AGENTS.md and the detailed handoff.
   export, a Player lossless badge for FLAC, and missing-font fallback
   feedback. Playlists reuse the existing recommendations record; no
   IndexedDB schema change.
+- 7.6.1 collapses the Sidebar only when the music area becomes too narrow,
+  without overwriting the saved Sidebar preference, and restores that preference
+  when the window width recovers.
 
 ## 10. Known regression-sensitive areas
 

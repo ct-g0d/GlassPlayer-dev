@@ -417,7 +417,7 @@
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Kinetic Glass · ${runtime.version||"7.6.0"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Kinetic Glass · ${runtime.version||"7.6.1"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
       [tr("引擎","Engines"),engineList||"GP Core 4.3 — Kinetic Runtime · GP Fusion Engine 4.2 — Playlist Flow · GP Motion Engine 4.2 — Kinetic Motion · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]

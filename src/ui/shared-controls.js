@@ -82,7 +82,7 @@
   let gpViewPhase="idle",gpPendingView=null,gpViewExitTimer=0,gpViewEnterTimer=0,gpViewTransitionToken=0;
   function refreshPrimaryViewLayout(viewName){
     requestAnimationFrame(()=>{
-      fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();
+      fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();syncSidebarCompactMode();
       if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
       if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);if(audio.duration)seekProgress=Math.max(0,Math.min(1,audio.currentTime/audio.duration));drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();});
       else{if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();if(typeof syncMiniEqMeter==="function")syncMiniEqMeter();}
@@ -147,7 +147,7 @@
   }
   $$(".nav-item").forEach(mountPrimaryNavButton);
   const sidebarShell=$("#appShell"),sidebar=$(".sidebar"),sidebarToggle=$("#sidebarToggle"),sidebarBrand=$(".brand"),sidebarBrandLogo=$(".brand-logo");
-  let sidebarSettleTimer=0,sidebarBrandHintTimer=0,sidebarHintHandoffTimer=0,sidebarLabelFadeFrame=0;
+  let sidebarSettleTimer=0,sidebarBrandHintTimer=0,sidebarHintHandoffTimer=0,sidebarLabelFadeFrame=0,sidebarCompactMode=false;
   const sidebarHintIcon=document.createElement("span");
   sidebarHintIcon.className="sidebar-expand-hint-icon";
   sidebarHintIcon.setAttribute("aria-hidden","true");
@@ -249,6 +249,21 @@
     });
     sidebarBrand?.addEventListener("pointerleave",clearSidebarBrandHint);
   }
+  const GP_SIDEBAR_COLLAPSE_PLAYER_WIDTH=700,GP_SIDEBAR_COLLAPSE_RATIO=1.2,GP_SIDEBAR_EXPAND_PLAYER_WIDTH=900,GP_SIDEBAR_EXPAND_RATIO=1.1;
+  function syncSidebarCompactMode(){
+    const playerSection=$(".now-playing"),width=playerSection?.offsetWidth||0,height=playerSection?.offsetHeight||0;
+    if(!width||!height)return;
+    const ratio=height/Math.max(1,width);
+    const next=sidebarCompactMode
+      ? !(width>GP_SIDEBAR_EXPAND_PLAYER_WIDTH&&ratio<GP_SIDEBAR_EXPAND_RATIO)
+      : width<GP_SIDEBAR_COLLAPSE_PLAYER_WIDTH&&ratio>GP_SIDEBAR_COLLAPSE_RATIO;
+    if(next===sidebarCompactMode)return;
+    sidebarCompactMode=next;
+    if(next)setSidebarCollapsed(true,false);
+    else setSidebarCollapsed(GPBrowserStorage.getLocal("glassPlayerSidebarCollapsed")==="1",false);
+  }
+  window.addEventListener("gp:viewport-fit",()=>syncSidebarCompactMode(),{passive:true});
+
   function activateSidebarView(viewName){
     $$(".nav-item").forEach(button=>button.classList.toggle("active",button.dataset.view===viewName));
     requestAnimationFrame(()=>updateNavGlider(true));

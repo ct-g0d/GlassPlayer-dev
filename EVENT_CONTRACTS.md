@@ -14,6 +14,7 @@ All names are centralized in `src/core/contracts.js`. Events are transient notif
 | `analysis:failed` | `{trackId, error}` | Spectrum Service | UI diagnostics |
 | `settings:changed` | changed key and read-only settings snapshot | Settings Service | Engines, Views, PiP |
 | `pip:opened/closed` | PiP lifecycle snapshot | PiP Service | UI |
+| `gp:viewport-fit` (DOM lifecycle event) | {width,height} fitted viewport dimensions | Window Layout UI | Shared Controls Sidebar |
 
 Listener disposal is mandatory through the unsubscribe function returned by Event Bus `on()`.
 

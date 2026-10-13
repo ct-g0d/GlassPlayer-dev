@@ -15,6 +15,15 @@
       ]
     },
     {
+      version:"7.6.1", date:"2026-10-13", kind:"patch",
+      summary:"HOTFIX BUILD：窗口宽度过窄时自动收起侧边栏，恢复宽度后回到已保存的侧边栏状态。",
+      sections:[
+        {title:"响应式布局",items:["窗口宽度过窄时，侧边栏默认收起，为主要内容保留可用空间；恢复宽度后继续遵循已保存的侧边栏偏好。"]}
+      ],english:{summary:"HOTFIX BUILD collapses the Sidebar only when the window becomes too narrow, then restores the saved Sidebar preference when the width recovers.",sections:[
+        {title:"Responsive Layout",items:["Narrow windows start with the Sidebar collapsed so the primary content keeps its working space; returning to a wider window restores the saved Sidebar preference."]}
+      ]}
+    },
+    {
       version:"7.6.0", date:"2026-10-05", kind:"minor",
       summary:"KINETIC GLASS：修复启动闪白、封面生命周期、播放动效、收藏识别与悬浮播放器空闲状态，并更新 GP Core 4.3、GP Fusion Engine 4.2 与 GP Motion Engine 4.2。",
       sections:[
@@ -2544,6 +2553,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.6.1":"HOTFIX BUILD collapses the Sidebar only when the window becomes too narrow, then restores the saved Sidebar preference when the width recovers.",
     "7.6.0":"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",
     "7.5.1":"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",
     "7.5.0":"REPLAY ATLAS brings a chaptered Annual Report story scroll, complete CJK serif and monospace font fallback stacks, and centered player title and settings layout.",
@@ -3997,7 +4007,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.0 — KINETIC GLASS`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.1 — HOTFIX BUILD`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4012,7 +4022,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.6.0 KINETIC GLASS.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.6.1 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
