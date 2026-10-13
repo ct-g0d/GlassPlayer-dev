@@ -10566,7 +10566,19 @@ window.GPModules.register = function register(name,factory){
     const paletteSignature=(gpVideoPipPalette||[]).flat().join(","),backgroundKey=[bgMode,dark,bg,accentRgb,gpVideoPipCoverSource,gpVideoPipCover?.complete?1:0,paletteSignature].join("|");
     if(backgroundKey!==gpVideoPipBackgroundKey){
       gpVideoPipBackgroundKey=backgroundKey;bgCtx.setTransform(scale,0,0,scale,0,0);bgCtx.imageSmoothingEnabled=true;bgCtx.imageSmoothingQuality="high";bgCtx.clearRect(0,0,width,height);bgCtx.fillStyle=bg;bgCtx.fillRect(0,0,width,height);
-      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){bgCtx.save();bgCtx.filter=`blur(${GP_VIDEO_PIP_BACKGROUND_BLUR}px) saturate(${dark?1.25:1.38}) brightness(${dark ? 0.48 : 1.02})`;bgCtx.globalAlpha=dark ? 0.88 : 0.72;bgCtx.drawImage(gpVideoPipCover,-96,-96,width+192,height+192);bgCtx.restore();bgCtx.fillStyle=dark?"rgba(4,6,9,.46)":"rgba(255,255,255,.10)";bgCtx.fillRect(0,0,width,height);}
+      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){
+        bgCtx.save();
+        bgCtx.filter=`blur(${GP_VIDEO_PIP_BACKGROUND_BLUR}px) saturate(${dark?1.25:1.38}) brightness(${dark ? 0.48 : 1.02})`;
+        bgCtx.globalAlpha=dark ? 0.88 : 0.72;
+        const coverW=Math.max(1,gpVideoPipCover.naturalWidth||gpVideoPipCover.width||1),coverH=Math.max(1,gpVideoPipCover.naturalHeight||gpVideoPipCover.height||1);
+        const bgPad=96,targetW=width+bgPad*2,targetH=height+bgPad*2;
+        const bgScale=Math.max(targetW/coverW,targetH/coverH);
+        const drawW=coverW*bgScale,drawH=coverH*bgScale;
+        bgCtx.drawImage(gpVideoPipCover,(width-drawW)/2,(height-drawH)/2,drawW,drawH);
+        bgCtx.restore();
+        bgCtx.fillStyle=dark?"rgba(4,6,9,.46)":"rgba(255,255,255,.10)";
+        bgCtx.fillRect(0,0,width,height);
+      }
       else{const fallback=currentAccentRgb(),palette=bgMode==="color"&&gpVideoPipPalette?.length?gpVideoPipPalette:[fallback,mixRgb(fallback,dark?[255,255,255]:[0,0,0],.2),mixRgb(fallback,dark?[0,0,0]:[255,255,255],.28)],points=bgMode==="color"?[[.08,.05,.78,.58],[.92,.18,.66,.5],[.48,1,.72,.46]]:[[.14,.12,.58,.34],[.86,.24,.5,.23],[.48,.94,.62,.2]];points.forEach((point,index)=>{const color=palette[index%palette.length],gradient=bgCtx.createRadialGradient(width*point[0],height*point[1],0,width*point[0],height*point[1],width*point[2]);gradient.addColorStop(0,`rgba(${color.join(",")},${dark?point[3]*.72:point[3]})`);gradient.addColorStop(1,"rgba(0,0,0,0)");bgCtx.fillStyle=gradient;bgCtx.fillRect(0,0,width,height);});bgCtx.fillStyle=dark?"rgba(3,5,8,.24)":"rgba(255,255,255,.08)";bgCtx.fillRect(0,0,width,height);}
     }
     ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(gpVideoPipBackgroundCanvas,0,0);ctx.setTransform(scale,0,0,scale,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
@@ -11403,8 +11415,8 @@ window.GPModules.register = function register(name,factory){
     shell.style.zoom = scale;
     document.documentElement.style.setProperty("--ui-scale", scale.toFixed(4));
     document.body.classList.toggle("compact-window", scale < .999);
-    window.dispatchEvent(new CustomEvent("gp:viewport-fit",{detail:{width:Math.round(width*pageZoom),height:Math.round(height*pageZoom)}}));
     fitActiveView();
+    window.dispatchEvent(new CustomEvent("gp:viewport-fit",{detail:{width:Math.round(width*pageZoom),height:Math.round(height*pageZoom)}}));
     requestAnimationFrame(()=>{
       updateNavGlider(false);updateAllGliders(false);
       refreshScrollEdgeFrames();GPUIRegistry.refresh($(".view.active")||document,false);

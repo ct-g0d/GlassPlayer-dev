@@ -39,8 +39,8 @@
     shell.style.zoom = scale;
     document.documentElement.style.setProperty("--ui-scale", scale.toFixed(4));
     document.body.classList.toggle("compact-window", scale < .999);
-    window.dispatchEvent(new CustomEvent("gp:viewport-fit",{detail:{width:Math.round(width*pageZoom),height:Math.round(height*pageZoom)}}));
     fitActiveView();
+    window.dispatchEvent(new CustomEvent("gp:viewport-fit",{detail:{width:Math.round(width*pageZoom),height:Math.round(height*pageZoom)}}));
     requestAnimationFrame(()=>{
       updateNavGlider(false);updateAllGliders(false);
       refreshScrollEdgeFrames();GPUIRegistry.refresh($(".view.active")||document,false);
