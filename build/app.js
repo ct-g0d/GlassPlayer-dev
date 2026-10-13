@@ -5088,13 +5088,13 @@ window.GPModules.register = function register(name,factory){
   }
   /* Fold from the capped Now Playing card, not the outer viewport. The
      separate enter/exit thresholds keep a sidebar resize from chattering. */
-  const GP_SIDEBAR_COLLAPSE_PLAYER_WIDTH=760,GP_SIDEBAR_COLLAPSE_RATIO=1.65,GP_SIDEBAR_EXPAND_PLAYER_WIDTH=900,GP_SIDEBAR_EXPAND_RATIO=1.35;
+  const GP_SIDEBAR_COLLAPSE_PLAYER_WIDTH=760,GP_SIDEBAR_COLLAPSE_RATIO=1.65,GP_SIDEBAR_EXPAND_RATIO=1.35;
   function syncSidebarCompactMode(){
     const playerSection=$(".now-playing"),width=playerSection?.offsetWidth||0,height=playerSection?.offsetHeight||0;
     if(!width||!height)return;
     const ratio=height/Math.max(1,width);
     const next=sidebarCompactMode
-      ? !(width>GP_SIDEBAR_EXPAND_PLAYER_WIDTH&&ratio<GP_SIDEBAR_EXPAND_RATIO)
+      ? ratio>=GP_SIDEBAR_EXPAND_RATIO
       : width<GP_SIDEBAR_COLLAPSE_PLAYER_WIDTH&&ratio>GP_SIDEBAR_COLLAPSE_RATIO;
     if(next===sidebarCompactMode)return;
     sidebarCompactMode=next;

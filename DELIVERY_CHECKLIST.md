@@ -699,7 +699,7 @@ could not support.
   glassPlayerSidebarCollapsed and restores the saved preference when width
   recovers.
 - PASS — build.ps1 regenerated build/app.js; SHA-256:
-  12B730DEEA48C40FEEC8A22BB05160D54A3F6919B53AB526002981B3B4E9A226.
+  5E8AF36AA0D80CD7539CE2CC5BBF87BFB4C7AEE3E09C0F87D39DCFB0246DC0AF.
 - PASS — validate-architecture.ps1: 55 sources / 22 modules.
 - PASS — tests/contract-tests.ps1: PASS, Contracts checked: 261.
 - PASS — Generated build JavaScript syntax and git diff whitespace checks.
