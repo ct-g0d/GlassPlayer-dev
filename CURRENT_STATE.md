@@ -477,14 +477,16 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
 - PASS — Current identity synchronized as 7.6.2 REBRAND UPDATE across
   index.html cache revisions and build card, bootstrap and Bionic facades,
   Settings fallback, Chinese/English/Russian i18n, release data and the
-  exported changelog identity.
+  exported changelog identity. The Settings About engines row now lists
+  GP Bionic Engine 1.0 (the facade key list and its fallback string were
+  previously missing it).
 - PASS — No IndexedDB/localStorage/schema, Store/Event Bus, queue identity,
   AudioContext/Deck graph, spatial bus or DOM contract changed; caches,
   Spectrum IDs, listening history and user data untouched.
 - PASS — build.ps1 regenerated build/app.js; SHA-256
-  46E7334084FBC9459464F2153795ED34C55864069799B64FE0DB76D25BCA5A43.
+  CD140FC995405B32C6E89521C589717F0588BFF56A5080413516952C1E3E44BE.
 - PASS — validate-architecture.ps1: 52 sources / 20 modules.
-- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 261.
+- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 262.
 - PASS — node --check build/app.js.
 - NOT RUN — Edge/file:// interaction, real audio device verification,
   4K/110% visual comparison and 120 Hz hardware profiling.

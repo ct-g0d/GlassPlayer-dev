@@ -291,6 +291,7 @@ Expect ($spectrumSource -match 'fusion:`GP Fusion Engine \$\{GP_FUSION_ENGINE_VE
 Expect ($audioSource -match 'window\.__GP_AUDIO_DIAGNOSTICS__=Object\.freeze\(\{get version\(\)\{return audioDiagnosticState\.version;\},get latest\(\)\{return audioDiagnosticState\.latest;\}') 'Audio diagnostics must expose the centralized Fusion version through its frozen public surface'
 Expect ($runtimeConstantsSource -match 'const GP_SPECTRUM_ALGORITHM_VERSION = "2\.1\.0";' -and $neuralSource -match 'const NEURAL_MODEL_VERSION=4;') 'Spectrum algorithm and Neural model compatibility tokens must remain unchanged'
 Expect ($index -match 'buildVersionText[^>]*>[^<]*7\.6\.2<' -and $index -match 'currentVersionBtn[^>]*>[^<]*7\.6\.2[^<]*REBRAND UPDATE<' -and $i18nSource -match '"Current Version 7\.6\.2 \u2014 REBRAND UPDATE"' -and $i18nSource -match '"Ver\. 7\.6\.2 \u2014 REBRAND UPDATE"' -and $i18nSource -match '"REBRAND UPDATE":"REBRAND UPDATE"' -and $i18nSource -match '"HOTFIX BUILD":"HOTFIX BUILD"' -and $i18nSource -match '"\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f 7\.6\.2 \u2014 REBRAND UPDATE"' -and $i18nSource -match '"\u0412\u0435\u0440\u0441\u0438\u044f 7\.6\.2 \u2014 REBRAND UPDATE"') '7.6.2 localized version and release strings are incomplete'
+Expect ($settingsSource -match '"core","bionic","fusion","motion","spatial","spectrum","neural"' -and $index -match 'GP Bionic Engine 1\.0') 'About engines row and build card must include GP Bionic Engine 1.0'
 $release740Index=$releasesSource.IndexOf('version:"7.4.0"')
 $release762Index=$releasesSource.IndexOf('version:"7.6.2"')
 $release761Index=$releasesSource.IndexOf('version:"7.6.1"')
@@ -348,7 +349,7 @@ Expect ($sharedControlsSource -match '#annualReportBody' -and $sharedControlsSou
 
 if($issues.Count){'FAIL';$issues|ForEach-Object{"- $_"};exit 1}
 'PASS'
-"Contracts checked: 261"
+"Contracts checked: 262"
 exit 0
 
 
