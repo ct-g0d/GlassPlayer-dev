@@ -1141,7 +1141,8 @@ input[type="range"]:not(.eq-slider).dragging::-webkit-slider-thumb{ margin-top:-
   .view[data-view="history"] .view-fill{ max-width:var(--gp-primary-content-width); margin-inline:auto; }
   .history-header{ margin-bottom:10px; }
   .history-controls{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-  .history-controls .history-mode-seg,.history-controls .history-range-seg{ margin:0; align-self:center; }
+  .history-controls .history-mode-seg{ margin:0; align-self:center; }
+  .history-controls .history-range-seg{ margin:0 0 0 auto; align-self:center; }
   .history-summary-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:0 4px 18px; }
   .history-stat-card{ min-width:0; min-height:108px; box-sizing:border-box; padding:17px 18px; border-radius:18px; display:flex; flex-direction:column; justify-content:space-between; }
   .history-stat-label{ color:var(--text-tertiary); font-size:.74em; font-weight:680; }

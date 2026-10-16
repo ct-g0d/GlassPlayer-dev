@@ -483,7 +483,8 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
   column width instead of using fixed pixel sizes that overlapped in narrow
   windows. Narrow windows (<=900px) merge the two ranking sections into one
   continuous Top 50 list on a single scroll surface. The History mode switch
-  and listening-time range selector share one control row.
+  and listening-time range selector share one control row, with the range
+  selector pinned to the right edge.
 - PASS — No IndexedDB/localStorage/schema, Store/Event Bus, queue identity,
   AudioContext/Deck graph, spatial bus or DOM contract changed; caches,
   Spectrum IDs, listening history and user data untouched.
