@@ -482,14 +482,15 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
   runtime-identity row is removed. History podium covers now scale with the
   column width instead of using fixed pixel sizes that overlapped in narrow
   windows. Narrow windows (<=900px) merge the two ranking sections into one
-  continuous Top 50 list on a single scroll surface.
+  continuous Top 50 list on a single scroll surface. The History mode switch
+  and listening-time range selector share one control row.
 - PASS — No IndexedDB/localStorage/schema, Store/Event Bus, queue identity,
   AudioContext/Deck graph, spatial bus or DOM contract changed; caches,
   Spectrum IDs, listening history and user data untouched.
 - PASS — build.ps1 regenerated build/app.js; SHA-256
-  A5E646D9F5B20E373F6BA8BF869B1C9C0BA7A898FB4E5474CB33F9E5FCBCCA16.
+  1CE80456B23F3F489932DCDC7D9D70627330F7D742D719BDAFAE2C38841CDB4A.
 - PASS — validate-architecture.ps1: 52 sources / 20 modules.
-- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 264.
+- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 265.
 - PASS — node --check build/app.js.
 - NOT RUN — Edge/file:// interaction, real audio device verification,
   4K/110% visual comparison and 120 Hz hardware profiling.

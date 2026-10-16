@@ -281,6 +281,13 @@
    <div class="view-fill">
     <div class="view-header history-header">
       <h2>听歌记录</h2>
+    </div>
+    <div class="history-controls">
+      <div class="segmented history-mode-seg" id="historyModeSeg">
+        <button data-history-mode="time" class="active">听歌时间</button>
+        <button data-history-mode="favorites">最近最爱</button>
+        <button data-history-mode="data">听歌数据</button>
+      </div>
       <div class="segmented history-range-seg" id="rangeSeg">
         <button data-r="day" class="active">今天</button>
         <button data-r="week">本周</button>
@@ -288,11 +295,6 @@
         <button data-r="year">本年</button>
         <button data-r="all">全部</button>
       </div>
-    </div>
-    <div class="segmented history-mode-seg" id="historyModeSeg">
-      <button data-history-mode="time" class="active">听歌时间</button>
-      <button data-history-mode="favorites">最近最爱</button>
-      <button data-history-mode="data">听歌数据</button>
     </div>
     <div class="history-pane active" id="historyTimePane">
     <div class="history-summary-grid">
