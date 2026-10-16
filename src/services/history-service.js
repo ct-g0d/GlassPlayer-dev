@@ -257,6 +257,9 @@
     const topSong=$("#historyStatTopSong");
     if(topSong)topSong.textContent=ranked[0]?.title||"—";
     const topList=$("#topList");if(!ranked.length){setBatchedScrollHTML(topList,`<div class="empty-state"><p>${tr("这个时间段还没有听歌记录","No listening history for this range")}</p></div>`);return;}
+    const artistTotals=new Map();candidates.forEach(item=>{const name=(item.artist||"").trim()||tr("未知艺人","Unknown Artist");artistTotals.set(name,(artistTotals.get(name)||0)+item.rangeSeconds);});
+    let topArtist="—",topArtistSeconds=0;artistTotals.forEach((seconds,name)=>{if(seconds>topArtistSeconds){topArtistSeconds=seconds;topArtist=name;}});
+    const topArtistEl=$("#historyStatTopArtist");if(topArtistEl)topArtistEl.textContent=topArtist;
     const historyIndex=getHistoryTrackIndex(),fallback=`<svg class="single-alpha-icon rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="18" r="3"/><path d="M9 17V5l12-2v12"/><circle cx="18" cy="16" r="3"/></svg>`;
     const coverFor=s=>{const normalized=normalizeHistoryToken(s.artist)+"||"+normalizeHistoryToken(s.title);return historyIndex.coverByKey.get(s.historyKey)||historyIndex.coverByKey.get(normalized)||s.track?.thumbUrl||s.track?.coverUrl||null;};
     const top3=ranked.slice(0,3),ranks4to10=ranked.slice(3,10),ranks11to50=ranked.slice(10,50),maxSec=ranked[0].rangeSeconds||1,podiumOrder=[top3[1],top3[0],top3[2]];
@@ -882,6 +885,7 @@
     const range=activeRange,dateRange=calendarHistoryRange(range),total=sumDailyRange(store.daily,dateRange);
     $("#statNumber").textContent=fmtDuration(total);
     $("#historyStatTopSong").textContent="—";
+    $("#historyStatTopArtist").textContent="—";
     if(total<=0){const compare=$("#historyCompare"),topList=$("#topList");compare.textContent=tr("当前无听歌数据","No listening data for this period");compare.className="history-compare flat";setBatchedScrollHTML(topList,`<div class="empty-state"><p>${tr("当前无听歌数据","No listening data for this period")}</p></div>`);return;}
     renderHistoryComparison(store,range,dateRange,total);renderHistoryRanking(store,dateRange);
   }

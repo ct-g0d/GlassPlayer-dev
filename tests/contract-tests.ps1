@@ -233,6 +233,7 @@ Expect ($index -match 'class="history-summary-grid"' -and $index -notmatch 'id="
 Expect ($css -match '\.view\[data-view="history"\][^}]*max-width:var\(--gp-primary-content-width\)' -and $css -match '\.history-ranking-grid\{[^}]*grid-template-columns:50% 50%' -and $css -match '\.history-ranks-list\{[^}]*overflow-y:auto' -and $css -match '\.history-top10[^}]*overflow:visible') 'History max width or 50/50 Top 1-10 and ranks 11-50 layout contract missing'
 Expect ($historySource -notmatch 'podium-cover" style="width' -and $css -match '\.history-top10 \.podium-cover[^}]*aspect-ratio:1' -and $css -match '\.history-top10 \.rank1 \.podium-cover[^}]*width:100%') 'History podium covers must scale fluidly with the column width instead of overlapping'
 Expect ($historySource -match 'history-kicker-narrow' -and $historySource -match '"Top 50","Top 50"' -and $css -match '\.history-kicker-narrow\{ display:none; \}' -and $css -match '@media\(max-width:900px\)[\s\S]{0,1200}\.history-kicker-narrow\{ display:inline; \}') 'Narrow History must merge both rank sections into one Top 50 list'
+Expect ($index -match 'id="historyStatTopArtist"' -and $historySource -match 'historyStatTopArtist' -and $css -match '\.history-summary-grid\{ display:grid; grid-template-columns:repeat\(4,minmax\(0,1fr\)\)' -and $i18nSource -match '"最爱艺人":"Favorite Artist"') 'History summary must expose the Favorite Artist card across DOM, service, CSS and i18n'
 Expect ($index -match '<div class="history-controls">[\s\S]{0,700}id="historyModeSeg"[\s\S]{0,700}id="rangeSeg"' -and $css -match '\.history-controls\{ display:flex' -and $css -match '\.history-controls \.history-range-seg\{[^}]*margin:0 0 0 auto') 'History mode and range controls must share one row with the range pinned right'
 Expect ($css -match '\.view\[data-view="player"\],\.view\[data-view="library"\],\.view\[data-view="history"\],\.view\[data-view="settings"\],\.view\[data-view="changelog"\]\{ max-width:var\(--gp-primary-content-width\); margin-inline:auto; \}' -and $css -match '\.view-fill\{ max-width:var\(--gp-primary-content-width\); margin-inline:auto; \}') 'All primary views must share the widened primary content width'
 Expect ($css -match '\.gp-sse-shell-releaseIndex>\.release-index\.gp-sse-viewport,\.gp-sse-shell-releaseDetail>\.release-detail\.gp-sse-viewport\{ -webkit-mask-image:none!important; mask-image:none!important; \}') 'Changelog edge mask must be disabled without removing its scroll surfaces'
@@ -352,7 +353,7 @@ Expect ($sharedControlsSource -match '#annualReportBody' -and $sharedControlsSou
 
 if($issues.Count){'FAIL';$issues|ForEach-Object{"- $_"};exit 1}
 'PASS'
-"Contracts checked: 265"
+"Contracts checked: 266"
 exit 0
 
 
