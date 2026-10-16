@@ -679,10 +679,10 @@ window.GPModules.register = function register(name,factory){
       version:"7.6.2", date:"2026-10-16", kind:"patch",
       summary:"REBRAND UPDATE：GP Bionic Engine 1.0 正式登场，统一曲目识别、声学分析、听歌建模与播放队列流程，引擎标识全面焕新。",
       sections:[
-        {title:"引擎身份",items:["GP Bionic Engine 1.0 — Intelligence Core 统一负责曲目识别、声学频谱分析、听歌 DNA 建模与播放队列流程。","设置「关于」页的构建卡与引擎信息同步展示全新引擎阵容。"]},
+        {title:"引擎身份",items:["GP Bionic Engine 1.0 — Intelligence Core 统一负责曲目识别、声学频谱分析、听歌 DNA 建模与播放队列流程。","设置「关于」页的构建卡展示全新引擎阵容，引擎列表改为逐行排版。"]},
         {title:"稳定性",items:["本次更新仅调整引擎归属与命名，识别、分析、均衡器与空间音频的实际行为保持不变。","全部缓存、Spectrum ID、听歌历史与用户数据原样保留。"]}
       ],english:{summary:"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",sections:[
-        {title:"Engine Identity",items:["GP Bionic Engine 1.0 — Intelligence Core unifies track recognition, acoustic spectrum analysis, Listening DNA modeling and queue flow.","The Settings About build card and engine information now present the refreshed engine lineup."]},
+        {title:"Engine Identity",items:["GP Bionic Engine 1.0 — Intelligence Core unifies track recognition, acoustic spectrum analysis, Listening DNA modeling and queue flow.","The Settings About build card presents the refreshed engine lineup, with each engine listed on its own line."]},
         {title:"Stability",items:["This update only reassigns and renames engines; recognition, analysis, equalizer and spatial behavior stay unchanged.","All caches, Spectrum IDs, listening history and user data remain intact."]}
       ]}
     },
@@ -11190,14 +11190,17 @@ window.GPModules.register = function register(name,factory){
     const pane=$('[data-settings-pane="about"]'),card=pane?.querySelector(".build-card");if(!pane||!card)return;
     if(!aboutRuntimeInfoNode){aboutRuntimeInfoNode=document.createElement("div");aboutRuntimeInfoNode.className="about-runtime-info";card.after(aboutRuntimeInfoNode);}
     const runtime=window.GP||{},engines=runtime.engines||{};
-    const engineList=["core","bionic","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
+    const engineList=["core","bionic","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean);
+    const fallbackEngineList=("GP Core 4.3 — Kinetic Runtime · GP Bionic Engine 1.0 — Intelligence Core · GP Fusion Engine 4.2 — Playlist Flow · GP Motion Engine 4.2 — Kinetic Motion · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA").split(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Kinetic Glass · ${runtime.version||"7.6.2"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
-      [tr("引擎","Engines"),engineList||"GP Core 4.3 — Kinetic Runtime · GP Bionic Engine 1.0 — Intelligence Core · GP Fusion Engine 4.2 — Playlist Flow · GP Motion Engine 4.2 — Kinetic Motion · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
+      [tr("引擎","Engines"),engineList.length?engineList:fallbackEngineList],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
     ];
-    aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>`<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div><div class="setting-hint">${escapeHTML(value)}</div></div></div>`).join("");
+    aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>{
+      const lines=Array.isArray(value)?value:[value];
+      return `<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div>${lines.map(line=>`<div class="setting-hint">${escapeHTML(line)}</div>`).join("")}</div></div>`;
+    }).join("");
     aboutRuntimeInfoNode.querySelectorAll(".setting-hint").forEach(node=>node.style.setProperty("display","block","important"));
   }
   function closeFontPicker(){

@@ -415,14 +415,17 @@
     const pane=$('[data-settings-pane="about"]'),card=pane?.querySelector(".build-card");if(!pane||!card)return;
     if(!aboutRuntimeInfoNode){aboutRuntimeInfoNode=document.createElement("div");aboutRuntimeInfoNode.className="about-runtime-info";card.after(aboutRuntimeInfoNode);}
     const runtime=window.GP||{},engines=runtime.engines||{};
-    const engineList=["core","bionic","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
+    const engineList=["core","bionic","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean);
+    const fallbackEngineList=("GP Core 4.3 — Kinetic Runtime · GP Bionic Engine 1.0 — Intelligence Core · GP Fusion Engine 4.2 — Playlist Flow · GP Motion Engine 4.2 — Kinetic Motion · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA").split(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Kinetic Glass · ${runtime.version||"7.6.2"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
-      [tr("引擎","Engines"),engineList||"GP Core 4.3 — Kinetic Runtime · GP Bionic Engine 1.0 — Intelligence Core · GP Fusion Engine 4.2 — Playlist Flow · GP Motion Engine 4.2 — Kinetic Motion · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
+      [tr("引擎","Engines"),engineList.length?engineList:fallbackEngineList],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
     ];
-    aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>`<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div><div class="setting-hint">${escapeHTML(value)}</div></div></div>`).join("");
+    aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>{
+      const lines=Array.isArray(value)?value:[value];
+      return `<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div>${lines.map(line=>`<div class="setting-hint">${escapeHTML(line)}</div>`).join("")}</div></div>`;
+    }).join("");
     aboutRuntimeInfoNode.querySelectorAll(".setting-hint").forEach(node=>node.style.setProperty("display","block","important"));
   }
   function closeFontPicker(){
