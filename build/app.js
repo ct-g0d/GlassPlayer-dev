@@ -358,7 +358,9 @@ window.GPModules.register = function register(name,factory){
     setLocal(key,value){localStorage.setItem(key,value);},
     removeLocal(key){localStorage.removeItem(key);}
   });
-  /* /src/core/analyzer.js */
+  /* ================= GP Bionic Engine 1.0 — Intelligence Core =================
+     Consolidates track identity recognition, acoustic signal spectrum analysis,
+     listening DNA neural modeling, and fusion queue/playlist flow. */
   const GPAnalyzer={
     schemaVersion:GP_FEATURE_SCHEMA_VERSION,
     database:GPDatabase,
@@ -437,6 +439,7 @@ window.GPModules.register = function register(name,factory){
     next(){return this.runtime&&this.runtime.next?this.runtime.next():undefined;},
     previous(){return this.runtime&&this.runtime.previous?this.runtime.previous():undefined;}
   };
+
   /* Module boundaries only, no Beta UI mutation. */
   const GPUIModules={
     galaxy:{status:"reserved",mount:null},
@@ -447,9 +450,9 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.6.1",
+    version:"7.6.2",
     architecture:"Peregrine Lake",
-    engines:{core:"GP Core 4.3 — Kinetic Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Spectrum ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
+    engines:{core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Bionic ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
     core:{audio:GPAudioCore,database:GPDatabase,analyzer:GPAnalyzer},
     ui:GPUIModules,
@@ -570,7 +573,7 @@ window.GPModules.register = function register(name,factory){
     "可变字体会获得最平滑的粗细变化；普通字体会自动匹配最接近的字重。":"Variable fonts provide the smoothest weight changes; standard fonts use the closest available weight.",
     "还没有音乐":"No music yet","点击上方按钮导入，或直接把歌曲/文件夹拖进窗口":"Import above, or drop songs and folders into the window","封面会自动从 MP3/FLAC/M4A 中识别":"Artwork is read automatically from MP3, FLAC and M4A files",
     "歌曲文件不会保存到磁盘外，刷新页面需要重新导入；听歌记录会保留。":"Audio files never leave your device. Reimport after refresh; listening history is retained.",
-    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.6.1 — HOTFIX BUILD":"Current Version 7.6.1 — HOTFIX BUILD","版本 7.6.1 — HOTFIX BUILD":"Ver. 7.6.1 — HOTFIX BUILD","当前版本 7.5.0 — Replay Atlas":"Current Version 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Ver. 7.5.0 — Replay Atlas","REPLAY ATLAS":"REPLAY ATLAS","HOTFIX BUILD":"HOTFIX BUILD","KINETIC GLASS":"KINETIC GLASS","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
+    "松开鼠标以添加音乐":"Release to add music","睡眠定时":"Snooze","选择字体":"Choose Font","听歌记录":"Listening History","当前版本 7.6.2 — REBRAND UPDATE":"Current Version 7.6.2 — REBRAND UPDATE","版本 7.6.2 — REBRAND UPDATE":"Ver. 7.6.2 — REBRAND UPDATE","当前版本 7.5.0 — Replay Atlas":"Current Version 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Ver. 7.5.0 — Replay Atlas","REPLAY ATLAS":"REPLAY ATLAS","HOTFIX BUILD":"HOTFIX BUILD","KINETIC GLASS":"KINETIC GLASS","REBRAND UPDATE":"REBRAND UPDATE","导出日志":"Export Log","打开悬浮播放器":"Open Floating Player","返回设置":"Back to Settings","清除搜索":"Clear Search","收起侧边栏":"Collapse Sidebar","展开侧边栏":"Expand Sidebar","未找到完全匹配，以下为粗略匹配":"No exact match. Approximate matches are shown below.","未找到匹配结果":"No matching results",
     "音乐库数据":"Library Data","重新扫描歌曲库":"Rescan Music Library","重新读取当前导入歌曲的 Genre、文件名信息、时长与封面；保留 Spectrum ID、MFCC、Energy、BPM 和收听历史。":"Reread Genre, filename metadata, duration and artwork from imported songs while preserving Spectrum ID, MFCC, Energy, BPM and listening history.",
     "重新扫描歌曲库？":"Rescan Music Library?","将从当前导入的音频文件重新读取 Genre、文件名信息、时长和封面，并覆盖缓存中的旧 metadata。Spectrum ID、MFCC、Energy、BPM 与收听历史不会改变。":"The current audio files will be reread for Genre, filename metadata, duration and artwork, replacing stale cached metadata. Spectrum ID, MFCC, Energy, BPM and listening history will remain unchanged.","取消":"Cancel","开始扫描":"Start Scan",
     "精选字体":"Curated Fonts","未知艺人":"Unknown Artist","未知":"Unknown","计算中…":"Calculating…","解码中…":"Decoding…","单声道":"Mono","立体声":"Stereo","版本列表":"Version List",
@@ -603,7 +606,7 @@ window.GPModules.register = function register(name,factory){
     "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
     "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
     "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно","随机播放":"Перемешивание","单曲循环":"Повтор одной песни",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.6.1 — HOTFIX BUILD":"Текущая версия 7.6.1 — HOTFIX BUILD","版本 7.6.1 — HOTFIX BUILD":"Версия 7.6.1 — HOTFIX BUILD","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","HOTFIX BUILD":"HOTFIX BUILD","KINETIC GLASS":"KINETIC GLASS","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
+    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.6.2 — REBRAND UPDATE":"Текущая версия 7.6.2 — REBRAND UPDATE","版本 7.6.2 — REBRAND UPDATE":"Версия 7.6.2 — REBRAND UPDATE","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","HOTFIX BUILD":"HOTFIX BUILD","KINETIC GLASS":"KINETIC GLASS","REBRAND UPDATE":"REBRAND UPDATE","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
     "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
     "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
   };
@@ -671,6 +674,17 @@ window.GPModules.register = function register(name,factory){
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.6.2", date:"2026-10-16", kind:"patch",
+      summary:"REBRAND UPDATE：GP Bionic Engine 1.0 正式登场，统一曲目识别、声学分析、听歌建模与播放队列流程，引擎标识全面焕新。",
+      sections:[
+        {title:"引擎身份",items:["GP Bionic Engine 1.0 — Intelligence Core 统一负责曲目识别、声学频谱分析、听歌 DNA 建模与播放队列流程。","设置「关于」页的构建卡与引擎信息同步展示全新引擎阵容。"]},
+        {title:"稳定性",items:["本次更新仅调整引擎归属与命名，识别、分析、均衡器与空间音频的实际行为保持不变。","全部缓存、Spectrum ID、听歌历史与用户数据原样保留。"]}
+      ],english:{summary:"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",sections:[
+        {title:"Engine Identity",items:["GP Bionic Engine 1.0 — Intelligence Core unifies track recognition, acoustic spectrum analysis, Listening DNA modeling and queue flow.","The Settings About build card and engine information now present the refreshed engine lineup."]},
+        {title:"Stability",items:["This update only reassigns and renames engines; recognition, analysis, equalizer and spatial behavior stay unchanged.","All caches, Spectrum IDs, listening history and user data remain intact."]}
+      ]}
     },
     {
       version:"7.6.1", date:"2026-10-13", kind:"patch",
@@ -3211,6 +3225,7 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.6.2":"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",
     "7.6.1":"HOTFIX BUILD collapses the Sidebar only when the window becomes too narrow, then restores the saved Sidebar preference when the width recovers.",
     "7.6.0":"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",
     "7.5.1":"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",
@@ -4665,7 +4680,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.1 — HOTFIX BUILD`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.2 — REBRAND UPDATE`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4680,7 +4695,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.6.1 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.6.2 REBRAND UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -10272,7 +10287,7 @@ window.GPModules.register = function register(name,factory){
       const visual=start.map((value,index)=>value+(target[index]-value)*eased);
       updateEQSliders(visual);renderEQCurve(visual);
       if(progress<1)requestAnimationFrame(frame);
-      else{updateEQSliders(target);renderEQCurve(target);}
+      else{updateEQSliders(target);renderEQCurve(target);};
     };
     requestAnimationFrame(frame);
   }
@@ -10300,6 +10315,7 @@ window.GPModules.register = function register(name,factory){
   $("#eqPresetPop").addEventListener("click",event=>{const button=event.target.closest("button[data-p]");if(!button)return;event.stopPropagation();applyEQPreset(button.dataset.p);});
   document.addEventListener("pointerdown",event=>{if(eqPopoverOpen&&!event.target.closest(".eq-preset-wrap,#eqPresetPop"))closeEQPresetPopover();},{passive:true});
   window.addEventListener("resize",()=>{if(eqPopoverOpen)placeEQPresetPopover();},{passive:true});
+
   /* ================= GP Spatial Engine 1.1 — Room =================
      Fixed, predictable presets. Playback state, track features, RMS and stereo
      correlation never modify spatial parameters. Only an explicit user mode
@@ -10566,19 +10582,7 @@ window.GPModules.register = function register(name,factory){
     const paletteSignature=(gpVideoPipPalette||[]).flat().join(","),backgroundKey=[bgMode,dark,bg,accentRgb,gpVideoPipCoverSource,gpVideoPipCover?.complete?1:0,paletteSignature].join("|");
     if(backgroundKey!==gpVideoPipBackgroundKey){
       gpVideoPipBackgroundKey=backgroundKey;bgCtx.setTransform(scale,0,0,scale,0,0);bgCtx.imageSmoothingEnabled=true;bgCtx.imageSmoothingQuality="high";bgCtx.clearRect(0,0,width,height);bgCtx.fillStyle=bg;bgCtx.fillRect(0,0,width,height);
-      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){
-        bgCtx.save();
-        bgCtx.filter=`blur(${GP_VIDEO_PIP_BACKGROUND_BLUR}px) saturate(${dark?1.25:1.38}) brightness(${dark ? 0.48 : 1.02})`;
-        bgCtx.globalAlpha=dark ? 0.88 : 0.72;
-        const coverW=Math.max(1,gpVideoPipCover.naturalWidth||gpVideoPipCover.width||1),coverH=Math.max(1,gpVideoPipCover.naturalHeight||gpVideoPipCover.height||1);
-        const bgPad=96,targetW=width+bgPad*2,targetH=height+bgPad*2;
-        const bgScale=Math.max(targetW/coverW,targetH/coverH);
-        const drawW=coverW*bgScale,drawH=coverH*bgScale;
-        bgCtx.drawImage(gpVideoPipCover,(width-drawW)/2,(height-drawH)/2,drawW,drawH);
-        bgCtx.restore();
-        bgCtx.fillStyle=dark?"rgba(4,6,9,.46)":"rgba(255,255,255,.10)";
-        bgCtx.fillRect(0,0,width,height);
-      }
+      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){bgCtx.save();bgCtx.filter=`blur(${GP_VIDEO_PIP_BACKGROUND_BLUR}px) saturate(${dark?1.25:1.38}) brightness(${dark ? 0.48 : 1.02})`;bgCtx.globalAlpha=dark ? 0.88 : 0.72;bgCtx.drawImage(gpVideoPipCover,-96,-96,width+192,height+192);bgCtx.restore();bgCtx.fillStyle=dark?"rgba(4,6,9,.46)":"rgba(255,255,255,.10)";bgCtx.fillRect(0,0,width,height);}
       else{const fallback=currentAccentRgb(),palette=bgMode==="color"&&gpVideoPipPalette?.length?gpVideoPipPalette:[fallback,mixRgb(fallback,dark?[255,255,255]:[0,0,0],.2),mixRgb(fallback,dark?[0,0,0]:[255,255,255],.28)],points=bgMode==="color"?[[.08,.05,.78,.58],[.92,.18,.66,.5],[.48,1,.72,.46]]:[[.14,.12,.58,.34],[.86,.24,.5,.23],[.48,.94,.62,.2]];points.forEach((point,index)=>{const color=palette[index%palette.length],gradient=bgCtx.createRadialGradient(width*point[0],height*point[1],0,width*point[0],height*point[1],width*point[2]);gradient.addColorStop(0,`rgba(${color.join(",")},${dark?point[3]*.72:point[3]})`);gradient.addColorStop(1,"rgba(0,0,0,0)");bgCtx.fillStyle=gradient;bgCtx.fillRect(0,0,width,height);});bgCtx.fillStyle=dark?"rgba(3,5,8,.24)":"rgba(255,255,255,.08)";bgCtx.fillRect(0,0,width,height);}
     }
     ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(gpVideoPipBackgroundCanvas,0,0);ctx.setTransform(scale,0,0,scale,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
@@ -11188,7 +11192,7 @@ window.GPModules.register = function register(name,factory){
     const runtime=window.GP||{},engines=runtime.engines||{};
     const engineList=["core","fusion","motion","spatial","spectrum","neural"].map(key=>engines[key]).filter(Boolean).join(" · ");
     const rows=[
-      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Kinetic Glass · ${runtime.version||"7.6.1"}`],
+      [tr("运行身份","Runtime identity"),`Glass Player Gen ${runtime.generation||7} · Kinetic Glass · ${runtime.version||"7.6.2"}`],
       [tr("架构","Architecture"),runtime.architecture||"Peregrine Lake"],
       [tr("引擎","Engines"),engineList||"GP Core 4.3 — Kinetic Runtime · GP Fusion Engine 4.2 — Playlist Flow · GP Motion Engine 4.2 — Kinetic Motion · GP Spatial Engine 1.1 — Room · GP Spectrum Engine 2.3 — Signal · GP Neural Engine 2.2 — Listening DNA"],
       [tr("数据安全","Cache safety"),tr("本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。","One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.")]
@@ -11452,8 +11456,39 @@ window.GPModules.register = function register(name,factory){
   GPModules.register("createAudioEngine",function createAudioEngine(runtime){
     return Object.freeze({init:runtime.init,loadTrack:runtime.loadTrack,play:runtime.play,pause:runtime.pause,seek:runtime.seek,setVolume:runtime.setVolume,setEQ:runtime.setEQ,setSpatialMode:runtime.setSpatialMode,setSpatialEnabled:runtime.setSpatialEnabled,startCrossfade:runtime.startCrossfade,stop:runtime.stop,destroy:runtime.destroy,getRuntimeSnapshot:runtime.getRuntimeSnapshot});
   });
-  GPModules.register("createRecognitionEngine",function createRecognitionEngine(runtime){return Object.freeze({recognizeAudioEssence:runtime.recognizeAudioEssence,detectAudioPayload:runtime.detectAudioPayload,extractFileMetadata:runtime.extractFileMetadata,extractGenre:runtime.extractGenre});});
-  GPModules.register("createSpectrumAnalyzer",function createSpectrumAnalyzer(runtime){return Object.freeze({analyze:runtime.analyze,readCached:runtime.readCached,processPending:runtime.processPending,getVersion:()=>runtime.version});});
+  GPModules.register("createBionicEngine",function createBionicEngine(runtime){
+    return Object.freeze({
+      recognizeAudioEssence:runtime.recognizeAudioEssence,
+      detectAudioPayload:runtime.detectAudioPayload,
+      extractFileMetadata:runtime.extractFileMetadata,
+      extractGenre:runtime.extractGenre,
+      analyze:runtime.analyze,
+      readCached:runtime.readCached,
+      processPending:runtime.processPending,
+      recordBehavior:runtime.recordBehavior,
+      generateDailyMix:runtime.generateDailyMix,
+      getUserModel:runtime.getUserModel,
+      resolveNextTrack:runtime.resolveNextTrack,
+      resolvePreviousTrack:runtime.resolvePreviousTrack,
+      getVersion:()=>runtime.version||GP_SPECTRUM_ALGORITHM_VERSION
+    });
+  });
+  GPModules.register("createRecognitionEngine",function createRecognitionEngine(runtime){
+    return Object.freeze({
+      recognizeAudioEssence:runtime.recognizeAudioEssence,
+      detectAudioPayload:runtime.detectAudioPayload,
+      extractFileMetadata:runtime.extractFileMetadata,
+      extractGenre:runtime.extractGenre
+    });
+  });
+  GPModules.register("createSpectrumAnalyzer",function createSpectrumAnalyzer(runtime){
+    return Object.freeze({
+      analyze:runtime.analyze,
+      readCached:runtime.readCached,
+      processPending:runtime.processPending,
+      getVersion:()=>runtime.version
+    });
+  });
   GPModules.register("createSpatialEngine",function createSpatialEngine(runtime){return Object.freeze({setEnabled:runtime.setEnabled,setMode:runtime.setMode,getSnapshot:runtime.getSnapshot,destroy:runtime.destroy});});
   GPModules.register("createMotionEngine",function createMotionEngine(runtime){return Object.freeze({transitionView:runtime.transitionView,transitionSector:runtime.transitionSector,setPopover:runtime.setPopover,refresh:runtime.refresh});});
   GPModules.register("createPlaybackService",function createPlaybackService({runtime,bus,events}){
@@ -11474,7 +11509,7 @@ window.GPModules.register = function register(name,factory){
   GPModules.register("createView",function createView({name,refresh}){let mounted=false;return Object.freeze({name,mount(){mounted=true;},render(snapshot){if(mounted&&refresh)refresh(snapshot);},refresh(){if(mounted&&refresh)refresh();},destroy(){mounted=false;},isMounted:()=>mounted});});
   ["Player","Library","History","Settings","Changelog","Sound"].forEach(name=>{GPModules.register(`create${name}View`,deps=>GPModules.createView({name:name.toLowerCase(),refresh:deps?.refresh}));});
   GPModules.register("createSharedControls",function createSharedControls(runtime){return Object.freeze({mount:runtime.mount,refresh:runtime.refresh,destroy:runtime.destroy});});
-  /* ================= init ================= */
+﻿  /* ================= init ================= */
   GP.changelog.render();
   loadPrefs();
   buildFontPicker();
@@ -11557,8 +11592,15 @@ window.GPModules.register = function register(name,factory){
   const settingsService=GPModules.createSettingsService({load:loadPrefs,save:savePrefs,setTheme:mode=>{themeMode=mode;applyTheme();savePrefs();},setLanguage:GP.i18n.setLanguage,setSpatialEnabled,setSpatialMode:mode=>selectSpatialMode(mode,true),getSnapshot:()=>Object.freeze({language:uiLanguage,theme:themeMode,backgroundMode:bgMode,coverMode:coverDisplayMode,adaptiveColor:adaptiveColorOn,spatialEnabled,spatialMode,loudnessNormalizationEnabled,eqPreset:eqPresetKey})});
   const pipService=GPModules.createPiPService({open:async()=>{if(!document.pictureInPictureElement)return toggleTraditionalPiP();},close:async()=>{if(document.pictureInPictureElement)return toggleTraditionalPiP();},sync:syncTraditionalPiP,destroy:cleanupTraditionalPiP,getSnapshot:()=>Object.freeze({open:document.pictureInPictureElement===gpVideoPipVideo})});
   const services=Object.freeze({playback:playbackService,queue:queueService,library:libraryService,history:historyService,spectrum:spectrumService,neural:neuralService,settings:settingsService,pip:pipService});
-  const engines=Object.freeze({audio:audioEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
+    const bionicEngine=GPModules.createBionicEngine({
+    recognizeAudioEssence,detectAudioPayload,extractFileMetadata,extractGenre,
+    analyze:track=>GPAnalyzer.analyze(track),readCached:key=>GPAnalyzer.readCached(key),processPending:()=>Promise.resolve(),version:GP_SPECTRUM_ALGORITHM_VERSION,
+    recordBehavior:recordBehaviorEvent,generateDailyMix,getUserModel:()=>GPDatabase.getUserModel("default"),
+    resolveNextTrack:()=>playQueue[0]||null,resolvePreviousTrack:()=>shuffleTimeline[shuffleTimelineCursor-1]||null
+  });
+  const engines=Object.freeze({audio:audioEngine,bionic:bionicEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.6.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.6.2",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
 })();
+

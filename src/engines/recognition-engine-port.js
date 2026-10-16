@@ -1,1 +1,0 @@
-  GPModules.register("createRecognitionEngine",function createRecognitionEngine(runtime){return Object.freeze({recognizeAudioEssence:runtime.recognizeAudioEssence,detectAudioPayload:runtime.detectAudioPayload,extractFileMetadata:runtime.extractFileMetadata,extractGenre:runtime.extractGenre});});

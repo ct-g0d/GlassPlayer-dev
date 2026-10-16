@@ -1,8 +1,13 @@
-# Glass Player — Current State
+﻿# Glass Player — Current State
 
-Last documentation update: 2026-10-13 (Pacific/Auckland)
+Last documentation update: 2026-10-16 (Pacific/Auckland)
 
-The 7.6.1 HOTFIX BUILD checkpoint records width-aware Sidebar recovery. The
+The 7.6.2 REBRAND UPDATE checkpoint introduces GP Bionic Engine 1.0,
+consolidating track recognition, acoustic spectrum analysis, listening DNA
+modeling and queue/playlist flow under one engine, with the equalizer runtime
+merged into the Spatial Engine module; engine identity surfaces are
+synchronized across the app. The 7.6.1 HOTFIX BUILD checkpoint records
+width-aware Sidebar recovery. The
 7.6.0 Kinetic Glass checkpoint records the annual report redesign, player title geometry,
 settings layout, CJK font fallback, and identity updates on 2026-10-02. The feature
 release expands the annual report into a rich chaptered scroll and standalone
@@ -21,10 +26,11 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 · Kinetic Glass |
-| Version | 7.6.1 |
-| Release name | HOTFIX BUILD |
+| Version | 7.6.2 |
+| Release name | REBRAND UPDATE |
 | Architecture | Peregrine Lake |
 | GP Core | 4.3 — Kinetic Runtime |
+| GP Bionic Engine | 1.0 — Intelligence Core |
 | GP Fusion Engine | 4.2 — Playlist Flow |
 | GP Motion Engine | 4.2 — Kinetic Motion |
 | GP Spatial Engine | 1.1 — Room |
@@ -32,8 +38,8 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | GP Neural Engine | 2.2 — Listening DNA |
 | Runtime entry | index.html |
 | Generated JavaScript | build/app.js |
-| Source fragments | 55 |
-| Governance modules | 22 |
+| Source fragments | 52 |
+| Governance modules | 20 |
 
 Current identity must be confirmed in index.html and src/bootstrap/main.js
 before a release is described as current. The visible settings card,
@@ -276,6 +282,10 @@ mapping. The full SSE contract is in AGENTS.md and the detailed handoff.
 - 7.6.1 collapses the Sidebar only when the music area becomes too narrow,
   without overwriting the saved Sidebar preference, and restores that preference
   when the window width recovers.
+- 7.6.2 introduces GP Bionic Engine 1.0 — Intelligence Core, consolidating
+  recognition, spectrum analysis, neural modeling and queue/playlist flow;
+  the equalizer runtime joins the Spatial Engine module. No persistence,
+  schema, queue or audio graph contract changed.
 
 ## 10. Known regression-sensitive areas
 
@@ -457,3 +467,26 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
 - NOT RUN — Edge/file:// interaction, startup/artwork/favorites/PiP behavior
   with real media, audible-device verification, 4K/110% visual comparison and
   120 Hz hardware profiling.
+
+## 23. 7.6.2 REBRAND UPDATE — 2026-10-16
+
+- PASS — GP Bionic Engine 1.0 consolidates track identity recognition and
+  spectrum analysis into src/engines/bionic-engine.js with a single engine
+  port; the equalizer runtime merges into src/engines/spatial-engine.js.
+  Source order 55 -> 52 fragments; governance modules 22 -> 20.
+- PASS — Current identity synchronized as 7.6.2 REBRAND UPDATE across
+  index.html cache revisions and build card, bootstrap and Bionic facades,
+  Settings fallback, Chinese/English/Russian i18n, release data and the
+  exported changelog identity.
+- PASS — No IndexedDB/localStorage/schema, Store/Event Bus, queue identity,
+  AudioContext/Deck graph, spatial bus or DOM contract changed; caches,
+  Spectrum IDs, listening history and user data untouched.
+- PASS — build.ps1 regenerated build/app.js; SHA-256
+  46E7334084FBC9459464F2153795ED34C55864069799B64FE0DB76D25BCA5A43.
+- PASS — validate-architecture.ps1: 52 sources / 20 modules.
+- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 261.
+- PASS — node --check build/app.js.
+- NOT RUN — Edge/file:// interaction, real audio device verification,
+  4K/110% visual comparison and 120 Hz hardware profiling.
+
+

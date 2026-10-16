@@ -1,1 +1,0 @@
-  GPModules.register("createSpectrumAnalyzer",function createSpectrumAnalyzer(runtime){return Object.freeze({analyze:runtime.analyze,readCached:runtime.readCached,processPending:runtime.processPending,getVersion:()=>runtime.version});});

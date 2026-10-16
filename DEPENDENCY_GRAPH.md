@@ -1,4 +1,4 @@
-# Dependency Graph — Peregrine Lake
+﻿# Dependency Graph — Peregrine Lake
 
 Allowed direction:
 
@@ -20,7 +20,7 @@ Actual bootstrap chain:
 bootstrap/main
 ├─ Core: Contracts → Event Bus → Actions → Store → Selectors → App Context
 ├─ Adapters: Clock / Media Session / File / PiP / StoragePort
-├─ Engines: Audio / Recognition / Spectrum / Spatial / Motion
+├─ Engines: Audio / Bionic / Spatial / Motion
 ├─ Services: Playback / Queue / Library / History / Spectrum / Neural / Settings / PiP
 └─ Data + UI: i18n / Releases / EQ / Spatial presets / Views / Shared Controls
 ```
@@ -34,3 +34,4 @@ Cross-module paths:
 - PiP Service → PiPPort + Playback Service; drawing delegates to the pure PiP renderer.
 
 Forbidden edges: Service → concrete View DOM; UI → raw AudioNode/IndexedDB; Engine → View; Core → Service; Adapter → UI. No known cycle exists in the registered factory graph.
+

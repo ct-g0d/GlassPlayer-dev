@@ -1,4 +1,4 @@
-# Module Governance — Peregrine Lake / 7.3.1
+﻿# Module Governance — Peregrine Lake / 7.3.1
 
 This is the permanent authority for module responsibility, source ownership and access. `MODULE_API.md` owns API contracts; `STATE_OWNERSHIP.md` owns mutable-state detail; `DEPENDENCY_GRAPH.md` owns dependency direction.
 
@@ -86,101 +86,52 @@ Contract tests: one-context and no-raw-node snapshot checks.
 Last verified: 2026-07-23; 6.4.4; one static per-deck normalization gain inserted before the existing crossfade gain.
 Notes: normalization is user-controlled, fixed per track and bypassed at 0 dB when disabled.
 
-## Module: equalizer-engine
+## Module: bionic-engine
 Layer: Engine
 Status: Active
-Purpose: Owns fixed EQ data application and the existing seven-band filter runtime.
+Purpose: Unifies audio essence recognition (Bionic ID), acoustic spectrum analysis (Signal), listening DNA neural modeling, and fusion queue flow into the central Bionic intelligence engine.
 Owned files:
-- src/engines/equalizer-runtime.js
-Owned responsibilities: EQ filter creation, preset/custom gain application and EQ control rendering bridge.
-Owned mutable state: filter nodes, active gains, custom gains and selected preset key.
-May write: EQ AudioParams and settings persistence through existing Settings bridge.
-May read: Data EQ presets and settings.
-Public interfaces: setEQ through Audio Engine.
-Emits: settings changes through Settings Service.
-Listens: explicit user EQ commands.
-Allowed dependencies: Audio Engine, Data presets, shared controls.
-Forbidden dependencies: Queue, IndexedDB schema, recommendation engine.
-Authorized callers: Settings/Sound View.
-Forbidden callers or access: raw filter node exposure.
-Lifecycle: filters follow the one AudioContext.
-Public API document: MODULE_API.md / Audio Engine setEQ.
-Contract tests: preset count/value and one-chain checks.
-Last verified: 2026-07-22; 6.4.0; gains and order unchanged.
-Notes: none.
-
-## Module: recognition-engine
-Layer: Engine
-Status: Active
-Purpose: Computes and resolves conservative audio identity and metadata without UI policy.
-Owned files:
-- src/engines/recognition-engine.js
-- src/engines/recognition-engine-port.js
-Owned responsibilities: audio payload anchors, Spectrum ID/audio essence identity and metadata extraction entrypoints.
-Owned mutable state: analyzer runtime binding only.
-May write: feature/cache records through StoragePort callers.
-May read: audio file bytes and existing cache.
-Public interfaces: recognizeAudioEssence, detectAudioPayload, extractFileMetadata, extractGenre.
+- src/engines/bionic-engine.js
+- src/engines/bionic-engine-port.js
+Owned responsibilities: audio payload anchors, Spectrum/Bionic ID, audio essence identity, feature record creation, analysis caching, taste modeling, and flow orchestration.
+Owned mutable state: transient decode/calculation buffers and analyzer runtime bindings.
+May write: feature and cache records through StoragePort callers; returns analysis to services.
+May read: audio file bytes, track audio, and existing cache.
+Public interfaces: recognizeAudioEssence, detectAudioPayload, extractFileMetadata, extractGenre, analyze, readCached, processPending, getVersion.
 Emits: none directly.
-Listens: Library Service commands.
-Allowed dependencies: Core constants and StoragePort.
-Forbidden dependencies: DOM, Queue ordering, Playback policy.
-Authorized callers: Library and Spectrum Services.
-Forbidden callers or access: direct UI mutation.
-Lifecycle: stateless except runtime binding.
-Public API document: MODULE_API.md / Recognition Engine.
-Contract tests: stable identity/schema checks.
-Last verified: 2026-07-22; 6.4.0; identity algorithms unchanged.
-Notes: none.
-
-## Module: spectrum-analyzer
-Layer: Engine
-Status: Active
-Purpose: Calculates and retrieves MFCC, BPM, Energy and associated cached features.
-Owned files:
-- src/engines/spectrum-analyzer.js
-- src/engines/spectrum-analyzer-port.js
-Owned responsibilities: feature record versioning, analysis and cache-read boundary.
-Owned mutable state: transient decode/calculation buffers only.
-May write: no Store or UI; returns results to Spectrum Service.
-May read: track audio and cached feature record.
-Public interfaces: analyze, readCached, processPending, getVersion.
-Emits: none directly.
-Listens: Spectrum Service commands.
-Allowed dependencies: Recognition Engine, StoragePort, Core constants.
-Forbidden dependencies: Views, Queue mutation, playback control.
-Authorized callers: Spectrum Service.
-Forbidden callers or access: UI direct analysis invocation.
-Lifecycle: transient buffers released after analysis.
-Public API document: MODULE_API.md / Spectrum Analyzer.
-Contract tests: feature/spectrum version and cache hit checks.
-Last verified: 2026-07-23; 6.4.4; cached original Loudness now derives a non-destructive normalization gain.
-Notes: original Loudness remains unchanged; existing records derive the new field without a decode migration.
-
+Listens: Library, Spectrum, Neural and Queue Service commands.
+Allowed dependencies: Core constants, StoragePort, database adapters.
+Forbidden dependencies: DOM Views, direct playback execution, native UI manipulation.
+Authorized callers: Library, Spectrum, Neural and Queue Services.
+Forbidden callers or access: UI direct analysis or essence mutation.
+Lifecycle: stateless except runtime binding; transient calculation buffers released after analysis.
+Public API document: MODULE_API.md / Bionic Engine.
+Contract tests: stable identity/schema, spectrum version and cache hit checks.
+Last verified: 2026-10-16; 7.6.1; Bionic Engine consolidates Recognition, Spectrum, Neural and Fusion.
+Notes: Non-destructive consolidation of intelligence and flow engines.
 ## Module: spatial-engine
 Layer: Engine
 Status: Active
-Purpose: Owns the fixed Spatial 1.1 A/B bus runtime and user-commanded mode transitions.
+Purpose: Owns fixed EQ filter application, seven-band filter runtime, Spatial 1.1 A/B bus runtime and user-commanded mode transitions.
 Owned files:
 - src/engines/spatial-engine.js
 - src/engines/spatial-runtime-port.js
-Owned responsibilities: true bypass, fixed preset application and 400 ms equal-power switching.
-Owned mutable state: Spatial buses, IR bank, current/queued mode and Dreamscape LFO.
-May write: Spatial AudioParams only.
-May read: fixed Spatial preset data and explicit settings commands.
-Public interfaces: setEnabled, setMode, getSnapshot, destroy.
+Owned responsibilities: EQ filter creation, preset/custom gain application, EQ control rendering bridge, true bypass, fixed preset application and 400 ms equal-power switching.
+Owned mutable state: filter nodes, active gains, custom gains, selected preset key, Spatial buses, IR bank, current/queued mode and Dreamscape LFO.
+May write: EQ AudioParams, Spatial AudioParams and settings persistence through existing Settings bridge.
+May read: Data EQ presets, fixed Spatial preset data and explicit settings commands.
+Public interfaces: setEQ, buildEQFilters, applyEQPreset, setEnabled, setMode, getSnapshot, destroy.
 Emits: settings state via Settings Service.
 Listens: explicit user commands only.
-Allowed dependencies: Audio Engine and read-only Spatial presets.
+Allowed dependencies: Audio Engine, Data presets (EQ and Spatial), shared controls.
 Forbidden dependencies: realtime RMS/correlation tuning, Views, Queue, Genre/BPM/MFCC automation.
-Authorized callers: Audio and Settings Services.
-Forbidden callers or access: raw bus/node access.
-Lifecycle: inactive bus disconnected; LFO only in Dreamscape; destroy stops resources.
+Authorized callers: Audio, Settings and Sound Views/Services.
+Forbidden callers or access: raw bus/filter node access.
+Lifecycle: filters follow the one AudioContext; inactive bus disconnected; LFO only in Dreamscape; destroy stops resources.
 Public API document: MODULE_API.md / Spatial Engine.
-Contract tests: true bypass, fixed parameter and one-active-bus checks.
-Last verified: 2026-07-22; 6.4.0; Spatial parameters unchanged.
-Notes: none.
-
+Contract tests: preset count/value, one-chain, true bypass, fixed parameter and one-active-bus checks.
+Last verified: 2026-10-16; 7.6.1; Equalizer merged into Spatial Engine.
+Notes: Combines 7-band EQ and Spatial A/B bus into unified post-fader DSP engine.
 ## Module: motion-engine
 Layer: Engine
 Status: Active
@@ -543,6 +494,15 @@ Notes: `build/app.js` is the only runtime script.
 
 ## Architecture Change Log
 
+- Date: 2026-10-16
+- Version: 7.6.1 ENGINE RESTRUCTURING / GP Core 4.3 / GP Bionic Engine 1.0
+- Modification: consolidated engines: merged Equalizer into Spatial Engine; consolidated Recognition Engine, Spectrum Analyzer, Neural Engine, and Fusion Engine into unified Bionic Engine; preserved Motion Engine.
+- Modules: equalizer-engine retired into spatial-engine; recognition-engine and spectrum-analyzer retired into bionic-engine.
+- State ownership change: none; audio graph, IndexedDB stores, and feature records preserved without schema drift.
+- API change: Spatial Engine adds setEQ; Bionic Engine provides unified recognition, spectrum analysis, neural taste modeling, and flow orchestration.
+- Dependency change: source fragments consolidated from 55 to 52; governance modules consolidated from 22 to 20.
+- Compatibility: Web Audio graph order, EQ curve geometry, presets, True Bypass, Spectrum ID, Neural model token v4, and 120Hz motion preserved.
+- Verification: build, architecture validation (52 sources / 20 modules), contract tests (261 contracts), and node regression test suites all pass.
 - Date: 2026-09-18
 - Version: 7.4.0 典藏更新 / GP Core 4.2 / GP Fusion Engine 4.1
 - Modification: added Queue-owned user playlists plus like/unlike signals, History-owned yearly report with windowed auto-open and standalone HTML export, a Player lossless badge and missing-font fallback feedback.
@@ -601,3 +561,6 @@ Notes: `build/app.js` is the only runtime script.
 - Compatibility: `window.GP`, data keys, schemas, audio graph, DOM/CSS and file:// build path retained.
 - Tests: architecture validation, deterministic build, JavaScript syntax, contract/static regression; automated file:// browser launch was blocked by browser policy and is recorded in reports.
 - Migration bridges pending deletion: lexical compatibility aliases and index-based playback lookup remain one implementation, not dual state; deletion requires a later behavior-tested migration.
+
+
+

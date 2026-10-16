@@ -1,4 +1,4 @@
-# Module API — Glass Player 7.3.1
+﻿# Module API — Glass Player 7.3.1
 
 New Peregrine interfaces are **Experimental** unless stated otherwise. They return frozen facades or cloned snapshots and never expose mutable runtime internals.
 
@@ -34,7 +34,7 @@ New Peregrine interfaces are **Experimental** unless stated otherwise. They retu
 | Audio Engine `getRuntimeSnapshot` | Candidate | none → frozen snapshot | none | none | Playback/PiP diagnostics | no raw node test |
 | Recognition Engine | Candidate | File/track → recognition or metadata Promise | parse errors retain existing fallback | reads audio bytes; no UI | Library Service | identity field/schema regression |
 | Spectrum Analyzer `analyze/readCached/processPending` | Candidate | track/key → Promise | decode/analysis errors propagate | feature calculation only | Spectrum Service | cache/version test |
-| Spatial Engine `setEnabled/setMode/getSnapshot/destroy` | Candidate | boolean/mode → existing runtime result | invalid modes use existing guard | fixed A/B bus configuration on user command only | Settings/Audio | true-bypass and one-bus regression |
+| Spatial Engine `setEnabled/setMode/getSnapshot/destroy/setEQ` | Candidate | boolean/mode → existing runtime result | invalid modes use existing guard | fixed A/B bus configuration on user command only | Settings/Audio | true-bypass and one-bus regression |
 | Motion Engine `transitionView/transitionSector/setPopover/refresh` | Candidate | DOM host/state → void | invalid host follows existing guard | animations only | Views | no duplicate listener and timing regression |
 
 ## Services
@@ -68,3 +68,5 @@ New Peregrine interfaces are **Experimental** unless stated otherwise. They retu
 - `window.GP` is the supported read-only 7.3.1 facade. The frozen App Context and internal compatibility object remain private inside Bootstrap and do not expose engine internals.
 - Existing `clamp`, `fmtTime`, `tr` and `applyLanguage` forwarding aliases remain until all verified callers use module APIs.
 - Stable data interfaces cannot change without migrating callers and their contract tests in the same release.
+
+

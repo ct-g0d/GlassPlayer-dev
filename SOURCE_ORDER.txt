@@ -2,8 +2,7 @@ src/core/module-registry.js
 src/core/runtime-constants.js
 src/engines/audio-engine.js
 src/adapters/browser/storage-adapter.js
-src/engines/recognition-engine.js
-src/engines/spectrum-analyzer.js
+src/engines/bionic-engine.js
 src/core/legacy-module-namespace.js
 src/core/utils.js
 src/core/contracts.js
@@ -30,7 +29,6 @@ src/services/playback-runtime.js
 src/services/history-service.js
 src/data/spatial-presets.js
 src/ui/pip-renderer.js
-src/engines/equalizer-runtime.js
 src/engines/spatial-engine.js
 src/ui/sound-view.js
 src/services/pip-runtime.js
@@ -39,8 +37,7 @@ src/ui/settings-view.js
 src/ui/window-layout.js
 src/data/eq-presets.js
 src/engines/audio-engine-port.js
-src/engines/recognition-engine-port.js
-src/engines/spectrum-analyzer-port.js
+src/engines/bionic-engine-port.js
 src/engines/spatial-runtime-port.js
 src/engines/motion-engine.js
 src/services/playback-service.js
