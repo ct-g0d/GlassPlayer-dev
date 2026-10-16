@@ -487,7 +487,7 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
   AudioContext/Deck graph, spatial bus or DOM contract changed; caches,
   Spectrum IDs, listening history and user data untouched.
 - PASS — build.ps1 regenerated build/app.js; SHA-256
-  BE33F09940DE19C71E6B08143FDDFEDF55D45819D7BD67008C8285D006325AAB.
+  A5E646D9F5B20E373F6BA8BF869B1C9C0BA7A898FB4E5474CB33F9E5FCBCCA16.
 - PASS — validate-architecture.ps1: 52 sources / 20 modules.
 - PASS — tests/contract-tests.ps1: PASS, Contracts checked: 264.
 - PASS — node --check build/app.js.
