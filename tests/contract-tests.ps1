@@ -231,6 +231,7 @@ Expect ($index -match 'class="library-toolbar"' -and $index -match 'class="libra
 Expect ($css -match '\.view\[data-view="library"\][^}]*max-width:var\(--gp-primary-content-width\)' -and $css -match '\.library-row\{[^}]*grid-template-columns' -and $css -match '\.library-table-head\{') 'Library content width or table grid contract missing'
 Expect ($index -match 'class="history-summary-grid"' -and $index -notmatch 'id="historyStatPlays"' -and $index -match 'id="historyStatTopSong"' -and $index -match 'id="historyStatCompare"' -and $index -match 'class="history-ranking-grid"' -and $index -match 'id="historyTop3"' -and $index -match 'id="historyRanks4to10"' -and $index -match 'id="historyRanks11to50"' -and $build -match 'history-ranking-grid') '7.2.1 Listening History summary cards or three-part ranking missing'
 Expect ($css -match '\.view\[data-view="history"\][^}]*max-width:var\(--gp-primary-content-width\)' -and $css -match '\.history-ranking-grid\{[^}]*grid-template-columns:50% 50%' -and $css -match '\.history-ranks-list\{[^}]*overflow-y:auto' -and $css -match '\.history-top10[^}]*overflow:visible') 'History max width or 50/50 Top 1-10 and ranks 11-50 layout contract missing'
+Expect ($historySource -notmatch 'podium-cover" style="width' -and $css -match '\.history-top10 \.podium-cover[^}]*aspect-ratio:1' -and $css -match '\.history-top10 \.rank1 \.podium-cover[^}]*width:100%') 'History podium covers must scale fluidly with the column width instead of overlapping'
 Expect ($css -match '\.view\[data-view="player"\],\.view\[data-view="library"\],\.view\[data-view="history"\],\.view\[data-view="settings"\],\.view\[data-view="changelog"\]\{ max-width:var\(--gp-primary-content-width\); margin-inline:auto; \}' -and $css -match '\.view-fill\{ max-width:var\(--gp-primary-content-width\); margin-inline:auto; \}') 'All primary views must share the widened primary content width'
 Expect ($css -match '\.gp-sse-shell-releaseIndex>\.release-index\.gp-sse-viewport,\.gp-sse-shell-releaseDetail>\.release-detail\.gp-sse-viewport\{ -webkit-mask-image:none!important; mask-image:none!important; \}') 'Changelog edge mask must be disabled without removing its scroll surfaces'
 Expect ($css -match '\.history-ranking-grid\{[^}]*height:100%;[^}]*min-height:0;[^}]*overflow:hidden' -and $css -match '\.history-ranking-left\{[^}]*min-height:0;[^}]*height:100%;[^}]*overflow-y:auto' -and $css -match '\.history-ranks-list\{[^}]*height:100%;[^}]*overflow-y:auto' -and $css -match '\.history-ranking-left\{ border-right:1px solid var\(--divider\); \}' -and $sharedControlsSource -match 'GP_SCROLL_EDGE_SELECTORS=\[[^\]]*#historyRankingLeft[^\]]*#historyRanks11to50' -and $sharedControlsSource -notmatch 'GP_SCROLL_EDGE_SELECTORS=\[[^\]]*#topList') 'Listening History ranking must provide independent left/right scroll viewports'
@@ -349,7 +350,7 @@ Expect ($sharedControlsSource -match '#annualReportBody' -and $sharedControlsSou
 
 if($issues.Count){'FAIL';$issues|ForEach-Object{"- $_"};exit 1}
 'PASS'
-"Contracts checked: 262"
+"Contracts checked: 263"
 exit 0
 
 
