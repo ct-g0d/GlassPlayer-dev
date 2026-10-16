@@ -481,14 +481,15 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
   GP Bionic Engine 1.0, each engine on its own line; the redundant
   runtime-identity row is removed. History podium covers now scale with the
   column width instead of using fixed pixel sizes that overlapped in narrow
-  windows.
+  windows. Narrow windows (<=900px) merge the two ranking sections into one
+  continuous Top 50 list on a single scroll surface.
 - PASS — No IndexedDB/localStorage/schema, Store/Event Bus, queue identity,
   AudioContext/Deck graph, spatial bus or DOM contract changed; caches,
   Spectrum IDs, listening history and user data untouched.
 - PASS — build.ps1 regenerated build/app.js; SHA-256
-  042F32A2FC99A950ACAA5941A9CAF7C71DF812354395E84B5B05E878355FA5C9.
+  BE33F09940DE19C71E6B08143FDDFEDF55D45819D7BD67008C8285D006325AAB.
 - PASS — validate-architecture.ps1: 52 sources / 20 modules.
-- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 263.
+- PASS — tests/contract-tests.ps1: PASS, Contracts checked: 264.
 - PASS — node --check build/app.js.
 - NOT RUN — Edge/file:// interaction, real audio device verification,
   4K/110% visual comparison and 120 Hz hardware profiling.
