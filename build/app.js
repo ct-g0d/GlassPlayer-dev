@@ -680,12 +680,12 @@ window.GPModules.register = function register(name,factory){
       summary:"REBRAND UPDATE：GP Bionic Engine 1.0 正式登场，统一曲目识别、声学分析、听歌建模与播放队列流程，引擎标识全面焕新。",
       sections:[
         {title:"引擎身份",items:["GP Bionic Engine 1.0 — Intelligence Core 统一负责曲目识别、声学频谱分析、听歌 DNA 建模与播放队列流程。","设置「关于」页的构建卡展示全新引擎阵容，引擎列表改为逐行排版。"]},
-        {title:"听歌记录",items:["窗口变窄时，排行榜合并为单个 Top 50 长列表，前三名的领奖台封面随宽度平滑缩放，不再重叠。","听歌时间范围与「听歌时间 / 最近最爱 / 听歌数据」切换并排在同一行，顶部布局更紧凑。"]},
-        {title:"稳定性",items:["本次更新仅调整引擎归属与命名，识别、分析、均衡器与空间音频的实际行为保持不变。","全部缓存、Spectrum ID、听歌历史与用户数据原样保留。"]}
+        {title:"听歌记录",items:["窗口变窄时，排行榜合并为单个 Top 50 长列表，前三名的领奖台封面随宽度平滑缩放，不再重叠。","听歌时间范围与「听歌时间 / 最近最爱 / 听歌数据」切换并排在同一行，范围选择固定在右侧。","汇总卡新增「最爱艺人」，显示所选时间段内收听时长最高的艺人。"]},
+        {title:"稳定性",items:["引擎归属与命名完成调整，识别、分析、均衡器与空间音频的实际行为保持不变；听歌记录新增按所选时间段汇总的最爱艺人卡片。","全部缓存、Spectrum ID、听歌历史与用户数据原样保留。"]}
       ],english:{summary:"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",sections:[
         {title:"Engine Identity",items:["GP Bionic Engine 1.0 — Intelligence Core unifies track recognition, acoustic spectrum analysis, Listening DNA modeling and queue flow.","The Settings About build card presents the refreshed engine lineup, with each engine listed on its own line."]},
-        {title:"Listening History",items:["In narrow windows the ranking merges into a single Top 50 list, and podium covers scale smoothly with the width instead of overlapping.","The listening-time range and the Listening Time / Recent Favorites / Listening Data switch now share one row."]},
-        {title:"Stability",items:["This update only reassigns and renames engines; recognition, analysis, equalizer and spatial behavior stay unchanged.","All caches, Spectrum IDs, listening history and user data remain intact."]}
+        {title:"Listening History",items:["In narrow windows the ranking merges into a single Top 50 list, and podium covers scale smoothly with the width instead of overlapping.","The listening-time range and the Listening Time / Recent Favorites / Listening Data switch now share one row, with the range pinned to the right.","The summary cards gain Favorite Artist, showing the artist with the most listening time in the selected range."]},
+        {title:"Stability",items:["Engine ownership and naming are refreshed while recognition, analysis, equalizer and spatial behavior stay unchanged; Listening History now adds a Favorite Artist summary for the selected range.","All caches, Spectrum IDs, listening history and user data remain intact."]}
       ]}
     },
     {
