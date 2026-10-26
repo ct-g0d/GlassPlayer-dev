@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "glassplayer-cinemax",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["cinemax-ui/serve.mjs"],
+      "port": 1003
+    },
+    {
+      "name": "cinemax-ref",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "1440", "--bind", "127.0.0.1", "--directory", "D:/CinemaX/dist-web"],
+      "port": 1440
+    }
+  ]
+}
