@@ -1,8 +1,10 @@
 ﻿# Glass Player — Current State
 
-Last documentation update: 2026-10-16 (Pacific/Auckland)
+Last documentation update: 2026-10-28 (Pacific/Auckland)
 
-The 7.6.2 REBRAND UPDATE checkpoint introduces GP Bionic Engine 1.0,
+The 7.6.3 HOTFIX BUILD checkpoint stops startup from auto-importing the
+remembered default music folder; choosing a folder in Settings still imports
+it once. The 7.6.2 REBRAND UPDATE checkpoint introduces GP Bionic Engine 1.0,
 consolidating track recognition, acoustic spectrum analysis, listening DNA
 modeling and queue/playlist flow under one engine, with the equalizer runtime
 merged into the Spatial Engine module; engine identity surfaces are
@@ -26,8 +28,8 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 · Kinetic Glass |
-| Version | 7.6.2 |
-| Release name | REBRAND UPDATE |
+| Version | 7.6.3 |
+| Release name | HOTFIX BUILD |
 | Architecture | Peregrine Lake |
 | GP Core | 4.3 — Kinetic Runtime |
 | GP Bionic Engine | 1.0 — Intelligence Core |
@@ -286,6 +288,8 @@ mapping. The full SSE contract is in AGENTS.md and the detailed handoff.
   recognition, spectrum analysis, neural modeling and queue/playlist flow;
   the equalizer runtime joins the Spatial Engine module. No persistence,
   schema, queue or audio graph contract changed.
+- 7.6.3 removes the startup auto-import of the remembered default folder.
+  The persisted folder handle is still written; no schema change.
 
 ## 10. Known regression-sensitive areas
 
@@ -496,5 +500,22 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
 - PASS — node --check build/app.js.
 - NOT RUN — Edge/file:// interaction, real audio device verification,
   4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 24. 7.6.3 HOTFIX BUILD — 2026-10-20
+
+- PASS — Bootstrap no longer calls restoreRememberedAudioFolder at startup;
+  Settings > Default Music Folder imports only when chosen. Hint and toast
+  copy updated in Chinese, English and Russian.
+- PASS — Identity synchronized as 7.6.3 HOTFIX BUILD across index.html cache
+  revisions, build card and current-version button, bootstrap and Bionic
+  facades, i18n, release data and exported changelog.
+- PASS — No IndexedDB/localStorage/schema, Store, queue or audio graph change.
+- PASS — build.ps1 regenerated build/app.js; SHA-256
+  A9928552BD690823AAFB5B867C72E912CEF242C3218E82663F577BC4E01517B9.
+- PASS — validate-architecture.ps1: 52 sources / 20 modules.
+- PASS — tests/contract-tests.ps1 (adds a no-startup-auto-import check);
+  node --check build/app.js; import-performance, service and audio-context
+  node tests.
+- NOT RUN — Edge/file:// startup check with a remembered folder.
 
 

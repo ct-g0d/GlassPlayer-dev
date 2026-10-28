@@ -78,7 +78,7 @@
       if(defaultFolderHint)defaultFolderHint.textContent=count
         ?tr(`默认文件夹已选择；本次找到 ${count} 个音频文件。`,`Default folder selected; found {count} audio files this time.`).replace("{count}",String(count))
         :tr("默认文件夹中没有找到音频文件。","No audio files were found in the default folder.");
-      showToast(count?tr("已保存默认文件夹，下次打开会自动导入音乐。","Default folder saved. Its music will be imported next time."):tr("默认文件夹中没有找到音频文件。","No audio files were found in the default folder."));
+      showToast(count?tr("已保存默认文件夹；本次已完成导入。","Default folder saved; its music was imported this time."):tr("默认文件夹中没有找到音频文件。","No audio files were found in the default folder."));
     }catch(error){
       if(error?.name!=="AbortError")showToast(tr("默认文件夹未保存。","The default folder was not saved."));
     }finally{defaultFolderButton.disabled=false;}

@@ -15,6 +15,15 @@
       ]
     },
     {
+      version:"7.6.3", date:"2026-10-20", kind:"patch",
+      summary:"HOTFIX BUILD：停止打开 HTML 时自动导入上次保存的默认音乐文件夹；默认文件夹仍可由用户手动选择并导入。",
+      sections:[
+        {title:"默认文件夹",items:["打开 HTML 时不再自动扫描或导入上次保存的音乐文件夹。","保留设置页的手动选择与导入操作，避免启动时占用资源。"]}
+      ],english:{summary:"HOTFIX BUILD stops the app from automatically importing the last saved music folder at startup while keeping manual folder selection available.",sections:[
+        {title:"Default Folder",items:["Opening the HTML file no longer scans or imports the previously saved music folder automatically.","The Settings action still lets you choose and import a folder manually when you want to."]}
+      ]}
+    },
+    {
       version:"7.6.2", date:"2026-10-16", kind:"patch",
       summary:"REBRAND UPDATE：GP Bionic Engine 1.0 正式登场，统一曲目识别、声学分析、听歌建模与播放队列流程，引擎标识全面焕新。",
       sections:[
@@ -2566,7 +2575,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
-    "7.6.2":"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",
+    "7.6.3":"HOTFIX BUILD stops the app from automatically importing the last saved music folder at startup while keeping manual folder selection available.","7.6.2":"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",
     "7.6.1":"HOTFIX BUILD collapses the Sidebar only when the window becomes too narrow, then restores the saved Sidebar preference when the width recovers.",
     "7.6.0":"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",
     "7.5.1":"HOTFIX BUILD completely redesigns the standalone Annual Report scroll, removes History range selector background, compacts font picker popup, and fixes centered player title and lossless badge geometry.",
@@ -4021,7 +4030,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.2 — REBRAND UPDATE`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.3 — HOTFIX BUILD`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4036,7 +4045,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.6.2 REBRAND UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.6.3 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
