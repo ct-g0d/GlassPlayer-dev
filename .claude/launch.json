@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "glassplayer-cinemax",
+      "name": "glassplayer",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["cinemax-ui/serve.mjs"],
+      "runtimeArgs": ["serve.mjs"],
       "port": 1003
     },
     {
