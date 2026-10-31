@@ -83,7 +83,7 @@
   function refreshPrimaryViewLayout(viewName){
     requestAnimationFrame(()=>{
       fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();syncSidebarCompactMode();
-      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
+      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();});
       if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);if(audio.duration)seekProgress=Math.max(0,Math.min(1,audio.currentTime/audio.duration));drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();});
       else{if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();if(typeof syncMiniEqMeter==="function")syncMiniEqMeter();}
     });
@@ -340,8 +340,8 @@
 
   /* GP Core 2.1: the panel shell is stationary; only its viewport moves.
      GP Motion Engine 2.0: complete moving sectors dissolve into that shell. */
-  const GP_SCROLL_EDGE_SELECTORS=["#queueBody","#recommendBody","#trackList","#historyRankingLeft","#historyRanks11to50","#settingsPanel","#releaseIndex","#releaseDetail","#favoritesGrid","#dataDashboard","#annualReportBody"];
-  const GP_SCROLLBAR_SELECTOR=".panel-body,.track-list,.history-ranking-left,.history-ranks-list,.settings-panel,.font-picker-pop,.release-index,.release-detail,.favorites-grid,.data-dashboard,.annual-report-body";
+  const GP_SCROLL_EDGE_SELECTORS=["#queueBody","#recommendBody","#trackList","#historyRankingLeft","#historyRanks11to50","#settingsPanel","#releaseIndex","#releaseDetail","#favoritesGrid","#dataDashboard"];
+  const GP_SCROLLBAR_SELECTOR=".panel-body,.track-list,.history-ranking-left,.history-ranks-list,.settings-panel,.font-picker-pop,.release-index,.release-detail,.favorites-grid,.data-dashboard";
   const GP_SCROLL_INTENT_WINDOW_MS=900;
   const gpScrollbarTimers=new WeakMap();
   const gpScrollIntentUntil=new WeakMap();
@@ -366,7 +366,7 @@
   },true);
   document.addEventListener("scroll",event=>revealLiquidScrollbar(scrollSurfaceFromTarget(event.target)),{capture:true,passive:true});
   const GP_OWN_SURFACE_IDS=new Set(["topList","settingsPanel","releaseIndex","releaseDetail"]);
-  const GP_SHARED_SHELLS={queueBody:".side-panel",recommendBody:".side-panel",trackList:".library-panel",historyRankingLeft:".top-list",historyRanks11to50:".top-list",favoritesGrid:"#historyFavoritesPane",dataDashboard:"#historyDataPane",annualReportBody:".annual-report-dialog"};
+  const GP_SHARED_SHELLS={queueBody:".side-panel",recommendBody:".side-panel",trackList:".library-panel",historyRankingLeft:".top-list",historyRanks11to50:".top-list",favoritesGrid:"#historyFavoritesPane",dataDashboard:"#historyDataPane"};
   const gpEdgeUpdateFrames=new WeakMap();
   function prepareScrollSurface(el){
     if(!el)return null;

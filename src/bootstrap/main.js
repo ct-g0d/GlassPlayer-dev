@@ -1,4 +1,28 @@
 ﻿  /* ================= init ================= */
+  function bindWindowTrafficLights(){
+    const lights=[...document.querySelectorAll(".traffic")];
+    if(!lights.length)return;
+    const fullscreenButton=lights.find(button=>button.dataset.windowAction==="fullscreen");
+    lights.forEach(button=>button.addEventListener("click",async()=>{
+      const action=button.dataset.windowAction;
+      if(action!=="fullscreen"){
+        window.dispatchEvent(new CustomEvent("gp:window-action",{detail:{action}}));
+        return;
+      }
+      try{
+        if(document.fullscreenElement)await document.exitFullscreen?.();
+        else await document.documentElement.requestFullscreen?.();
+      }catch(error){}
+    }));
+    const syncFocus=focused=>document.body.classList.toggle("gp-window-focused",focused);
+    window.addEventListener("focus",()=>syncFocus(true));
+    window.addEventListener("blur",()=>syncFocus(false));
+    syncFocus(true);
+    const syncFullscreenState=()=>fullscreenButton?.setAttribute("aria-pressed",String(Boolean(document.fullscreenElement)));
+    document.addEventListener("fullscreenchange",syncFullscreenState,{passive:true});
+    syncFullscreenState();
+  }
+
   GP.changelog.render();
   loadPrefs();
   buildFontPicker();
@@ -8,6 +32,7 @@
   drawWaveform();
   applyLanguage();
   GP.ui.mount(document);GP.ui.observe(document.body);
+  bindWindowTrafficLights();
   applyViewportFit();
   initializeSelectionGliders();
   if(document.fonts?.ready)document.fonts.ready.then(()=>requestAnimationFrame(initializeSelectionGliders));
@@ -88,7 +113,9 @@
   });
   const engines=Object.freeze({audio:audioEngine,bionic:bionicEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.6.3",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.7.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
+  showDataRestored();
+  GPDataVault.start({beforeReload:()=>{historyStoreCache=null;historyStoreDirty=false;},onStatus:renderDataVaultStatus,onProgress:({percent,...detail})=>{if(rescanModalMode!=="dataRunning")openDataProgress(tr("正在载入你的数据","Loading Your Data"),tr("正在准备…","Getting ready…"));paintDataProgress(percent,detail);}});
 })();
 

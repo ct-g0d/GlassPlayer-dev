@@ -43,37 +43,18 @@
   });
   Object.assign(UI_EN,{"无法打开悬浮播放器":"Unable to open Floating Player","当前浏览器或页面环境暂不支持传统视频画中画。":"The current browser or page environment does not support traditional video Picture-in-Picture.","知道了":"Got it"});
   Object.assign(UI_EN,{"常规":"Regular","中等":"Medium","半粗":"Semibold","特粗":"Heavy","运行身份":"Runtime identity","架构":"Architecture","引擎":"Engines","数据安全":"Cache safety","本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。":"One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.","默认音乐文件夹":"Default Music Folder","选择文件夹":"Choose Folder","选择后仅在本次导入；打开 HTML 时不会自动导入。":"Importing happens only when you choose a folder; opening the HTML file no longer imports it automatically.","已保存默认文件夹；本次已完成导入。":"Default folder saved; its music was imported this time.","默认文件夹已选择；本次找到 {count} 个音频文件。":"Default folder selected; found {count} audio files this time.","默认文件夹中没有找到音频文件。":"No audio files were found in the default folder.","当前浏览器不支持自动记住文件夹；请每次使用添加文件夹。":"This browser cannot remember folders automatically; use Add Folder each time."});
-  const UI_RU={
-    "播放器":"Плеер","歌单":"Медиатека","歌曲库":"Медиатека","听歌历史":"История прослушивания","设置":"Настройки","更新日志":"Журнал изменений",
-    "播放队列":"Очередь","音效":"Звук","每日推荐":"Микс дня","清空":"Очистить","接下来播放":"Далее",
-    "添加文件":"Добавить файлы","添加文件夹":"Добавить папку","搜索歌曲或歌手":"Поиск песен или исполнителей","筛选":"Фильтр","全部歌曲":"Все песни","已播放":"Прослушанные","未播放":"Непрослушанные","视图":"Вид","切换列表和网格视图":"Переключить список и сетку","列表 / Grid":"Список / сетка","未标注专辑":"Без альбома","序号":"№","封面 + 歌名/歌手":"Обложка + песня/исполнитель","专辑":"Альбом","操作":"Действия",
-    "排序：原始顺序":"Сортировка: исходный порядок","原始顺序":"Исходный порядок","歌手 A–Z":"Исполнитель А–Я","歌名 A–Z":"Название А–Я",
-    "今天":"Сегодня","本周":"Эта неделя","本月":"Этот месяц","本年":"Этот год","全部":"Все","听歌时间":"Время прослушивания","最近最爱":"Недавние любимые","听歌数据":"Данные прослушивания","播放次数":"Прослушивания","最常听歌曲":"Самая прослушиваемая песня","最爱艺人":"Любимый исполнитель","昨日对比":"Сравнение со вчера","听歌时长排行 Top 10":"Топ-10 по времени прослушивания","Top 3":"Топ-3","较大封面与听歌数据":"Крупные обложки и данные прослушивания","第 4–10 名列表":"Места 4–10","歌曲":"Песня","时长 / 播放次数":"Длительность / прослушивания","暂无更多歌曲":"Больше песен нет",
-    "听歌时长排行 Top 50":"Топ-50 по времени прослушивания","选定时间段内的听歌时长":"Время прослушивания за выбранный период",
-    "外观":"Внешний вид","界面语言":"Язык интерфейса","外观模式":"Режим оформления","浅色":"Светлая","深色":"Тёмная","自动":"Авто","音频":"Аудио","音乐库":"Медиатека","数据":"Данные","高级":"Дополнительно","关于":"О программе","设置分类":"Разделы настроек","音效面板":"Панель звука","本地数据":"Локальные данные","本地保存":"Сохранено локально","音效与空间音频":"Звук и пространственное аудио",
-    "主题色":"Цвет акцента","背景效果":"Эффект фона","灵动光晕":"Динамическое свечение","封面取色":"Цвет обложки","封面虚化":"Размытая обложка",
-    "播放行为":"Воспроизведение","专辑封面显示方式":"Отображение обложки","随唱片旋转":"Вращать с диском","静态展示":"Статичная обложка","交叉淡入淡出":"Плавное сведение","时长":"Длительность",
-    "文字":"Типографика","字体":"Шрифт","字体大小":"Размер шрифта","字体粗细":"Насыщенность шрифта","细":"Светлый","粗":"Жирный",
-    "均衡器 EQ":"Эквалайзер","预设":"Пресеты","手动调节":"Ручная настройка","原始":"Плоский","低音增强":"Усиление басов","人声增强":"Вокал","高音明亮":"Яркие высокие","自定义":"Вручную",
-    "暂停":"Пауза","关闭":"Выкл.","播完暂停":"Остановить после песни","播放速度":"Скорость","未选择歌曲":"Песня не выбрана","拖入或导入音乐开始播放":"Перетащите или импортируйте музыку",
-    "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
-    "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
-    "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно","随机播放":"Перемешивание","单曲循环":"Повтор одной песни",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.6.3 — HOTFIX BUILD":"Текущая версия 7.6.3 — HOTFIX BUILD","版本 7.6.3 — HOTFIX BUILD":"Версия 7.6.3 — HOTFIX BUILD","当前版本 7.6.2 — REBRAND UPDATE":"Текущая версия 7.6.2 — REBRAND UPDATE","版本 7.6.2 — REBRAND UPDATE":"Версия 7.6.2 — REBRAND UPDATE","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","HOTFIX BUILD":"HOTFIX BUILD","KINETIC GLASS":"KINETIC GLASS","REBRAND UPDATE":"REBRAND UPDATE","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
-    "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
-    "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
-  };
   
   
 
 
-  Object.assign(UI_RU,{"常规":"Обычный","中等":"Средний","半粗":"Полужирный","特粗":"Тяжёлый","运行身份":"Идентичность среды","架构":"Архитектура","引擎":"Движки","数据安全":"Безопасность кэша","本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。":"Один локальный runtime; настройки не добавляют состояние, а анализ и история прослушивания сохраняют прежние границы кэша.","默认音乐文件夹":"Папка музыки по умолчанию","选择文件夹":"Выбрать папку","选择后仅在本次导入；打开 HTML 时不会自动导入。":"Импорт выполняется только при выборе; открытие HTML больше не запускает автоматический импорт.","已保存默认文件夹；本次已完成导入。":"Папка сохранена; музыка импортирована в этот раз.","默认文件夹已选择；本次找到 {count} 个音频文件。":"Папка выбрана; найдено аудиофайлов: {count}.","默认文件夹中没有找到音频文件。":"В папке по умолчанию аудиофайлы не найдены.","当前浏览器不支持自动记住文件夹；请每次使用添加文件夹。":"Этот браузер не поддерживает запоминание папки; каждый раз используйте «Добавить папку»."});
-  Object.assign(UI_EN,{"年度报告":"Annual Report","无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report","高刷新率流动视觉":"Fluid 120Hz Motion","平滑连续播放":"Seamless Continuous Playback","按键播控":"Keyboard Controls","重置界面偏好":"Reset Interface Preferences","恢复默认":"Restore Defaults","已恢复默认设置":"Settings restored to defaults"});
-  Object.assign(UI_RU,{"年度报告":"Годовой отчёт","无损":"Лосслесс","播放全部":"Играть всё","新建歌单":"Новый плейлист","新建歌单…":"Новый плейлист…","新建歌单名称":"Название нового плейлиста","重命名":"Переименовать","删除歌单":"Удалить плейлист","未命名歌单":"Плейлист без названия","歌单：全部歌曲":"Плейлисты: вся музыка","还没有自建歌单，先去歌单里新建一个吧":"Пока нет своих плейлистов — создайте его в разделе «Плейлисты»","下载报告":"Скачать отчёт","高刷新率流动视觉":"Плавная визуализация 120 Гц","平滑连续播放":"Бесшовное воспроизведение","按键播控":"Управление с клавиатуры","重置界面偏好":"Сброс настроек интерфейса","恢复默认":"По умолчанию","已恢复默认设置":"Настройки сброшены по умолчанию"});
+  Object.assign(UI_EN,{"版本 7.7.1":"Ver. 7.7.1","当前版本 7.7.1 — FINAL PRESSING":"Current Version 7.7.1 — FINAL PRESSING","版本 7.7.1 — FINAL PRESSING":"Ver. 7.7.1 — FINAL PRESSING","FINAL PRESSING":"FINAL PRESSING"});
+  Object.assign(UI_EN,{"版本 7.7.0":"Ver. 7.7.0","当前版本 7.7.0 — LOCALIZATION UPDATE":"Current Version 7.7.0 — LOCALIZATION UPDATE","版本 7.7.0 — LOCALIZATION UPDATE":"Ver. 7.7.0 — LOCALIZATION UPDATE","LOCALIZATION UPDATE":"LOCALIZATION UPDATE"});
+  Object.assign(UI_EN,{"导出与导入":"Export and Import","约每小时保存一次":"Saves about hourly","磁盘数据库":"Disk Database","约每小时保存一次到 data/db，只写入有变化的内容。":"Saved to data/db about once an hour, writing only what changed.","导出数据":"Export Data","把听歌历史、偏好、分析缓存和封面保存为一个文件。":"Save your listening history, preferences, analysis cache and covers as one file.","导出":"Export","导入数据":"Import Data","从导出的文件恢复。只会添加和更新，不会删除现有记录；偏好会被文件中的设置替换。":"Restore from an exported file. It only adds and updates, never deletes records. Preferences are replaced by the ones in the file.","导入":"Import"});
+  Object.assign(UI_EN,{"无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report","高刷新率流动视觉":"Fluid 120Hz Motion","平滑连续播放":"Seamless Continuous Playback","按键播控":"Keyboard Controls","重置界面偏好":"Reset Interface Preferences","恢复默认":"Restore Defaults","已恢复默认设置":"Settings restored to defaults"});
   const i18nTextOriginal=new WeakMap();
   const i18nAttrOriginal=new WeakMap();
-  function translatedValue(key){if(uiLanguage==="zh")return key;const dictionary=uiLanguage==="ru"?UI_RU:UI_EN;return dictionary[key]||UI_EN[key]||key;}
-  function tr(zh,en){return uiLanguage==="zh"?zh:uiLanguage==="ru"?(UI_RU[zh]||en):en;}
+  function translatedValue(key){if(uiLanguage==="zh")return key;return UI_EN[key]||key;}
+  function tr(zh,en){return uiLanguage==="zh"?zh:en;}
   function translateTree(root){
     if(!root)return;
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){return /\S/.test(node.nodeValue||"")&&!["SCRIPT","STYLE"].includes(node.parentElement?.tagName)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
@@ -85,7 +66,7 @@
     });
   }
   function applyLanguage(){
-    document.documentElement.lang=uiLanguage==="en"?"en":uiLanguage==="ru"?"ru":"zh-CN";
+    document.documentElement.lang=uiLanguage==="en"?"en":"zh-CN";
     $$("#languageSeg button").forEach(button=>button.classList.toggle("active",button.dataset.lang===uiLanguage));
     if(typeof render==="function")render(searchInputSafe());
     if(typeof syncSortUI==="function")syncSortUI();
@@ -107,7 +88,7 @@
     if(typeof syncTitleLanguage==="function")syncTitleLanguage();
   }
     function getLanguage(){return uiLanguage;}
-    function setLanguage(value){uiLanguage=value==="en"?"en":value==="ru"?"ru":"zh";applyLanguage();}
+    function setLanguage(value){uiLanguage=value==="en"?"en":"zh";applyLanguage();}
     return Object.freeze({tr,translateTree,applyLanguage,getLanguage,setLanguage});
   })();
   const tr=(...args)=>GP.i18n.tr(...args);

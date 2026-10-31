@@ -1,7 +1,11 @@
 ﻿# Glass Player — Current State
 
-Last documentation update: 2026-10-28 (Pacific/Auckland)
+Last documentation update: 2026-10-31 (Pacific/Auckland)
 
+The 7.7.1 FINAL PRESSING checkpoint is the last intentionally maintained version before
+Glass Player merges into MacX; see section 24B.
+The 7.7.0 LOCALIZATION UPDATE checkpoint adds the local disk database, data export and import
+in Settings, and a History opening range that skips an empty Today; see section 24A.
 The 7.6.3 HOTFIX BUILD checkpoint stops startup from auto-importing the
 remembered default music folder; choosing a folder in Settings still imports
 it once. The 7.6.2 REBRAND UPDATE checkpoint introduces GP Bionic Engine 1.0,
@@ -28,8 +32,8 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 · Kinetic Glass |
-| Version | 7.6.3 |
-| Release name | HOTFIX BUILD |
+| Version | 7.7.1 |
+| Release name | FINAL PRESSING |
 | Architecture | Peregrine Lake |
 | GP Core | 4.3 — Kinetic Runtime |
 | GP Bionic Engine | 1.0 — Intelligence Core |
@@ -500,6 +504,38 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
 - PASS — node --check build/app.js.
 - NOT RUN — Edge/file:// interaction, real audio device verification,
   4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 24B. 7.7.1 FINAL PRESSING — 2026-10-31
+
+Last intentionally maintained version before Glass Player merges into MacX.
+Window gap is 40px on all four sides; the window controls keep their position in
+the strip above the panels. EQ band labels span the full curve and measure layout
+pixels, with a ResizeObserver on the stage. Data pane reduced to three rows; About
+engines fold into one row. Play All moved beside the import buttons and the
+collection bar was removed. Add to Playlist has its own icon and motion. Annual
+Report and the Russian interface are removed; saved Russian preference falls back
+to Chinese. Old release notes keep their history. Verified: build, architecture
+checks, contract tests, service regression tests, browser pane measurements. NOT
+RUN: real Edge, audio device, the row icon animation on a real song row.
+
+## 24A. 7.7.0 LOCALIZATION UPDATE — 2026-10-31
+
+IndexedDB and localStorage stay the live copy with no schema change. `GPDataVault`
+in the storage adapter saves the same records to `data/db` through serve.mjs: about
+hourly, or on leaving the tab after ten minutes, writing only changed documents.
+Covers are content-named files in `data/db/covers`. `glassPlayerDiskRevision` is a new
+localStorage key recording the disk revision a browser has seen. Reading from disk
+or importing only adds and updates: history keeps the higher counts. Settings > Data
+has the export and import buttons. `data/` is git-ignored and not served as static
+files. Opened from file://, disk saving is off; export and import still work. Import,
+export and first-time loading use the shared import progress window. History's first
+opening moves past an empty Today to the shortest range with listening; a range
+clicked by the user stays. Identity synchronized as 7.7.0 across index.html cache
+revisions, build card, current-version button, bootstrap and Bionic facades, i18n,
+release data, exported changelog and contract tests. Verified: build, architecture
+checks, contract tests, service regression tests, real-data import in throwaway
+profiles. NOT RUN: real Edge, audio device, 4K, 120 Hz, export and first-load progress
+windows on screen, the Choose Music Folder picker.
 
 ## 24. 7.6.3 HOTFIX BUILD — 2026-10-20
 

@@ -509,7 +509,7 @@
   }
   let currentNowTitleText="",titleMeasureTimer=0,titleResizeTimer=0,titleMarqueeRevision=0,titleMarqueeAnimation=null,lastTitleLayoutScale=0,nowPlayingMetaRevision=0,nowPlayingMetaAnimations=[];
   function syncTitleLanguage(){
-    const language=document.documentElement.lang||(uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh-CN");
+    const language=document.documentElement.lang||(uiLanguage==="en"?"en":"zh-CN");
     $$("#nowTitle,#nowArtist,.view-header h2").forEach(node=>node?.setAttribute("lang",language));
     if(typeof refreshNowTitleMarquee==="function")refreshNowTitleMarquee();
   }

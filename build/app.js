@@ -326,6 +326,15 @@ window.GPModules.register = function register(name,factory){
     get(storeName,key){return this.run(storeName,"readonly",store=>store.get(key));}
     getByIndex(storeName,indexName,key){return this.run(storeName,"readonly",store=>store.index(indexName).get(key));}
     getAll(storeName){return this.run(storeName,"readonly",store=>store.getAll());}
+    async putMany(storeName,rows){
+      const db=await this.open();
+      return new Promise((resolve,reject)=>{
+        const transaction=db.transaction(storeName,"readwrite"),store=transaction.objectStore(storeName);
+        rows.forEach(row=>store.put(row));
+        transaction.oncomplete=()=>resolve(rows.length);
+        transaction.onerror=transaction.onabort=()=>reject(transaction.error||new Error("IndexedDB transaction failed"));
+      });
+    }
     put(storeName,value){return this.run(storeName,"readwrite",store=>store.put(value));}
     delete(storeName,key){return this.run(storeName,"readwrite",store=>store.delete(key));}
     clear(storeName){return this.run(storeName,"readwrite",store=>store.clear());}
@@ -358,6 +367,308 @@ window.GPModules.register = function register(name,factory){
     setLocal(key,value){localStorage.setItem(key,value);},
     removeLocal(key){localStorage.removeItem(key);}
   });
+
+  /* /src/storage/data-vault.js
+     The browser's storage stays the live copy, so playing music never touches the disk. data/db holds a saved copy, in the same
+     records, written about once an hour (or on leaving the tab, if it's been ten minutes) and only for what has changed. Covers are
+     image files shared between tracks. Reading from disk or importing only adds: no record is deleted, and play counts keep the higher. */
+  const GPDataVault=(()=>{
+    const DB_NAME="glass-player-gen4",DB_VERSION=5,FORMAT="glass-player-export",HOURLY=3600000,LEAVING=600000,BATCH_ROWS=50,BATCH_BYTES=64*1048576;
+    const STORES=Object.freeze({trackCache:"contentKey",trackFeatures:"contentKey",behaviorEvents:"id",userModel:"id",recommendations:"id"});
+    const HISTORY="glassPlayerHistory",PREFS="glassPlayerPrefs",SIDEBAR="glassPlayerSidebarCollapsed",REVISION="glassPlayerDiskRevision";
+    const EXTENSIONS=Object.freeze({"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/gif":"gif"});
+    const onDisk=location.protocol.startsWith("http");
+    const adapter=()=>GPDatabase.requireAdapter();
+    let lastFlushAt=Date.now(),flushing=null,importing=false,reporter=null,coverRefs=null,savedAt=0,state=onDisk?"ready":"unavailable",notify=()=>{};
+    const setState=value=>{state=value;notify(status());};
+    const progress=(percent,phase,completed,total)=>reporter?.({percent:Math.min(100,percent),phase,completed,total});
+    const nextPaint=()=>new Promise(resolve=>setTimeout(resolve));
+    const FINISHED="glassPlayerDataFinished";
+    const rowWeight=store=>store==="trackCache"?200:1;   // a track carries its covers, so it takes far longer than any other record: the bar follows the work
+    const weigh=counts=>Object.entries(counts).reduce((sum,[store,count])=>sum+count*rowWeight(store),0)||1;
+    const status=()=>Object.freeze({state,savedAt});
+    const knownRevision=()=>Number(GPBrowserStorage.getLocal(REVISION))||0;
+    const stamp=row=>row.updatedAt||row.analyzedAt||row.generatedAt||row.savedAt||row.timestamp||0;
+    const toHex=buffer=>[...new Uint8Array(buffer)].map(byte=>byte.toString(16).padStart(2,"0")).join("");
+    const hashOf=async data=>toHex(await crypto.subtle.digest("SHA-256",data));
+    const docText=rows=>`[\n${rows.map(row=>JSON.stringify(row)).join(",\n")}\n]`;
+    async function readDisk(path){
+      const response=await fetch(`/db/${path}`);
+      if(response.status===404)return null;
+      if(!response.ok)throw new Error(`Disk read failed: ${path}`);
+      return path.startsWith("covers/")?response.blob():response.json();
+    }
+    async function writeDisk(path,body,headers){
+      const response=await fetch(`/db/${path}`,{method:"PUT",headers:{"X-GP":"1",...headers},body});
+      if(!response.ok)throw Object.assign(new Error(`Disk write failed: ${path}`),{status:response.status});
+    }
+    // Merging two histories never lowers a count, whichever copy is behind
+    function mergeHigher(a,b){
+      if(typeof a==="number"&&typeof b==="number")return Math.max(a,b);
+      if(a&&b&&typeof a==="object"&&typeof b==="object"&&!Array.isArray(a)&&!Array.isArray(b)){
+        const merged={...a};
+        for(const key of Object.keys(b))merged[key]=key in a?mergeHigher(a[key],b[key]):b[key];
+        return merged;
+      }
+      return b??a;
+    }
+    const parseLocal=key=>{try{return JSON.parse(GPBrowserStorage.getLocal(key));}catch(error){return null;}};
+    function mergeLocal(incoming,replace){
+      if(incoming[HISTORY]){
+        const merged=mergeHigher(parseLocal(HISTORY),JSON.parse(incoming[HISTORY]));
+        GPBrowserStorage.setLocal(HISTORY,JSON.stringify(merged));
+      }
+      for(const key of [PREFS,SIDEBAR])if(incoming[key]!=null&&(replace||GPBrowserStorage.getLocal(key)==null))GPBrowserStorage.setLocal(key,incoming[key]);
+    }
+    async function revive(value){
+      if(!value||typeof value!=="object")return value;
+      if(value.__file)return new Blob([await readDisk(value.__file)],{type:value.type});
+      if(value.__blob!==undefined||value.__bytes!==undefined){
+        const bytes=Uint8Array.from(atob(value.data),char=>char.charCodeAt(0));
+        if(value.__blob!==undefined)return new Blob([bytes],{type:value.__blob});
+        return value.__bytes==="ArrayBuffer"?bytes.buffer:new globalThis[value.__bytes](bytes.buffer);
+      }
+      if(Array.isArray(value))return Promise.all(value.map(revive));
+      const out={};
+      for(const key of Object.keys(value))out[key]=await revive(value[key]);
+      return out;
+    }
+    // Writes rows in batches, keeping any local record that is as new as the incoming one (replace: the local copy is empty, so anything there is only a start-up default)
+    function rowWriter(store,replace){
+      const keyPath=STORES[store];
+      let local=null,batch=[],bytes=0,written=0;
+      const flushBatch=async()=>{
+        const rows=[];
+        for(const row of batch)rows.push(await revive(row));
+        batch=[];bytes=0;
+        if(rows.length){await adapter().putMany(store,rows);written+=rows.length;}
+      };
+      return{
+        async add(row,size=0){
+          if(row.folderHandle)return;   // a folder's permission belongs to the browser it was granted in
+          local??=new Map((await adapter().getAll(store)).map(item=>[item[keyPath],stamp(item)]));
+          const known=local.get(row[keyPath]);
+          if(!replace&&known!==undefined&&known>=stamp(row))return;
+          batch.push(row);bytes+=size;
+          if(batch.length>=BATCH_ROWS||bytes>=BATCH_BYTES)await flushBatch();
+        },
+        async finish(){await flushBatch();return written;}
+      };
+    }
+    async function localIsEmpty(){
+      const [tracks,events]=await Promise.all([adapter().getAll("trackCache"),adapter().getAll("behaviorEvents")]);
+      const history=parseLocal(HISTORY);
+      return !tracks.length&&!events.length&&!Object.keys(history?.songs||{}).length;
+    }
+    async function pullFromDisk(manifest,replace){
+      const total=weigh(manifest.counts||{});
+      let done=0,count=0;
+      const rowTotal=Object.values(manifest.counts||{}).reduce((sum,value)=>sum+value,0);
+      mergeLocal(await readDisk("local.json")||{},replace);
+      for(const store of Object.keys(STORES)){
+        const writer=rowWriter(store,replace);
+        for(const row of await readDisk(`${store}.json`)||[]){
+          await writer.add(row);
+          done+=rowWeight(store);count++;
+          if(!(count%10))progress(done/total*100,"restore",count,rowTotal);
+        }
+        await writer.finish();
+      }
+      GPBrowserStorage.setLocal(REVISION,String(manifest.revision));
+    }
+    // What came back, for the message once the page has reloaded
+    async function summary(){
+      const [tracks,events]=await Promise.all([adapter().getAll("trackCache"),adapter().getAll("behaviorEvents")]);
+      return{tracks:tracks.length,events:events.length,songs:Object.keys(parseLocal(HISTORY)?.songs||{}).length};
+    }
+    async function markFinished(){sessionStorage.setItem(FINISHED,JSON.stringify(await summary()));}
+    function takeFinished(){
+      const value=sessionStorage.getItem(FINISHED);
+      sessionStorage.removeItem(FINISHED);
+      return value?JSON.parse(value):null;
+    }
+    // A cover already on disk isn't read again: rows point at it by track, kind and size
+    async function loadCoverRefs(){
+      coverRefs=new Map();
+      for(const row of await readDisk("trackCache.json")||[])for(const field of ["coverBlob","thumbBlob"])if(row[field]?.__file)coverRefs.set(`${row.contentKey}:${field}:${row[field].size}`,row[field]);
+    }
+    async function coverRef(row,field){
+      const blob=row[field];
+      if(!blob)return blob??null;
+      const key=`${row.contentKey}:${field}:${blob.size}`;
+      if(coverRefs.has(key))return coverRefs.get(key);
+      const bytes=await blob.arrayBuffer(),name=`covers/${await hashOf(bytes)}.${EXTENSIONS[blob.type]||"bin"}`;
+      await writeDisk(name,bytes);
+      const ref={__file:name,type:blob.type,size:blob.size};
+      coverRefs.set(key,ref);
+      return ref;
+    }
+    async function saveToDisk(){
+      const manifest=await readDisk("manifest.json");
+      const base=manifest?.revision||0;
+      if(base&&base!==knownRevision()){setState("conflict");return false;}
+      if(!base&&await localIsEmpty())return false;
+      if(!coverRefs)await loadCoverRefs();
+      const docs={"local.json":JSON.stringify({[HISTORY]:GPBrowserStorage.getLocal(HISTORY),[PREFS]:GPBrowserStorage.getLocal(PREFS),[SIDEBAR]:GPBrowserStorage.getLocal(SIDEBAR)})},counts={};
+      for(const store of Object.keys(STORES)){
+        const rows=(await adapter().getAll(store)).filter(row=>!row.folderHandle);
+        if(store==="trackCache")for(let index=0;index<rows.length;index++){
+          const row=rows[index];
+          row.coverBlob=await coverRef(row,"coverBlob");row.thumbBlob=await coverRef(row,"thumbBlob");
+          if(!(index%10))progress(index/rows.length*100,"disk",index,rows.length);
+        }
+        docs[`${store}.json`]=docText(rows);counts[store]=rows.length;
+      }
+      const files={};
+      let changed=!base;
+      for(const [name,text] of Object.entries(docs)){
+        files[name]=await hashOf(new TextEncoder().encode(text));
+        if(files[name]===manifest?.files?.[name])continue;
+        await writeDisk(name,text);
+        changed=true;
+      }
+      if(!changed)return false;
+      const next={format:1,revision:base+1,savedAt:Date.now(),files,counts};
+      await writeDisk("manifest.json",JSON.stringify(next,null,2),{"X-GP-Base":String(base)});
+      GPBrowserStorage.setLocal(REVISION,String(next.revision));
+      savedAt=next.savedAt;
+      return true;
+    }
+    function flush(onProgress){
+      if(!onDisk||importing)return Promise.resolve(false);   // an import saves once it has finished
+      lastFlushAt=Date.now();
+      reporter=typeof onProgress==="function"?onProgress:null;
+      return flushing??=saveToDisk().then(saved=>{if(state!=="conflict")setState("ready");return saved;},error=>{console.warn("[GP Data]",error);setState(error.status===409?"conflict":"failed");return false;}).finally(()=>{flushing=null;reporter=null;});
+    }
+    async function start({beforeReload,onStatus,onProgress}={}){
+      notify=onStatus||notify;
+      notify(status());
+      if(!onDisk)return;
+      try{
+        const manifest=await readDisk("manifest.json");
+        savedAt=manifest?.savedAt||0;
+        if(manifest&&manifest.revision!==knownRevision()){
+          const replace=await localIsEmpty();
+          reporter=replace?onProgress:null;   // a browser that only needs topping up does it quietly
+          await pullFromDisk(manifest,replace);
+          reporter=null;
+          if(replace)await markFinished();
+          beforeReload?.();
+          location.reload();
+          return;
+        }
+        if(!manifest)setTimeout(flush,60000);
+        notify(status());
+      }catch(error){console.warn("[GP Data]",error);setState("failed");return;}
+      setInterval(flush,HOURLY);
+      document.addEventListener("visibilitychange",()=>{if(document.hidden&&Date.now()-lastFlushAt>=LEAVING)flush();});
+    }
+    const toBase64=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]||"");reader.onerror=()=>reject(reader.error);reader.readAsDataURL(blob);});
+    async function encode(value){
+      if(value instanceof Blob)return{__blob:value.type,data:await toBase64(value)};
+      if(value instanceof ArrayBuffer||ArrayBuffer.isView(value))return{__bytes:value.constructor.name,data:await toBase64(new Blob([value]))};
+      if(Array.isArray(value))return Promise.all(value.map(encode));
+      if(value===null||typeof value!=="object"||value instanceof Date)return value;
+      if(window.FileSystemHandle&&value instanceof FileSystemHandle)return{__handle:value.kind,name:value.name};
+      const out={};
+      for(const key of Object.keys(value))out[key]=await encode(value[key]);
+      return out;
+    }
+    // One record to a line, in parts, so the size of a library never hits the limit on one string. It's still ordinary JSON
+    async function exportFile(onProgress){
+      const local={};
+      const rowsByStore={};
+      for(const store of Object.keys(STORES))rowsByStore[store]=await adapter().getAll(store);
+      const total=weigh(Object.fromEntries(Object.entries(rowsByStore).map(([store,rows])=>[store,rows.length])));
+      const rowTotal=Object.values(rowsByStore).reduce((sum,rows)=>sum+rows.length,0);
+      let done=0,count=0;
+      for(const key of [HISTORY,PREFS,SIDEBAR]){const value=GPBrowserStorage.getLocal(key);if(value!=null)local[key]=value;}
+      const parts=[`{"format":"${FORMAT}","version":2,"exportedAt":${JSON.stringify(new Date().toISOString())},"localStorage":${JSON.stringify(local)},"indexedDB":{"${DB_NAME}":{"version":${DB_VERSION},"stores":{\n`];
+      let firstStore=true;
+      for(const store of Object.keys(STORES)){
+        parts.push(`${firstStore?"":",\n"}"${store}":[\n`);firstStore=false;
+        const rows=rowsByStore[store];
+        for(let index=0;index<rows.length;index++){
+          parts.push(`${index?",\n":""}${JSON.stringify(await encode(rows[index]))}`);
+          done+=rowWeight(store);count++;
+          if(!(count%10)){onProgress?.({percent:done/total*100,phase:"export",completed:count,total:rowTotal});await nextPaint();}
+        }
+        parts.push("\n]");
+      }
+      parts.push("}}}}\n");
+      return new Blob(parts,{type:"application/json"});
+    }
+    async function* fileLines(file,onChunk){
+      const reader=file.stream().pipeThrough(new TextDecoderStream()).getReader();
+      let pending=[];   // only each new piece is searched, as an older export is one very long line
+      for(;;){
+        const {value,done}=await reader.read();
+        if(done)break;
+        onChunk(value);
+        let start=0,end;
+        while((end=value.indexOf("\n",start))>=0){
+          pending.push(value.slice(start,end));
+          yield pending.join("");
+          pending=[];
+          start=end+1;
+        }
+        if(start<value.length)pending.push(value.slice(start));
+      }
+      if(pending.length)yield pending.join("");
+    }
+    // Takes this format, and the older export that's all on one line. Other apps' data in that file stays out
+    async function importFile(file,onProgress){
+      importing=true;
+      await flushing;
+      reporter=onProgress||null;
+      try{await readImport(file);await markFinished();}finally{importing=false;reporter=null;}
+    }
+    async function readImport(file){
+      const replace=await localIsEmpty();
+      let isFirst=true,writer=null,total=0,recognised=false,oneLine=null,read=0;
+      const onChunk=chunk=>{
+        oneLine??=!chunk.startsWith(`{"format":"${FORMAT}"`);
+        read+=chunk.length;
+        progress(read/file.size*(oneLine?40:100),"read");
+      };
+      for await(const line of fileLines(file,onChunk)){
+        if(isFirst){
+          isFirst=false;
+          if(line.startsWith(`{"format":"${FORMAT}"`)){
+            mergeLocal(JSON.parse(`${line}}}}}`).localStorage||{},true);
+            recognised=true;
+            continue;
+          }
+          progress(40,"read");
+          await nextPaint();
+          const data=JSON.parse(line),stores=data.indexedDB?.[DB_NAME]?.stores;
+          if(!stores)break;
+          const rowCount=Object.keys(STORES).reduce((sum,store)=>sum+(stores[store]?.length||0),0);
+          const weight=weigh(Object.fromEntries(Object.keys(STORES).map(store=>[store,stores[store]?.length||0])));
+          let done=0,count=0;
+          recognised=true;
+          mergeLocal(data.localStorage||{},true);
+          for(const store of Object.keys(STORES)){
+            const rows=rowWriter(store,replace);
+            for(const row of stores[store]||[]){
+              await rows.add(row,row.coverBlob?.data?.length||0);
+              done+=rowWeight(store);count++;
+              if(!(count%10))progress(40+done/weight*60,"restore",count,rowCount);
+            }
+            total+=await rows.finish();
+          }
+          continue;
+        }
+        const opening=line.match(/^,?"(\w+)":\[$/);
+        if(opening){writer=STORES[opening[1]]?rowWriter(opening[1],replace):null;continue;}
+        if(line.startsWith("]")){if(writer)total+=await writer.finish();writer=null;continue;}
+        if(writer)await writer.add(JSON.parse(line.endsWith(",")?line.slice(0,-1):line),line.length);
+      }
+      if(!recognised)throw new Error("Not a Glass Player export");
+      return total;
+    }
+    return Object.freeze({start,flush,status,exportFile,importFile,takeFinished});
+  })();
   /* ================= GP Bionic Engine 1.0 — Intelligence Core =================
      Consolidates track identity recognition, acoustic signal spectrum analysis,
      listening DNA neural modeling, and fusion queue/playlist flow. */
@@ -450,7 +761,7 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.6.3",
+    version:"7.7.1",
     architecture:"Peregrine Lake",
     engines:{core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Bionic ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
@@ -590,37 +901,18 @@ window.GPModules.register = function register(name,factory){
   });
   Object.assign(UI_EN,{"无法打开悬浮播放器":"Unable to open Floating Player","当前浏览器或页面环境暂不支持传统视频画中画。":"The current browser or page environment does not support traditional video Picture-in-Picture.","知道了":"Got it"});
   Object.assign(UI_EN,{"常规":"Regular","中等":"Medium","半粗":"Semibold","特粗":"Heavy","运行身份":"Runtime identity","架构":"Architecture","引擎":"Engines","数据安全":"Cache safety","本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。":"One local runtime; Settings adds no state, and audio analysis and listening history keep their existing cache boundaries.","默认音乐文件夹":"Default Music Folder","选择文件夹":"Choose Folder","选择后仅在本次导入；打开 HTML 时不会自动导入。":"Importing happens only when you choose a folder; opening the HTML file no longer imports it automatically.","已保存默认文件夹；本次已完成导入。":"Default folder saved; its music was imported this time.","默认文件夹已选择；本次找到 {count} 个音频文件。":"Default folder selected; found {count} audio files this time.","默认文件夹中没有找到音频文件。":"No audio files were found in the default folder.","当前浏览器不支持自动记住文件夹；请每次使用添加文件夹。":"This browser cannot remember folders automatically; use Add Folder each time."});
-  const UI_RU={
-    "播放器":"Плеер","歌单":"Медиатека","歌曲库":"Медиатека","听歌历史":"История прослушивания","设置":"Настройки","更新日志":"Журнал изменений",
-    "播放队列":"Очередь","音效":"Звук","每日推荐":"Микс дня","清空":"Очистить","接下来播放":"Далее",
-    "添加文件":"Добавить файлы","添加文件夹":"Добавить папку","搜索歌曲或歌手":"Поиск песен или исполнителей","筛选":"Фильтр","全部歌曲":"Все песни","已播放":"Прослушанные","未播放":"Непрослушанные","视图":"Вид","切换列表和网格视图":"Переключить список и сетку","列表 / Grid":"Список / сетка","未标注专辑":"Без альбома","序号":"№","封面 + 歌名/歌手":"Обложка + песня/исполнитель","专辑":"Альбом","操作":"Действия",
-    "排序：原始顺序":"Сортировка: исходный порядок","原始顺序":"Исходный порядок","歌手 A–Z":"Исполнитель А–Я","歌名 A–Z":"Название А–Я",
-    "今天":"Сегодня","本周":"Эта неделя","本月":"Этот месяц","本年":"Этот год","全部":"Все","听歌时间":"Время прослушивания","最近最爱":"Недавние любимые","听歌数据":"Данные прослушивания","播放次数":"Прослушивания","最常听歌曲":"Самая прослушиваемая песня","最爱艺人":"Любимый исполнитель","昨日对比":"Сравнение со вчера","听歌时长排行 Top 10":"Топ-10 по времени прослушивания","Top 3":"Топ-3","较大封面与听歌数据":"Крупные обложки и данные прослушивания","第 4–10 名列表":"Места 4–10","歌曲":"Песня","时长 / 播放次数":"Длительность / прослушивания","暂无更多歌曲":"Больше песен нет",
-    "听歌时长排行 Top 50":"Топ-50 по времени прослушивания","选定时间段内的听歌时长":"Время прослушивания за выбранный период",
-    "外观":"Внешний вид","界面语言":"Язык интерфейса","外观模式":"Режим оформления","浅色":"Светлая","深色":"Тёмная","自动":"Авто","音频":"Аудио","音乐库":"Медиатека","数据":"Данные","高级":"Дополнительно","关于":"О программе","设置分类":"Разделы настроек","音效面板":"Панель звука","本地数据":"Локальные данные","本地保存":"Сохранено локально","音效与空间音频":"Звук и пространственное аудио",
-    "主题色":"Цвет акцента","背景效果":"Эффект фона","灵动光晕":"Динамическое свечение","封面取色":"Цвет обложки","封面虚化":"Размытая обложка",
-    "播放行为":"Воспроизведение","专辑封面显示方式":"Отображение обложки","随唱片旋转":"Вращать с диском","静态展示":"Статичная обложка","交叉淡入淡出":"Плавное сведение","时长":"Длительность",
-    "文字":"Типографика","字体":"Шрифт","字体大小":"Размер шрифта","字体粗细":"Насыщенность шрифта","细":"Светлый","粗":"Жирный",
-    "均衡器 EQ":"Эквалайзер","预设":"Пресеты","手动调节":"Ручная настройка","原始":"Плоский","低音增强":"Усиление басов","人声增强":"Вокал","高音明亮":"Яркие высокие","自定义":"Вручную",
-    "暂停":"Пауза","关闭":"Выкл.","播完暂停":"Остановить после песни","播放速度":"Скорость","未选择歌曲":"Песня не выбрана","拖入或导入音乐开始播放":"Перетащите или импортируйте музыку",
-    "歌单顺序":"Порядок медиатеки","手动播放列表":"Ручная очередь","从播放队列移除":"Удалить из очереди","拖拽排序":"Перетащите для сортировки","下一首播放":"Воспроизвести следующей","加入播放队列":"Добавить в очередь","从歌单移除":"Удалить из медиатеки","生成推荐歌单":"Создать микс","播放推荐":"Воспроизвести микс","播放推荐歌单":"Воспроизвести микс дня",
-    "Aa 你好，世界 Glass Player 123":"Aa Привет, мир — Glass Player 123","New York（衬线）":"New York (с засечками)","Apple 系统字体":"Системный шрифт Apple","中文":"Китайский","UI 主题色跟随当前歌曲封面":"Акцент по текущей обложке",
-    "比特率":"Битрейт","播放":"Воспроизвести","播客":"Подкаст","播完这首后暂停":"Остановить после этой песни","取消定时":"Отменить таймер","采样率":"Частота дискретизации","声道":"Каналы","格式":"Формат","文件信息":"Информация о файле","响度":"Громкость","风格":"Жанр","能量":"Энергия","分析中…":"Анализ…","未检测到":"Не обнаружено","电子":"Электронная","古典":"Классика","歌曲名称 A–Z":"Название песни А–Я","歌手名称 A–Z":"Имя исполнителя А–Я","顺序播放":"Последовательно","随机播放":"Перемешивание","单曲循环":"Повтор одной песни",
-    "界面配色":"Цвет интерфейса","还没有音乐":"Музыки пока нет","松开鼠标以添加音乐":"Отпустите кнопку мыши, чтобы добавить музыку","睡眠定时":"Таймер сна","选择字体":"Выбор шрифта","听歌记录":"История прослушивания","当前版本 7.6.3 — HOTFIX BUILD":"Текущая версия 7.6.3 — HOTFIX BUILD","版本 7.6.3 — HOTFIX BUILD":"Версия 7.6.3 — HOTFIX BUILD","当前版本 7.6.2 — REBRAND UPDATE":"Текущая версия 7.6.2 — REBRAND UPDATE","版本 7.6.2 — REBRAND UPDATE":"Версия 7.6.2 — REBRAND UPDATE","当前版本 7.5.0 — Replay Atlas":"Текущая версия 7.5.0 — Replay Atlas","版本 7.5.0 — Replay Atlas":"Версия 7.5.0 — Replay Atlas","REPLAY ATLAS":"АТЛАС REPLAY","HOTFIX BUILD":"HOTFIX BUILD","KINETIC GLASS":"KINETIC GLASS","REBRAND UPDATE":"REBRAND UPDATE","导出日志":"Экспорт журнала","打开悬浮播放器":"Открыть плавающий плеер","返回设置":"Назад к настройкам","清除搜索":"Очистить поиск","收起侧边栏":"Свернуть боковую панель","展开侧边栏":"Развернуть боковую панель","未找到完全匹配，以下为粗略匹配":"Точного совпадения нет. Показаны близкие результаты","未找到匹配结果":"Совпадений нет","无法打开悬浮播放器":"Не удалось открыть плавающий плеер","当前浏览器或页面环境暂不支持传统视频画中画。":"Текущий браузер или окружение страницы не поддерживает классический режим «картинка в картинке».","知道了":"Понятно",
-    "音乐库数据":"Данные медиатеки","重新扫描歌曲库":"Повторно сканировать медиатеку","重新扫描歌曲库？":"Повторно сканировать медиатеку?","取消":"Отмена","开始扫描":"Начать сканирование","精选字体":"Подборка шрифтов","未知艺人":"Неизвестный исполнитель","未知":"Неизвестно","计算中…":"Вычисление…","解码中…":"Декодирование…","单声道":"Моно","立体声":"Стерео","版本列表":"Список версий",
-    "选择 Glass Player 的界面语言。":"Выберите язык интерфейса Glass Player.","在浅色、深色或根据时间自动切换。":"Выберите светлую, тёмную тему или автоматический режим.","选择界面使用的 Accent 颜色。":"Выберите цвет акцента интерфейса.","灵动光晕、封面取色或封面虚化。":"Динамическое свечение, цвет или размытие обложки.","调整界面字体的大小。":"Настройте размер шрифта интерфейса.","在可读性和信息密度之间调整。":"Баланс читаемости и плотности информации.","音效与空间音频":"Звук и пространственное аудио","空间音效":"Пространственный звук","自动响度均衡":"Автоматический баланс громкости","了解响度均衡":"О балансе громкости","桌面音响":"Настольные колонки","监听音箱":"Студийные мониторы","宽阔舞台":"Широкая сцена","环绕音":"Орбита","前置双耳":"Фронтальный бинауральный","现场大厅":"Живой зал","影院":"Кинотеатр","梦境":"Сновидение"
-  };
   
   
 
 
-  Object.assign(UI_RU,{"常规":"Обычный","中等":"Средний","半粗":"Полужирный","特粗":"Тяжёлый","运行身份":"Идентичность среды","架构":"Архитектура","引擎":"Движки","数据安全":"Безопасность кэша","本地单一运行时；设置不新增状态，音频分析与听歌历史继续使用现有缓存边界。":"Один локальный runtime; настройки не добавляют состояние, а анализ и история прослушивания сохраняют прежние границы кэша.","默认音乐文件夹":"Папка музыки по умолчанию","选择文件夹":"Выбрать папку","选择后仅在本次导入；打开 HTML 时不会自动导入。":"Импорт выполняется только при выборе; открытие HTML больше не запускает автоматический импорт.","已保存默认文件夹；本次已完成导入。":"Папка сохранена; музыка импортирована в этот раз.","默认文件夹已选择；本次找到 {count} 个音频文件。":"Папка выбрана; найдено аудиофайлов: {count}.","默认文件夹中没有找到音频文件。":"В папке по умолчанию аудиофайлы не найдены.","当前浏览器不支持自动记住文件夹；请每次使用添加文件夹。":"Этот браузер не поддерживает запоминание папки; каждый раз используйте «Добавить папку»."});
-  Object.assign(UI_EN,{"年度报告":"Annual Report","无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report","高刷新率流动视觉":"Fluid 120Hz Motion","平滑连续播放":"Seamless Continuous Playback","按键播控":"Keyboard Controls","重置界面偏好":"Reset Interface Preferences","恢复默认":"Restore Defaults","已恢复默认设置":"Settings restored to defaults"});
-  Object.assign(UI_RU,{"年度报告":"Годовой отчёт","无损":"Лосслесс","播放全部":"Играть всё","新建歌单":"Новый плейлист","新建歌单…":"Новый плейлист…","新建歌单名称":"Название нового плейлиста","重命名":"Переименовать","删除歌单":"Удалить плейлист","未命名歌单":"Плейлист без названия","歌单：全部歌曲":"Плейлисты: вся музыка","还没有自建歌单，先去歌单里新建一个吧":"Пока нет своих плейлистов — создайте его в разделе «Плейлисты»","下载报告":"Скачать отчёт","高刷新率流动视觉":"Плавная визуализация 120 Гц","平滑连续播放":"Бесшовное воспроизведение","按键播控":"Управление с клавиатуры","重置界面偏好":"Сброс настроек интерфейса","恢复默认":"По умолчанию","已恢复默认设置":"Настройки сброшены по умолчанию"});
+  Object.assign(UI_EN,{"版本 7.7.1":"Ver. 7.7.1","当前版本 7.7.1 — FINAL PRESSING":"Current Version 7.7.1 — FINAL PRESSING","版本 7.7.1 — FINAL PRESSING":"Ver. 7.7.1 — FINAL PRESSING","FINAL PRESSING":"FINAL PRESSING"});
+  Object.assign(UI_EN,{"版本 7.7.0":"Ver. 7.7.0","当前版本 7.7.0 — LOCALIZATION UPDATE":"Current Version 7.7.0 — LOCALIZATION UPDATE","版本 7.7.0 — LOCALIZATION UPDATE":"Ver. 7.7.0 — LOCALIZATION UPDATE","LOCALIZATION UPDATE":"LOCALIZATION UPDATE"});
+  Object.assign(UI_EN,{"导出与导入":"Export and Import","约每小时保存一次":"Saves about hourly","磁盘数据库":"Disk Database","约每小时保存一次到 data/db，只写入有变化的内容。":"Saved to data/db about once an hour, writing only what changed.","导出数据":"Export Data","把听歌历史、偏好、分析缓存和封面保存为一个文件。":"Save your listening history, preferences, analysis cache and covers as one file.","导出":"Export","导入数据":"Import Data","从导出的文件恢复。只会添加和更新，不会删除现有记录；偏好会被文件中的设置替换。":"Restore from an exported file. It only adds and updates, never deletes records. Preferences are replaced by the ones in the file.","导入":"Import"});
+  Object.assign(UI_EN,{"无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report","高刷新率流动视觉":"Fluid 120Hz Motion","平滑连续播放":"Seamless Continuous Playback","按键播控":"Keyboard Controls","重置界面偏好":"Reset Interface Preferences","恢复默认":"Restore Defaults","已恢复默认设置":"Settings restored to defaults"});
   const i18nTextOriginal=new WeakMap();
   const i18nAttrOriginal=new WeakMap();
-  function translatedValue(key){if(uiLanguage==="zh")return key;const dictionary=uiLanguage==="ru"?UI_RU:UI_EN;return dictionary[key]||UI_EN[key]||key;}
-  function tr(zh,en){return uiLanguage==="zh"?zh:uiLanguage==="ru"?(UI_RU[zh]||en):en;}
+  function translatedValue(key){if(uiLanguage==="zh")return key;return UI_EN[key]||key;}
+  function tr(zh,en){return uiLanguage==="zh"?zh:en;}
   function translateTree(root){
     if(!root)return;
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){return /\S/.test(node.nodeValue||"")&&!["SCRIPT","STYLE"].includes(node.parentElement?.tagName)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
@@ -632,7 +924,7 @@ window.GPModules.register = function register(name,factory){
     });
   }
   function applyLanguage(){
-    document.documentElement.lang=uiLanguage==="en"?"en":uiLanguage==="ru"?"ru":"zh-CN";
+    document.documentElement.lang=uiLanguage==="en"?"en":"zh-CN";
     $$("#languageSeg button").forEach(button=>button.classList.toggle("active",button.dataset.lang===uiLanguage));
     if(typeof render==="function")render(searchInputSafe());
     if(typeof syncSortUI==="function")syncSortUI();
@@ -654,7 +946,7 @@ window.GPModules.register = function register(name,factory){
     if(typeof syncTitleLanguage==="function")syncTitleLanguage();
   }
     function getLanguage(){return uiLanguage;}
-    function setLanguage(value){uiLanguage=value==="en"?"en":value==="ru"?"ru":"zh";applyLanguage();}
+    function setLanguage(value){uiLanguage=value==="en"?"en":"zh";applyLanguage();}
     return Object.freeze({tr,translateTree,applyLanguage,getLanguage,setLanguage});
   })();
   const tr=(...args)=>GP.i18n.tr(...args);
@@ -674,6 +966,32 @@ window.GPModules.register = function register(name,factory){
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.7.1", date:"2026-10-31", kind:"patch",
+      summary:"FINAL PRESSING：这是 Glass Player 最后一个被用心维护的版本。从这里开始，它将并入我的超级应用 MacX。",
+      sections:[
+        {title:"最后一张唱片",items:["7 月 7 日，1.0.0。10 月 31 日，7.7.1。一百一十六天，一百三十二个版本。","这是我第一个真正有意义的 vibe coding 项目。数十亿个 token，全都花在同一件事上：把它打磨成我想要的样子，分毫不差。","我不怎么会写代码。我只知道哪里不对，然后一遍又一遍地说，直到它对为止。转盘、七台引擎、每一条曲线、每一段动效，都是这样磨出来的。","Glass Player 不会就此停转。它会成为 MacX 的一部分，继续转下去。但作为一个独立的作品，它就停在这里，停在我想要的样子。","这张唱片，压制完成。"]},
+        {title:"最后的打磨",items:["侧边栏和面板与窗口四边保持相同的距离，窗口按钮有了属于自己的位置。","均衡器的频率标签现在在任何窗口宽度下都对齐各自的调节点。","数据页精简为三行，关于页的引擎列表收起到一行。","「播放全部」成为歌曲库的常驻按钮，与添加文件和添加文件夹同排；选择歌单时不再多出一条横栏。","「添加到歌单」有了自己的音符图标和动效，不再与「加入播放队列」相同。"]},
+        {title:"留在过去的",items:["年度报告已完整移除，你的听歌历史不受影响。","俄语界面已移除，Glass Player 现在提供中文和英文。"]}
+      ],english:{summary:"FINAL PRESSING is the last intentionally maintained version of Glass Player. From here, it becomes part of my superapp, MacX.",sections:[
+        {title:"The Last Record",items:["July 7, 1.0.0. October 31, 7.7.1. 116 days, 132 versions.","This is my first meaningful vibecoded project. Billions of tokens, all spent on one thing: polishing it into exactly what I wanted.","I can't really write code. I just know when something is wrong, and I kept saying so until it was right. The turntable, the seven engines, every curve and every animation were worn into shape that way.","Glass Player doesn't stop spinning here. It carries on as part of MacX. But as a work of its own, this is where it rests, exactly how I want it.","This record is pressed."]},
+        {title:"The Final Polish",items:["The sidebar and panels now sit the same distance from all four window edges, and the window controls have a place of their own.","Equalizer frequency labels now line up with their points at any window width.","The Data page is down to three rows, and the engine list in About folds into one.","Play All is now a permanent Library button beside Add File and Add Folder, and picking a playlist no longer adds an extra bar.","Add to Playlist has its own music note icon and animation instead of sharing the look of Add to Queue."]},
+        {title:"Left Behind",items:["The Annual Report has been removed completely. Your listening history is untouched.","The Russian interface has been removed. Glass Player now comes in Chinese and English."]}
+      ]}
+    },
+    {
+      version:"7.7.0", date:"2026-10-31", kind:"minor",
+      summary:"LOCALIZATION UPDATE：你的数据现在会保存到本地磁盘，也可以在设置中导出和导入；听歌记录在今天还没有数据时，会打开最近有记录的时段。",
+      sections:[
+        {title:"本地数据",items:["从 localhost 打开时，听歌历史、偏好、分析缓存和封面约每小时保存一次到本地磁盘，只写入有变化的内容，播放时不会写入磁盘。","在新的浏览器中打开时，会自动从磁盘恢复这些数据，并显示进度。"]},
+        {title:"导出与导入",items:["设置的「数据」页新增导出和导入，并使用与导入音乐相同的进度窗口。","导入只会添加和更新记录，不会删除现有记录；听歌次数保留较高的数值，偏好由文件中的设置替换。","恢复完成后会说明恢复了哪些内容，并可直接选择音乐文件夹，让歌曲重新出现在音乐库中。"]},
+        {title:"听歌记录",items:["今天还没有听歌时，页面首次打开会显示最近有记录的时段；你选择的时间范围会保持不变。"]}
+      ],english:{summary:"LOCALIZATION UPDATE saves your data to your local disk and adds export and import in Settings. When today has no listening yet, Listening History opens on the most recent period that does.",sections:[
+        {title:"Local Data",items:["Opened from localhost, your listening history, preferences, analysis cache and covers are saved to your local disk about once an hour, writing only what changed and never during playback.","A new browser restores this data from disk automatically and shows its progress."]},
+        {title:"Export and Import",items:["The Data page in Settings adds Export and Import, using the same progress window as importing music.","Import only adds and updates records and never deletes them. Play counts keep the higher number, and preferences are replaced by the ones in the file.","When a restore finishes, it tells you what came back and lets you choose your music folder so your songs reappear in the library."]},
+        {title:"Listening History",items:["When today has no listening yet, the page first opens on the most recent period that does. A range you choose stays selected."]}
+      ]}
     },
     {
       version:"7.6.3", date:"2026-10-20", kind:"patch",
@@ -3236,6 +3554,8 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.7.1":"FINAL PRESSING is the last intentionally maintained version of Glass Player. From here, it becomes part of my superapp, MacX.",
+    "7.7.0":"LOCALIZATION UPDATE saves your data to your local disk and adds export and import in Settings. When today has no listening yet, Listening History opens on the most recent period that does.",
     "7.6.3":"HOTFIX BUILD stops the app from automatically importing the last saved music folder at startup while keeping manual folder selection available.","7.6.2":"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",
     "7.6.1":"HOTFIX BUILD collapses the Sidebar only when the window becomes too narrow, then restores the saved Sidebar preference when the width recovers.",
     "7.6.0":"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",
@@ -4691,7 +5011,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.3 — HOTFIX BUILD`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.7.1 — FINAL PRESSING`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4706,7 +5026,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.6.3 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.7.1 FINAL PRESSING.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -4946,7 +5266,7 @@ window.GPModules.register = function register(name,factory){
   function refreshPrimaryViewLayout(viewName){
     requestAnimationFrame(()=>{
       fitActiveView($(`.view[data-view="${viewName}"]`));updateAllGliders(false);updateNavGlider(true);refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();syncSidebarCompactMode();
-      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();if(typeof maybeAutoOpenAnnualReport==="function")maybeAutoOpenAnnualReport();});
+      if(viewName==="history")requestAnimationFrame(()=>{scheduleHistoryRender();refreshScrollEdgeFrames();updateAdaptiveTextColors();updateContextualControlColors();});
       if(viewName==="player")requestAnimationFrame(()=>{$("#curTime").textContent=fmtTime(audio.currentTime);if(audio.duration)seekProgress=Math.max(0,Math.min(1,audio.currentTime/audio.duration));drawWaveform();syncDiscRotationTimeline(!audio.paused&&!audio.ended);drawDiscRotation();miniEqGeometry=null;drawMiniEq();syncMiniEqMeter();refreshNowTitleMarquee();if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();});
       else{if(typeof syncPlaybackMotion120==="function")syncPlaybackMotion120();if(typeof syncMiniEqMeter==="function")syncMiniEqMeter();}
     });
@@ -5203,8 +5523,8 @@ window.GPModules.register = function register(name,factory){
 
   /* GP Core 2.1: the panel shell is stationary; only its viewport moves.
      GP Motion Engine 2.0: complete moving sectors dissolve into that shell. */
-  const GP_SCROLL_EDGE_SELECTORS=["#queueBody","#recommendBody","#trackList","#historyRankingLeft","#historyRanks11to50","#settingsPanel","#releaseIndex","#releaseDetail","#favoritesGrid","#dataDashboard","#annualReportBody"];
-  const GP_SCROLLBAR_SELECTOR=".panel-body,.track-list,.history-ranking-left,.history-ranks-list,.settings-panel,.font-picker-pop,.release-index,.release-detail,.favorites-grid,.data-dashboard,.annual-report-body";
+  const GP_SCROLL_EDGE_SELECTORS=["#queueBody","#recommendBody","#trackList","#historyRankingLeft","#historyRanks11to50","#settingsPanel","#releaseIndex","#releaseDetail","#favoritesGrid","#dataDashboard"];
+  const GP_SCROLLBAR_SELECTOR=".panel-body,.track-list,.history-ranking-left,.history-ranks-list,.settings-panel,.font-picker-pop,.release-index,.release-detail,.favorites-grid,.data-dashboard";
   const GP_SCROLL_INTENT_WINDOW_MS=900;
   const gpScrollbarTimers=new WeakMap();
   const gpScrollIntentUntil=new WeakMap();
@@ -5229,7 +5549,7 @@ window.GPModules.register = function register(name,factory){
   },true);
   document.addEventListener("scroll",event=>revealLiquidScrollbar(scrollSurfaceFromTarget(event.target)),{capture:true,passive:true});
   const GP_OWN_SURFACE_IDS=new Set(["topList","settingsPanel","releaseIndex","releaseDetail"]);
-  const GP_SHARED_SHELLS={queueBody:".side-panel",recommendBody:".side-panel",trackList:".library-panel",historyRankingLeft:".top-list",historyRanks11to50:".top-list",favoritesGrid:"#historyFavoritesPane",dataDashboard:"#historyDataPane",annualReportBody:".annual-report-dialog"};
+  const GP_SHARED_SHELLS={queueBody:".side-panel",recommendBody:".side-panel",trackList:".library-panel",historyRankingLeft:".top-list",historyRanks11to50:".top-list",favoritesGrid:"#historyFavoritesPane",dataDashboard:"#historyDataPane"};
   const gpEdgeUpdateFrames=new WeakMap();
   function prepareScrollSurface(el){
     if(!el)return null;
@@ -6611,7 +6931,7 @@ window.GPModules.register = function register(name,factory){
   }
   let currentNowTitleText="",titleMeasureTimer=0,titleResizeTimer=0,titleMarqueeRevision=0,titleMarqueeAnimation=null,lastTitleLayoutScale=0,nowPlayingMetaRevision=0,nowPlayingMetaAnimations=[];
   function syncTitleLanguage(){
-    const language=document.documentElement.lang||(uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh-CN");
+    const language=document.documentElement.lang||(uiLanguage==="en"?"en":"zh-CN");
     $$("#nowTitle,#nowArtist,.view-header h2").forEach(node=>node?.setAttribute("lang",language));
     if(typeof refreshNowTitleMarquee==="function")refreshNowTitleMarquee();
   }
@@ -6876,7 +7196,7 @@ window.GPModules.register = function register(name,factory){
           <button class="track-action track-like ripple-target${isLikedTrack(playlist[idx])?" active":""}" data-idx="${idx}" aria-pressed="${isLikedTrack(playlist[idx])}" title="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}" aria-label="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
           <button class="track-action queue-next ripple-target" data-idx="${idx}" title="${tr("下一首播放","Play Next")}" aria-label="${tr("下一首播放","Play Next")}"><svg class="rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path class="list-next-triangle" d="M5.9 5.55c-.52-.36-.9-.12-.9.52v11.86c0 .64.38.88.9.52l8.45-5.93c.48-.34.48-.7 0-1.04z"/><path class="list-next-echo" d="M19 5.8v12.4"/><path class="list-next-bar" d="M19 5.8v12.4"/></svg></button>
           <button class="track-action queue-add ripple-target" data-idx="${idx}" title="${tr("加入播放队列","Add to Queue")}" aria-label="${tr("加入播放队列","Add to Queue")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="queue-bars"><path d="M4 6h9M4 12h7M4 18h7"/></g><path class="queue-plus-wave" d="M17 11v8M13 15h8"/><path class="queue-plus" d="M17 11v8M13 15h8"/></svg></button>
-          ${options.playlistRemove?"":`<button class="track-action playlist-add ripple-target" data-idx="${idx}" title="${tr("添加到歌单","Add to playlist")}" aria-label="${tr("添加到歌单","Add to playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h9M4 12h9M4 18h5"/><path d="M17.5 13v7M14 16.5h7"/></svg></button>`}
+          ${options.playlistRemove?"":`<button class="track-action playlist-add ripple-target" data-idx="${idx}" title="${tr("添加到歌单","Add to playlist")}" aria-label="${tr("添加到歌单","Add to playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="playlist-note"><circle cx="6.5" cy="17.5" r="2.5"/><path d="M9 17.5V6l7-2v5"/></g><path class="queue-plus-wave" d="M18 12.5v7M14.5 16h7"/><path class="queue-plus" d="M18 12.5v7M14.5 16h7"/></svg></button>`}
           ${options.playlistRemove?`<button class="track-action playlist-remove ripple-target" data-idx="${idx}" title="${tr("从歌单移除","Remove from playlist")}" aria-label="${tr("从歌单移除","Remove from playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`:""}
         </div>
       </div>`;
@@ -7127,7 +7447,7 @@ window.GPModules.register = function register(name,factory){
     syncCollectionScope();syncPlaylistUI();
   }
   function syncPlaylistUI(skipRender=false){
-    const label=$("#playlistBtnText"),pop=$("#playlistPop"),bar=$("#collectionBar");
+    const label=$("#playlistBtnText"),pop=$("#playlistPop");
     if(label)label.textContent=`${tr("歌单","Playlists")}：${collectionDisplayName()}`;
     if(pop){
       const rows=[{mode:"all",name:tr("全部歌曲","All Songs"),count:playlist.length},{mode:"liked",name:`♥ ${tr("我喜欢","Liked")}`,count:collectionTrackIndicesForMode("liked").length}].concat(userPlaylists().map(list=>({mode:`pl:${list.id}`,name:list.name,count:collectionTrackIndicesForMode(`pl:${list.id}`).length,id:list.id})));
@@ -7150,15 +7470,6 @@ window.GPModules.register = function register(name,factory){
       const input=$("#playlistNameInput"),confirm=$("#playlistConfirmBtn"),active=activePlaylist();
       if(input&&document.activeElement!==input)input.value=active?active.name:"";
       if(confirm)confirm.textContent=active?tr("重命名","Rename"):tr("新建歌单","New Playlist");
-    }
-    if(bar){
-      const active=libraryCollectionMode!=="all";
-      bar.classList.toggle("show",active);
-      if(active){
-        const members=collectionTrackIndices();
-        bar.querySelector(".collection-name").textContent=collectionDisplayName();
-        bar.querySelector(".collection-count").textContent=tr(`${members.length} 首`,`${members.length} songs`);
-      }
     }
     if(!skipRender)render(searchInputSafe());
   }
@@ -9351,6 +9662,7 @@ window.GPModules.register = function register(name,factory){
 
   $("#rangeSeg").addEventListener("click", (e) => {
     const btn = e.target.closest("button"); if(!btn) return;
+    historyOpeningRangeChosen=true;
     $$("#rangeSeg button").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
     requestAnimationFrame(()=>updateGlider($("#rangeSeg"),true));
@@ -9526,529 +9838,23 @@ window.GPModules.register = function register(name,factory){
     const insights=buildListeningInsights(store);
     setBatchedScrollHTML($("#dataDashboard"),`<section class="data-card wide"><h3>${tr("过去十天听歌时间","Listening Time · Last Ten Days")}</h3><div class="data-sub">${tr("悬停数据点查看日期与详细时长","Hover a point for the date and listening time")}</div>${svg}</section><section class="data-card"><h3>${tr("过去十二周最爱艺人","Favorite Artists · Twelve Weeks")}</h3><div class="data-sub">${tr("每周以听歌时长计算","Calculated from weekly listening time")}</div>${periodBars(weeks)}</section><section class="data-card"><h3>${tr("过去十二个月最爱艺人","Favorite Artists · Twelve Months")}</h3><div class="data-sub">${tr("悬停条形查看月份、艺人和时长","Hover a bar for month, artist and time")}</div>${periodBars(months)}</section><section class="data-card wide"><div class="neural-insights">${insights.map(text=>`<div class="neural-insight">${text}</div>`).join("")}</div></section>`);
   }
-   /* ============ annual report (7.5.0 Replay Atlas) ============
-     History Service owns yearly aggregation; History View renders it.
-     The report year rolls forward automatically: Dec 31 (year Y) through
-     Jan 14 (year Y+1) opens year Y and presents it once per session.
-     Completed years stay viewable and downloadable all year. Downloads are
-      standalone interactive HTML (inline style, chapters and scroll motion;
-      blob: covers are omitted by design). */
-  const ANNUAL_WINDOW_END_DAY=14;
-  function annualReportWindow(now=new Date()){
-    const month=now.getMonth(),date=now.getDate(),year=now.getFullYear();
-    if(month===11&&date===31)return {open:true,year};
-    if(month===0&&date<=ANNUAL_WINDOW_END_DAY)return {open:true,year:year-1};
-    return {open:false,year:year-1};
-  }
-  function annualAvailableYears(store){
-    const years=new Set(),collect=key=>{const year=Number(String(key||"").slice(0,4));if(Number.isInteger(year)&&year>=2000&&year<=9999)years.add(year);};
-    Object.keys(store.daily||{}).forEach(collect);
-    Object.values(store.songs||{}).forEach(entry=>Object.keys(entry?.daily||{}).forEach(collect));
-    return [...years].sort((a,b)=>b-a);
-  }
-  function buildAnnualReport(store,year){
-    const range={start:new Date(year,0,1),end:new Date(year+1,0,1)};
-    const total=sumDailyRange(store.daily,range);
-    const songs=Object.entries(store.songs||{}).map(([key,entry])=>({key,entry,track:currentTrackForHistory(key,entry),seconds:sumSongRange(entry,range),plays:sumPlayCountRange(entry,range,Number(entry.duration)||0)})).filter(item=>item.seconds>0).sort((a,b)=>b.seconds-a.seconds||b.plays-a.plays);
-    const totalPlays=songs.reduce((sum,item)=>sum+item.plays,0);
-    const artists=new Map(),albums=new Map(),genres=new Map();
-    songs.forEach(item=>{
-      const artist=item.track?.artist||item.entry.artist,album=item.track?.album||item.entry.album,genre=item.track?.genre||item.entry.genre;
-      if(artist)artists.set(artist,(artists.get(artist)||0)+item.seconds);
-      if(album)albums.set(album,(albums.get(album)||0)+item.seconds);
-      if(genre)genres.set(genre,(genres.get(genre)||0)+item.seconds);
-    });
-    const topRows=list=>[...list.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
-    const days=Object.entries(store.daily||{}).filter(([key,value])=>String(key).startsWith(`${year}-`)&&(Number(value)||0)>0);
-    const weekdayTotals=Array.from({length:7},()=>0),seasonTotals=new Map([["winter",0],["spring",0],["summer",0],["autumn",0]]);
-    const seasonForMonth=month=>month<2||month===11?"winter":month<5?"spring":month<8?"summer":"autumn";
-    days.forEach(([key,value])=>{const date=new Date(`${key}T12:00:00`),month=date.getMonth();weekdayTotals[date.getDay()]+=Number(value)||0;seasonTotals.set(seasonForMonth(month),(seasonTotals.get(seasonForMonth(month))||0)+(Number(value)||0));});
-    const monthly=Array.from({length:12},(_,month)=>{
-      const seconds=sumDailyRange(store.daily,{start:new Date(year,month,1),end:new Date(year,month+1,1)});
-      const [name]=artistTopForMonth(store,new Date(year,month,1));
-      return {label:new Date(year,month,1).toLocaleDateString(uiLanguage==="zh"?"zh-CN":"en-US",{month:"short"}),name:seconds>0?name:tr("—","—"),value:seconds};
-    });
-    const activeDays=days.length;
-    let bestDay=null;
-    Object.entries(store.daily||{}).forEach(([key,value])=>{if(String(key).startsWith(`${year}-`)&&(Number(value)||0)>0&&(!bestDay||Number(value)>bestDay.value))bestDay={key,value:Number(value)};});
-    const hourTotals=Array.from({length:24},()=>0);
-    Object.entries(store.hourly||{}).forEach(([day,hours])=>{if(!String(day).startsWith(`${year}-`))return;Object.entries(hours||{}).forEach(([hour,seconds])=>{const slot=Number(hour);if(slot>=0&&slot<24)hourTotals[slot]+=Number(seconds)||0;});});
-    const peakHour=hourTotals.indexOf(Math.max(...hourTotals,0));
-    const hourBands=Array.from({length:6},(_,band)=>({label:`${String(band*4).padStart(2,"0")}–${String(band*4+3).padStart(2,"0")}`,value:hourTotals.slice(band*4,band*4+4).reduce((sum,value)=>sum+value,0)}));
-    const weekdayNames=Array.from({length:7},(_,day)=>new Date(2024,0,day+7).toLocaleDateString(uiLanguage==="zh"?"zh-CN":"en-US",{weekday:"long"}));
-    const weekdays=weekdayNames.map((label,day)=>({label,value:weekdayTotals[day]}));
-    const seasons=[...seasonTotals.entries()].map(([key,value])=>({key,label:tr({winter:"冬季",spring:"春季",summer:"夏季",autumn:"秋季"}[key],{winter:"Winter",spring:"Spring",summer:"Summer",autumn:"Autumn"}[key]),value}));
-    const formatTotals=new Map(),losslessFormats=new Set(["FLAC","ALAC","WAV","AIFF"]);
-    songs.forEach(item=>{const format=String(item.track?.format||item.entry.format||"").toUpperCase();if(format)formatTotals.set(format,(formatTotals.get(format)||0)+item.seconds);});
-    const audioProfile={formats:[...formatTotals.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5),losslessSeconds:[...formatTotals.entries()].filter(([format])=>losslessFormats.has(format)).reduce((sum,[,value])=>sum+value,0),sampleRateTracks:songs.filter(item=>Number(item.track?.sampleRate||item.entry.sampleRate)>=48000).length};
-    const artistEvolution=monthly.map(row=>({label:row.label,name:row.name,value:row.value})).filter(row=>row.value>0&&row.name&&row.name!=="—");
-    return {year,total,totalPlays,activeDays,bestDay,songs:songs.slice(0,12),topSong:songs[0]||null,topArtist:topRows(artists)[0]||null,topAlbum:topRows(albums)[0]||null,artists:topRows(artists),albums:topRows(albums),genres:topRows(genres),monthly,weekdays,seasons,hourBands,peakHour:hourTotals[peakHour]>0?peakHour:null,peakWeekday:weekdays.slice().sort((a,b)=>b.value-a.value)[0]||null,peakSeason:seasons.slice().sort((a,b)=>b.value-a.value)[0]||null,artistEvolution,audioProfile,uniqueSongs:songs.length};
-  }
-  let annualReportYear=null,annualAutoOpenedFor=0;
-  function renderAnnualTabs(years,target,win){
-    const host=$("#annualYearTabs");if(!host)return;
-    host.innerHTML=years.map(year=>`<button type="button" class="${year===target?"active":""}" data-annual-year="${year}">${year}${win.open&&year===win.year?` · ${tr("新","New")}`:""}</button>`).join("");
-  }
-  function annualBarRows(rows,max=Math.max(1,...rows.map(row=>row.value))){return rows.map(row=>'<div class="annual-bar-row"><span>'+escapeHtml(row.label||row.name||row.key||'—')+'</span><i><b style="width:'+((row.value/max*100).toFixed(1))+'%"></b></i><em>'+fmtDuration(row.value)+'</em></div>').join('');}
-  function attachAnnualReportMotion(host){
-    host._annualMotionCleanup?.();
-    host.classList.remove('is-ready');
-    const sections=[...host.querySelectorAll('[data-annual-depth]')];
-    const reveal=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add('is-visible');}),{root:host,threshold:.12});
-    sections.forEach(section=>reveal.observe(section));
-    let frame=0;
-    const sync=()=>{if(frame)return;frame=requestAnimationFrame(()=>{frame=0;const box=host.getBoundingClientRect();sections.forEach(section=>{const rect=section.getBoundingClientRect(),center=rect.top+rect.height/2,delta=(box.top+box.height/2-center)/Math.max(1,box.height);section.style.setProperty('--annual-shift',(Math.max(-1,Math.min(1,delta))*Number(section.dataset.annualDepth||0))+'em');});});};
-    host.addEventListener('scroll',sync,{passive:true});
-    addEventListener('resize',sync,{passive:true});
-    host._annualMotionCleanup=()=>{reveal.disconnect();host.removeEventListener('scroll',sync);removeEventListener('resize',sync);if(frame)cancelAnimationFrame(frame);};
-    requestAnimationFrame(()=>{host.classList.add('is-ready');sync();});
-  }
-  function renderAnnualBody(store,year){
-    const host=$('#annualReportBody');if(!host)return;
-    const report=buildAnnualReport(store,year);
-    $('#annualReportTitle').textContent=tr(year+' 年度报告',year+' Annual Report');
-    if(report.total<=0){host._annualMotionCleanup?.();host._annualMotionCleanup=null;setBatchedScrollHTML(host,'<div class="empty-state"><p>'+tr(year+' 年还没有听歌记录','No listening history for '+year)+'</p></div>');return;}
-    const card=(label,value,detail)=>'<article class="annual-kpi"><span>'+label+'</span><strong>'+value+'</strong>'+(detail?'<small>'+detail+'</small>':'')+'</article>';
-    const top=report.topSong,bestDayValue=report.bestDay?escapeHtml(report.bestDay.key)+' · '+fmtDuration(report.bestDay.value):'—';
-    const peakValue=report.peakHour===null?tr('—','—'):tr(report.peakHour+':00 最活跃','Most active at '+report.peakHour+':00');
-    const rankRows=report.songs.map((item,rank)=>{const cover=item.track?.thumbUrl||item.track?.coverUrl;const thumb=cover?'<img src="'+cover+'" class="track-thumb" loading="lazy" decoding="async">':'<div class="track-thumb"><span>'+escapeHtml((item.track?.title||item.entry.title||'?').trim().slice(0,1))+'</span></div>';return '<div class="top-row"><div class="top-rank">'+(rank+1)+'</div><div class="top-row-main">'+thumb+'<div class="top-info"><div class="t-title">'+escapeHtml(item.track?.title||item.entry.title)+'</div><div class="t-artist">'+escapeHtml(item.track?.artist||item.entry.artist)+'</div></div></div><div class="top-row-metrics"><div class="top-bar-wrap"><div class="top-bar-fill" style="width:'+((item.seconds/Math.max(1,report.songs[0].seconds)*100).toFixed(0))+'%"></div></div><div class="top-meta"><span>'+fmtDuration(item.seconds)+' · '+item.plays+tr('次',' plays')+'</span></div></div></div>';}).join('');
-    const topSongTitle=top?escapeHtml(top.track?.title||top.entry.title):'—',topArtist=report.topArtist?escapeHtml(report.topArtist[0]):'—',topAlbum=report.topAlbum?escapeHtml(report.topAlbum[0]):'—';
-    const audioLabel=report.audioProfile.losslessSeconds>0?tr('包含无损播放','Includes lossless listening'):tr('未记录无损格式','No lossless format recorded');
-    let html='<div class="annual-report-story">';
-    html+='<section class="annual-chapter annual-hero-chapter" data-annual-depth=".12"><div class="annual-kicker">GLASS PLAYER · '+tr('年度回顾','YEAR IN SOUND')+'</div><div class="annual-year">'+year+'</div><p>'+tr('这一年，你把时间交给了声音。','A year of your time, translated into sound.')+'</p><div class="annual-kpis">'+card(tr('听歌时间','Listening time'),fmtDuration(report.total),report.activeDays+tr('个活跃日',' active days'))+card(tr('播放次数','Plays'),report.totalPlays,report.uniqueSongs+tr('首独立歌曲',' unique songs'))+card(tr('年度之歌','Song of the year'),topSongTitle,top?fmtDuration(top.seconds):'—')+card(tr('年度艺人','Artist of the year'),topArtist)+card(tr('年度专辑','Album of the year'),topAlbum)+'</div></section>';
-    html+='<section class="annual-chapter annual-feature-chapter" data-annual-depth="-.08"><div class="annual-chapter-index">01</div><div><h4>'+tr('年度之歌','THE SONG THAT STAYED')+'</h4><h2>'+topSongTitle+'</h2><p>'+(top?(escapeHtml(top.track?.artist||top.entry.artist||'')+' · '+fmtDuration(top.seconds)+' · '+top.plays+tr('次',' plays')):'—')+'</p></div><div class="annual-feature-number">01</div></section>';
-    html+='<section class="annual-chapter" data-annual-depth=".05"><div class="annual-section-heading"><div><span>'+tr('节奏','RHYTHM')+'</span><h3>'+tr('你的听歌节拍','Your listening rhythm')+'</h3></div><p>'+tr('从日期、时段和季节，看见这一年的习惯。','A year of habits, seen through days, hours and seasons.')+'</p></div><div class="annual-rhythm-grid"><div><h5>'+tr('最活跃星期','Most active weekday')+'</h5><strong>'+escapeHtml(report.peakWeekday?.label||'—')+'</strong>'+annualBarRows(report.weekdays)+'</div><div><h5>'+tr('最常出现的时段','Most active hours')+'</h5><strong>'+peakValue+'</strong>'+annualBarRows(report.hourBands)+'</div><div><h5>'+tr('季节偏好','Seasonal listening')+'</h5><strong>'+escapeHtml(report.peakSeason?.label||'—')+'</strong>'+annualBarRows(report.seasons)+'</div></div></section>';
-    html+='<section class="annual-chapter" data-annual-depth="-.06"><div class="annual-section-heading"><div><span>'+tr('时间线','TIMELINE')+'</span><h3>'+tr('十二个月的起伏','Twelve months in motion')+'</h3></div></div><div class="annual-month-grid">'+annualBarRows(report.monthly)+'</div><div class="annual-evolution">'+report.artistEvolution.map(row=>'<span>'+escapeHtml(row.label)+'<b>'+escapeHtml(row.name)+'</b></span>').join('')+'</div></section>';
-    html+='<section class="annual-chapter annual-ranking-chapter" data-annual-depth=".1"><div class="annual-section-heading"><div><span>'+tr('排行榜','RANKINGS')+'</span><h3>'+tr('重复播放的那些歌','The songs you returned to')+'</h3></div><p>'+tr('按年度听歌时长排序，显示最多 12 首。','Ranked by listening time, up to 12 songs.')+'</p></div><div class="annual-ranking-list">'+rankRows+'</div></section>';
-    const dims=[[tr('最爱艺人','Favorite artists'),report.artists],[tr('最爱专辑','Favorite albums'),report.albums],[tr('最爱风格','Favorite genres'),report.genres]];
-    html+='<section class="annual-chapter" data-annual-depth="-.05"><div class="annual-section-heading"><div><span>'+tr('偏好版图','YOUR MAP')+'</span><h3>'+tr('艺人、专辑与风格','Artists, albums and genres')+'</h3></div></div><div class="annual-dims">'+dims.map(pair=>'<div class="annual-dim"><h5>'+pair[0]+'</h5>'+annualBarRows(pair[1].map(row=>({name:row[0],value:row[1]})))+'</div>').join('')+'</div></section>';
-    html+='<section class="annual-chapter" data-annual-depth=".07"><div class="annual-section-heading"><div><span>'+tr('音质档案','AUDIO PROFILE')+'</span><h3>'+tr('你听到的声音','The sound you chose')+'</h3></div></div><div class="annual-audio-grid"><div><strong>'+audioLabel+'</strong><span>'+fmtDuration(report.audioProfile.losslessSeconds)+' '+tr('无损时长','lossless time')+'</span></div><div><strong>'+tr('高采样率曲目','High sample-rate tracks')+'</strong><span>'+report.audioProfile.sampleRateTracks+'</span></div><div><strong>'+tr('记录到的格式','Formats recorded')+'</strong><span>'+(report.audioProfile.formats.map(row=>escapeHtml(row[0])).join(' · ')||'—')+'</span></div></div></section>';
-    html+='<section class="annual-chapter annual-closing-chapter" data-annual-depth="-.1"><div class="annual-closing-number">'+fmtDuration(report.total)+'</div><h3>'+tr('这一年，感谢你一直在听。','Thanks for listening all year.')+'</h3><p>'+tr('单日最高是 '+bestDayValue+'。所有统计均在本地生成。','Your peak day was '+bestDayValue+'. Every statistic was generated locally.')+'</p><small>'+tr('歌曲文件不会离开设备；本报告只读取现有听歌历史。','Audio files never leave this device; this report reads only existing listening history.')+'</small></section></div>';
-    host.innerHTML=html;
-    attachAnnualReportMotion(host);
-  }
-  function openAnnualReport(year){
-    const store=loadHistoryStore(),win=annualReportWindow();
-    const years=annualAvailableYears(store);
-    if(win.open&&!years.includes(win.year))years.unshift(win.year);
-    const target=years.includes(year)?year:(win.open?win.year:years[0]);
-    if(target===undefined){showToast(tr("还没有听歌记录","No listening history yet"));return;}
-    annualReportYear=target;
-    renderAnnualTabs(years,target,win);
-    renderAnnualBody(store,target);
-    $("#annualReportModal").classList.add("show");
-    setTimeout(()=>{try{scheduleScrollEdgeUpdate($("#annualReportBody"));}catch(error){}},260);
-  }
-  function closeAnnualReport(){$("#annualReportModal").classList.remove("show");}
-  function maybeAutoOpenAnnualReport(){
-    const win=annualReportWindow();
-    if(!win.open||annualAutoOpenedFor===win.year)return;
-    if(!$(".view[data-view=\"history\"]")?.classList.contains("active"))return;
-    annualAutoOpenedFor=win.year;openAnnualReport(win.year);
-  }
-  function syncAnnualButton(){
-    const button=$("#annualReportBtn");if(!button)return;
-    const win=annualReportWindow();
-    button.textContent=tr("年度报告","Annual Report");
-    button.classList.toggle("fresh",win.open);
-    button.title=win.open?tr(`${win.year} 年度报告已开放，1 月 14 日截止`,`${win.year} report is open until January 14`):tr("查看往年报告","Browse past yearly reports");
-  }
-  function buildAnnualReportHTML(report){
-    const esc=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const fmt=seconds=>{const total=Math.round(seconds||0),hours=Math.floor(total/3600),minutes=Math.floor(total%3600/60);return hours?hours+'h '+minutes+'m':minutes?minutes+' min':total+' sec';};
-
-    // helper for bar charts
-    const barRows=rows=>rows.map(row=>`<div class="bar-row"><span>${esc(row.label||row.name||row.key||'-')}</span><i><b style="width:${(row.value/Math.max(1,...rows.map(item=>item.value))*100).toFixed(1)}%"></b></i><em>${fmt(row.value)}</em></div>`).join('');
-
-    const top=report.topSong;
-    const topTitle=top?.track?.title||top?.entry.title||'-';
-    const topArtist=report.topArtist?.[0]||'-';
-    const topAlbum=report.topAlbum?.[0]||'-';
-
-    // Top 12 list
-    const top12 = report.songs.slice(0, 12);
-    const maxSeconds = Math.max(1, ...top12.map(s => s.seconds));
-    const rows=top12.map((item,index)=>{
-      const badge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : String(index+1).padStart(2,'0');
-      const pct = (item.seconds / maxSeconds * 100).toFixed(1);
-      return `<div class="rank"><div class="badge">${badge}</div><div class="rank-info"><b>${esc(item.track?.title||item.entry.title)}</b><small>${esc(item.track?.artist||item.entry.artist||'')}</small><div class="rank-bar"><div style="width:${pct}%"></div></div></div><div class="rank-stats"><em>${fmt(item.seconds)}</em><span>${item.plays} plays</span></div></div>`;
-    }).join('');
-
-    const dims=[['Top Artists',report.artists],['Top Albums',report.albums],['Top Genres',report.genres]].map(pair=>`<div class="dim-panel"><h4>${pair[0]}</h4><div class="bars">${barRows(pair[1].map(row=>({name:row[0],value:row[1]})))}</div></div>`).join('');
-
-    const style = `
-      :root {
-        --bg-obsidian: #08090d;
-        --bg-velvet: #0e1017;
-        --accent-cyan: #00f0ff;
-        --accent-magenta: #ff0055;
-        --accent-amber: #ffb800;
-        --accent-indigo: #4d00ff;
-        --text-main: #f0f2f5;
-        --text-muted: #8b949e;
-        --font-base: "Inter", system-ui, -apple-system, sans-serif;
-      }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      html { scroll-behavior: smooth; background: var(--bg-obsidian); }
-      body {
-        font-family: var(--font-base);
-        color: var(--text-main);
-        background: radial-gradient(circle at 15% 10%, rgba(77, 0, 255, 0.15) 0%, transparent 40%),
-                    radial-gradient(circle at 85% 90%, rgba(255, 0, 85, 0.1) 0%, transparent 40%);
-        background-attachment: fixed;
-        overflow-x: hidden;
-      }
-      /* Sticky Header */
-      header.top-nav {
-        position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-        background: rgba(8, 9, 13, 0.7); backdrop-filter: blur(16px);
-        display: flex; flex-direction: column;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-      }
-      .progress-bar { height: 4px; width: 100%; background: rgba(255,255,255,0.1); }
-      .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta)); transform-origin: left; }
-      .nav-inner { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; }
-      .nav-pills { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
-      .nav-pills::-webkit-scrollbar { display: none; }
-      .pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); background: rgba(255,255,255,0.05); cursor: pointer; text-decoration: none; transition: 0.3s; white-space: nowrap; }
-      .pill.active, .pill:hover { background: rgba(255,255,255,0.15); color: #fff; box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
-      .btn-print { background: linear-gradient(135deg, var(--accent-indigo), var(--accent-magenta)); border: none; color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
-      .btn-print:hover { filter: brightness(1.2); }
-
-      main { width: min(1200px, 100%); margin: auto; padding: 80px 4vw 16vh; }
-
-      .chapter {
-        min-height: 85vh; display: flex; flex-direction: column; justify-content: center;
-        padding: 10vh 0; position: relative;
-        opacity: 0; transform: translateY(60px) scale(0.95); filter: blur(8px);
-        transition: opacity 1s ease, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1s ease;
-      }
-      .chapter.visible { opacity: 1; transform: translateY(var(--parallax-shift, 0px)) scale(1); filter: blur(0); }
-
-      /* Typography */
-      .eyebrow { font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent-cyan); font-weight: 800; margin-bottom: 16px; display: inline-block; padding-bottom: 4px; border-bottom: 2px solid var(--accent-cyan); }
-      h1 { font-size: clamp(60px, 10vw, 150px); line-height: 0.9; font-weight: 900; letter-spacing: -0.05em; background: linear-gradient(135deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
-      h2 { font-size: clamp(36px, 6vw, 72px); line-height: 1.1; margin-bottom: 16px; font-weight: 800; color: #fff; }
-      h3 { font-size: 24px; color: #fff; margin-bottom: 12px; }
-      p { font-size: clamp(16px, 2vw, 24px); color: var(--text-muted); max-width: 800px; line-height: 1.6; }
-
-      /* Cover Stats */
-      .hero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 60px; }
-      .hero-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; transition: 0.3s; backdrop-filter: blur(10px); }
-      .hero-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.08); border-color: var(--accent-cyan); box-shadow: 0 10px 30px rgba(0,240,255,0.1); }
-      .hero-card .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; }
-      .hero-card .val { font-size: 28px; font-weight: 800; color: #fff; }
-
-      /* Chapter 01 Vinyl */
-      .vinyl-container { display: flex; align-items: center; gap: 40px; margin-top: 40px; flex-wrap: wrap; }
-      .vinyl-disc { width: 300px; height: 300px; border-radius: 50%; background: repeating-radial-gradient(#111 0%, #000 5%, #111 10%); box-shadow: 0 0 50px rgba(255,0,85,0.3), inset 0 0 20px rgba(255,255,255,0.1); position: relative; animation: spin 10s linear infinite; display: grid; place-items: center; }
-      .vinyl-label { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-magenta), var(--accent-amber)); border: 4px solid #111; }
-      .vinyl-hole { width: 12px; height: 12px; border-radius: 50%; background: var(--bg-obsidian); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-      @keyframes spin { 100% { transform: rotate(360deg); } }
-      .soty-info h3 { font-size: 48px; margin-bottom: 8px; background: linear-gradient(90deg, #fff, var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-      .soty-info p { font-size: 24px; margin-bottom: 16px; color: var(--text-main); }
-
-      /* Grids */
-      .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px; }
-      .dim-panel { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
-      .dim-panel h4 { font-size: 20px; margin-bottom: 24px; color: var(--accent-amber); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
-
-      /* Bar Charts */
-      .bars { display: flex; flex-direction: column; gap: 12px; }
-      .bar-row { display: grid; grid-template-columns: minmax(80px, 1fr) 2fr 70px; align-items: center; gap: 12px; font-size: 14px; }
-      .bar-row span { color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .bar-row i { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
-      .bar-row b { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan)); border-radius: 4px; transition: width 1s ease-out; }
-      .bar-row em { font-style: normal; text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-
-      /* Evolution Timeline */
-      .evolution { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-      .ev-badge { background: rgba(255,255,255,0.05); padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 12px; align-items: center; transition: 0.3s; }
-      .ev-badge:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-amber); transform: translateY(-2px); }
-      .ev-badge span { color: var(--text-muted); font-size: 12px; }
-      .ev-badge b { color: #fff; font-size: 16px; }
-
-      /* Rankings */
-      .rankings { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
-      .rank { display: grid; grid-template-columns: 50px 1fr auto; align-items: center; gap: 20px; background: rgba(255,255,255,0.02); padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
-      .rank:hover { background: rgba(255,255,255,0.05); transform: translateX(10px); border-color: rgba(255,255,255,0.2); }
-      .badge { font-size: 24px; font-weight: 900; color: var(--text-muted); text-align: center; }
-      .rank-info b { display: block; font-size: 18px; color: #fff; margin-bottom: 4px; }
-      .rank-info small { color: var(--text-muted); font-size: 14px; }
-      .rank-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; width: 60%; }
-      .rank-bar div { height: 100%; background: var(--accent-amber); border-radius: 2px; }
-      .rank-stats { text-align: right; }
-      .rank-stats em { display: block; font-style: normal; font-size: 16px; color: #fff; font-weight: bold; }
-      .rank-stats span { font-size: 12px; color: var(--text-muted); }
-
-      /* Footer */
-      .closing { text-align: center; align-items: center; }
-      .watermark { opacity: 0.3; margin: 40px 0; max-width: 400px; }
-      .privacy-seal { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 255, 128, 0.1); color: #00ff80; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: bold; border: 1px solid rgba(0, 255, 128, 0.3); margin-top: 20px; }
-
-      @media print {
-        body { background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        header.top-nav { display: none; }
-        .chapter { opacity: 1; transform: none; filter: none; min-height: auto; page-break-inside: avoid; padding: 20px 0; }
-        h1, h2, h3, h4, .val, .rank-info b { color: #000; -webkit-text-fill-color: #000; }
-        .hero-card, .dim-panel, .rank, .ev-badge { background: #f0f0f0; border-color: #ccc; box-shadow: none; }
-        .bar-row span, p, .text-muted { color: #333; }
-        .bar-row i { background: #ddd; }
-        .vinyl-disc { box-shadow: none; border: 1px solid #ccc; animation: none; }
-        .privacy-seal { background: #e0ffe0; color: #008000; border-color: #008000; }
-      }
-
-      @media (max-width: 768px) {
-        .rank { grid-template-columns: 30px 1fr; gap: 12px; }
-        .rank-stats { grid-column: 2; text-align: left; display: flex; gap: 12px; align-items: center; }
-        .hero-grid { grid-template-columns: 1fr 1fr; }
-        .nav-inner { padding: 12px; }
-      }
-    `;
-
-    const html = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Glass Player Replay Atlas ${report.year}</title>
-  <style>${style}</style>
-</head>
-<body>
-  <header class="top-nav">
-    <div class="progress-bar"><div class="progress-fill" id="scrollProgress"></div></div>
-    <div class="nav-inner">
-      <div class="nav-pills" id="navPills">
-        <a href="#prologue" class="pill active">Prologue</a>
-        <a href="#ch01" class="pill">01. Song</a>
-        <a href="#ch02" class="pill">02. Rhythm</a>
-        <a href="#ch03" class="pill">03. Time</a>
-        <a href="#ch04" class="pill">04. Top 12</a>
-        <a href="#ch05" class="pill">05. Map</a>
-        <a href="#ch06" class="pill">06. Profile</a>
-        <a href="#epilogue" class="pill">Epilogue</a>
-      </div>
-      <button class="btn-print" onclick="window.print()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-        Save / Print
-      </button>
-    </div>
-  </header>
-
-  <main>
-    <section class="chapter" id="prologue" data-depth="0.05">
-      <div class="eyebrow">REPLAY ATLAS · 声音旅程</div>
-      <h1>${report.year}</h1>
-      <p>A year of your time, translated into sound. Every beat, every silence, mapped locally on your device.</p>
-
-      <div class="hero-grid">
-        <div class="hero-card"><div class="lbl">Listening Time</div><div class="val">${fmt(report.total)}</div></div>
-        <div class="hero-card"><div class="lbl">Plays</div><div class="val">${report.totalPlays}</div></div>
-        <div class="hero-card"><div class="lbl">Active Days</div><div class="val">${report.activeDays}</div></div>
-        <div class="hero-card"><div class="lbl">Unique Songs</div><div class="val">${report.uniqueSongs}</div></div>
-        <div class="hero-card"><div class="lbl">Top Artist</div><div class="val">${esc(topArtist)}</div></div>
-        <div class="hero-card"><div class="lbl">Top Album</div><div class="val">${esc(topAlbum)}</div></div>
-      </div>
-    </section>
-
-    <section class="chapter" id="ch01" data-depth="-0.04">
-      <div class="eyebrow">Chapter 01 / 年度之歌 (Song of the Year)</div>
-      <h2>The sound that defined your year</h2>
-      <div class="vinyl-container">
-        <div class="vinyl-disc">
-          <div class="vinyl-label"><div class="vinyl-hole"></div></div>
-        </div>
-        <div class="soty-info">
-          <h3>${esc(topTitle)}</h3>
-          <p>${esc(top?.track?.artist||top?.entry.artist||'')}</p>
-          <div class="ev-badge" style="display:inline-flex;">
-            <span>Repeated</span><b>${top?.plays||0} times</b>
-          </div>
-          <div class="ev-badge" style="display:inline-flex; margin-left: 12px;">
-            <span>Listened for</span><b>${top ? fmt(top.seconds) : '-'}</b>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="chapter" id="ch02" data-depth="0.06">
-      <div class="eyebrow">Chapter 02 / 声音的昼夜与四季节拍</div>
-      <h2>Rhythm & Circadian Flow</h2>
-      <div class="grid-3">
-        <div class="dim-panel">
-          <h4>24-Hour Daypart</h4>
-          <p style="font-size:14px; margin-bottom: 12px; color: var(--accent-cyan);">Peak: ${esc(report.peakHour===null?'-':report.peakHour+':00')}</p>
-          <div class="bars">${barRows(report.hourBands)}</div>
-        </div>
-        <div class="dim-panel">
-          <h4>Weekly Flow</h4>
-          <p style="font-size:14px; margin-bottom: 12px; color: var(--accent-cyan);">Peak: ${esc(report.peakWeekday?.label||'-')}</p>
-          <div class="bars">${barRows(report.weekdays)}</div>
-        </div>
-        <div class="dim-panel">
-          <h4>Seasonal Tides</h4>
-          <p style="font-size:14px; margin-bottom: 12px; color: var(--accent-cyan);">Peak: ${esc(report.peakSeason?.label||'-')}</p>
-          <div class="bars">${barRows(report.seasons)}</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="chapter" id="ch03" data-depth="-0.03">
-      <div class="eyebrow">Chapter 03 / 12 个月的流动故事</div>
-      <h2>Twelve Months in Motion</h2>
-      <p>Your listening peaks and the monthly top artist evolution.</p>
-      <div class="grid-3">
-        <div class="dim-panel" style="grid-column: 1 / -1;">
-          <div class="bars" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-            <div style="flex:1;">
-              <h4 style="font-size:16px;">Monthly Volume</h4>
-              <div class="bars">${barRows(report.monthly)}</div>
-            </div>
-            <div style="flex:1;">
-              <h4 style="font-size:16px;">Top Artist by Month</h4>
-              <div class="evolution" style="margin-top:0;">
-                ${report.artistEvolution.map(row=>`<div class="ev-badge"><span>${esc(row.label)}</span><b>${esc(row.name)}</b></div>`).join('')}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="chapter" id="ch04" data-depth="0.05">
-      <div class="eyebrow">Chapter 04 / 年度百炼排行榜 Top 12</div>
-      <h2>The Hall of Fame</h2>
-      <div class="rankings">${rows}</div>
-    </section>
-
-    <section class="chapter" id="ch05" data-depth="-0.05">
-      <div class="eyebrow">Chapter 05 / 偏好版图与星系</div>
-      <h2>Cartography of Taste</h2>
-      <div class="grid-3">${dims}</div>
-    </section>
-
-    <section class="chapter" id="ch06" data-depth="0.04">
-      <div class="eyebrow">Chapter 06 / 发烧与音质档案</div>
-      <h2>Audiophile & Acoustic DNA</h2>
-      <div class="grid-3">
-        <div class="hero-card"><div class="lbl">Lossless Listening</div><div class="val">${fmt(report.audioProfile.losslessSeconds)}</div></div>
-        <div class="hero-card"><div class="lbl">High Sample-Rate</div><div class="val">${report.audioProfile.sampleRateTracks} tracks</div></div>
-        <div class="hero-card"><div class="lbl">Formats Discovered</div><div class="val" style="font-size:18px;">${esc(report.audioProfile.formats.map(row=>row[0]).join(' · ')||'-')}</div></div>
-      </div>
-    </section>
-
-    <section class="chapter" id="epilogue" data-depth="-0.02" style="align-items: center; text-align: center;">
-      <div class="eyebrow">Chapter 07 & Epilogue / 尾声</div>
-      <h2>Thanks for listening.</h2>
-      <p style="margin: 20px auto;">Your single highest listening day was <strong>${esc(report.bestDay?.key||'-')}</strong>.</p>
-
-      <div class="privacy-seal">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-        100% 本地生成 · 零数据上传 · 音乐文件始终保留在你的设备中
-      </div>
-
-      <div style="margin-top: 60px; font-weight: 800; color: var(--text-muted); font-size: 14px; letter-spacing: 0.2em;">
-        GLASS PLAYER GEN 7<br>REPLAY ATLAS
-      </div>
-    </section>
-  </main>
-
-  <script>
-    (function(){
-      const sections = Array.from(document.querySelectorAll(".chapter"));
-      const bar = document.getElementById("scrollProgress");
-      const pills = Array.from(document.querySelectorAll(".pill"));
-
-      let frame = 0;
-      function sync() {
-        if (frame) return;
-        frame = requestAnimationFrame(() => {
-          frame = 0;
-          const h = document.documentElement.scrollHeight - window.innerHeight;
-          const scroll = window.scrollY;
-          bar.style.width = (h ? (scroll / h) * 100 : 0) + "%";
-
-          let currentId = '';
-          sections.forEach(s => {
-            const r = s.getBoundingClientRect();
-            const p = (window.innerHeight / 2 - (r.top + r.height / 2)) / window.innerHeight;
-            // Parallax shift calculation
-            const depth = Number(s.dataset.depth || 0);
-            const shift = Math.max(-1, Math.min(1, p)) * depth * 200;
-            s.style.setProperty("--parallax-shift", shift + "px");
-
-            // Determine active section for nav pills
-            if (r.top < window.innerHeight / 2 && r.bottom > window.innerHeight / 2) {
-              currentId = s.id;
-            }
-          });
-
-          if (currentId) {
-            pills.forEach(pill => {
-              if (pill.getAttribute("href") === "#" + currentId) {
-                pill.classList.add("active");
-                // Center active pill in nav if scrollable
-                pill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-              } else {
-                pill.classList.remove("active");
-              }
-            });
-          }
-        });
-      }
-
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            e.target.classList.add("visible");
-          }
-        });
-      }, { threshold: 0.15 });
-
-      sections.forEach(s => io.observe(s));
-
-      window.addEventListener("scroll", sync, { passive: true });
-      window.addEventListener("resize", sync);
-      sync();
-
-      // Smooth scroll for nav pills
-      pills.forEach(pill => {
-        pill.addEventListener("click", (e) => {
-          e.preventDefault();
-          const targetId = pill.getAttribute("href").substring(1);
-          const target = document.getElementById(targetId);
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-          }
-        });
-      });
-    })();
-  </script>
-</body>
-</html>`;
-    return html;
-  }
-  function downloadAnnualReport(year){
-    const store=loadHistoryStore(),report=buildAnnualReport(store,year);
-    if(report.total<=0){showToast(tr("这一年还没有听歌记录","No listening history for this year"));return;}
-    const blob=new Blob(["﻿",buildAnnualReportHTML(report)],{type:"text/html;charset=utf-8"});
-    const url=URL.createObjectURL(blob),link=document.createElement("a");
-     link.href=url;link.download=`Glass Player Replay Atlas Annual Report ${year}.html`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
-    showToast(tr("年度报告已导出","Annual report exported"));
-  }
-  $("#annualReportBtn").addEventListener("click",()=>openAnnualReport());
-  $("#annualCloseBtn").addEventListener("click",closeAnnualReport);
-  $("#annualDownloadBtn").addEventListener("click",()=>{if(annualReportYear!==null&&annualReportYear!==undefined)downloadAnnualReport(annualReportYear);});
-  $("#annualReportModal").addEventListener("click",event=>{if(event.target===$("#annualReportModal"))closeAnnualReport();});
-  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("#annualReportModal")?.classList.contains("show"))closeAnnualReport();});
-  $("#annualYearTabs").addEventListener("click",event=>{const button=event.target.closest("[data-annual-year]");if(button)openAnnualReport(Number(button.dataset.annualYear));});
   const historyRenderedSignatures=new Map();
+  // The first time the page opens, an empty Today gives way to the shortest range that has listening. A range you pick after that stays
+  let historyOpeningRangeChosen=false;
+  function chooseOpeningHistoryRange(store){
+    if(historyOpeningRangeChosen||$(".view.active")?.dataset.view!=="history")return;
+    historyOpeningRangeChosen=true;
+    const range=["day","week","month","year","all"].find(kind=>sumDailyRange(store.daily,calendarHistoryRange(kind))>0);
+    if(!range||range==="day")return;
+    $$("#rangeSeg button").forEach(button=>button.classList.toggle("active",button.dataset.r===range));
+    requestAnimationFrame(()=>updateGlider($("#rangeSeg"),false));
+  }
   function renderHistory(){
     /* Metadata migration already runs after import and manual rescan. Repeating
        the full identity reconciliation on every tab click blocked first paint. */
     const store=loadHistoryStore(),mode=$("#historyModeSeg button.active")?.dataset.historyMode||"time";
+    chooseOpeningHistoryRange(store);
     lastVisibleHistoryRefreshAt=Date.now();
-    syncAnnualButton();
     $$(".history-pane").forEach(p=>p.classList.toggle("active",p.id===({time:"historyTimePane",favorites:"historyFavoritesPane",data:"historyDataPane"}[mode])));
     const activeRange=$("#rangeSeg button.active")?.dataset.r||"day";
     const signature=`${historyStoreRevision}|${uiLanguage}|${playlist.length}|${activeRange}`;
@@ -10821,13 +10627,14 @@ window.GPModules.register = function register(name,factory){
     $("#rescanModal").classList.add("show");requestAnimationFrame(()=>$("#rescanConfirmBtn").focus());
   }
   function closeRescanModal(force=false){
-    if(metadataRescanRunning||importRunning)return;
+    if(metadataRescanRunning||importRunning||dataTransferRunning)return;
     const completedImport=rescanModalMode==="importDone"||rescanModalMode==="importError";
     if(completedImport&&!force)return;
     $("#rescanModal").classList.remove("show","is-scanning");$("#rescanLibraryBtn").classList.remove("is-scanning");rescanModalMode="closed";
     if(completedImport){requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();}
   }
   async function runMetadataRescanFromModal(){
+    if(rescanModalMode==="dataDone"){closeRescanModal();$("#defaultFolderBtn")?.click();return;}
     if(rescanModalMode==="importDone"||rescanModalMode==="importError"){closeRescanModal(true);return;}
     if(rescanModalMode==="done"||rescanModalMode==="error"){closeRescanModal();return;}
     if(rescanModalMode!=="confirm"||metadataRescanRunning)return;
@@ -10979,19 +10786,16 @@ window.GPModules.register = function register(name,factory){
     eqGeometryFrame=requestAnimationFrame(()=>{
       const stage=$(".eq-curve-stage"),curve=$("#eqCurveVisual"),bands=$("#eqBands");
       if(!stage||!curve||!bands||!stage.offsetWidth)return;
-      const compact=window.matchMedia("(max-width:660px)").matches;
-      const stageRect=stage.getBoundingClientRect(),visualRect=curve.getBoundingClientRect();
-      if(!visualRect.width||!visualRect.height)return;
+      const visualWidth=curve.clientWidth,visualHeight=curve.clientHeight;
+      if(!visualWidth||!visualHeight)return;
       const viewBox=curve.viewBox?.baseVal,viewWidth=viewBox?.width||700,viewHeight=viewBox?.height||180;
-      const scale=Math.min(visualRect.width/viewWidth,visualRect.height/viewHeight);
+      const scale=Math.min(visualWidth/viewWidth,visualHeight/viewHeight);
       const contentWidth=viewWidth*scale,contentHeight=viewHeight*scale;
-      const contentLeft=visualRect.left+(visualRect.width-contentWidth)/2;
-      const contentTop=visualRect.top+(visualRect.height-contentHeight)/2;
-      const plotLeft=contentLeft+50*scale,plotRight=contentLeft+650*scale;
+      const contentTop=parseFloat(getComputedStyle(curve).top)+(visualHeight-contentHeight)/2;
       const plotTop=contentTop+22*scale,plotBottom=contentTop+162*scale;
-      bands.style.left=`${Math.round(plotLeft-stageRect.left)}px`;
-      bands.style.width=`${Math.round(plotRight-plotLeft)}px`;
-      bands.style.right="auto";bands.style.top=`${Math.round(plotTop-stageRect.top)}px`;
+      bands.style.left=`${(stage.clientWidth-contentWidth)/2}px`;
+      bands.style.width=`${contentWidth}px`;
+      bands.style.right="auto";bands.style.top=`${Math.round(plotTop)}px`;
       bands.style.height=`${Math.max(31,Math.round(plotBottom-plotTop+31))}px`;bands.style.bottom="auto";
       bands.dataset.gpGeometry="aligned";
     });
@@ -11027,6 +10831,7 @@ window.GPModules.register = function register(name,factory){
   const loudnessInfoController=createSoundInfoController("#loudnessInfoBtn","#loudnessInfoPop",renderLoudnessInfo,290);
   document.addEventListener("click",event=>{[spatialInfoController,loudnessInfoController].forEach(controller=>{if(!controller.button.contains(event.target)&&!controller.pop.contains(event.target))controller.hide();});});
   window.addEventListener("resize",()=>{spatialInfoController.position();loudnessInfoController.position();syncTypographyPreviewLayout();syncEQGeometry();syncSpatialModeGeometry();},{passive:true});
+  new ResizeObserver(syncEQGeometry).observe($(".eq-curve-stage"));
   $("#settingsPanel")?.addEventListener("scroll",()=>{spatialInfoController.position();loudnessInfoController.position();},{passive:true});
   function bindDragToggle(button,getValue,setValue){
     if(!button)return;let startX=0,dragging=false,suppressClickUntil=0;
@@ -11067,6 +10872,83 @@ window.GPModules.register = function register(name,factory){
     keyboardControlsEnabled=!!value;
     $("#keyboardControlsToggle")?.classList.toggle("on",keyboardControlsEnabled);
     savePrefs();
+  });
+  function renderDataVaultStatus({state,savedAt}){
+    const hint=$("#dataVaultHint");
+    if(!hint)return;
+    if(state==="unavailable")hint.textContent=tr("仅 localhost 可用","Only on localhost");
+    else if(state==="conflict")hint.textContent=tr("重新打开后合并","Reopen to merge");
+    else if(state==="failed")hint.textContent=tr("暂时无法保存","Couldn't save");
+    else hint.textContent=savedAt?tr(`上次保存：${new Date(savedAt).toLocaleString()}`,`Last saved: ${new Date(savedAt).toLocaleString()}`):tr("约每小时保存一次","Saves about hourly");
+  }
+  // Data import and export use the music import's progress window
+  let dataTransferRunning=false;
+  function openDataProgress(title,message){
+    closeAllMotionPopovers();
+    dataTransferRunning=true;rescanModalMode="dataRunning";
+    $("#rescanModal").classList.add("is-scanning");
+    $("#rescanModalTitle").textContent=title;$("#rescanModalMessage").textContent=message;
+    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="0%";
+    $("#rescanCancelBtn").style.display="none";
+    $("#rescanConfirmBtn").disabled=true;$("#rescanConfirmBtn").textContent=tr("请稍候…","Please wait…");
+    $("#rescanModal").classList.add("show");
+    startImportSpinner();
+  }
+  function paintDataProgress(percent,{phase,completed,total}={}){
+    $("#rescanProgressFill").style.width=`${Math.max(0,Math.min(100,percent))}%`;
+    const counted=completed!==undefined?` ${completed} / ${total}`:"";
+    $("#rescanModalMessage").textContent=phase==="read"?tr("正在读取文件…","Reading the file…")
+      :phase==="restore"?tr(`正在恢复数据${counted}…`,`Restoring your data${counted}…`)
+      :phase==="disk"?tr(`正在保存到磁盘${counted}…`,`Saving to disk${counted}…`)
+      :phase==="export"?tr(`正在导出数据${counted}…`,`Exporting your data${counted}…`)
+      :$("#rescanModalMessage").textContent;
+  }
+  function closeDataProgress(mode,title,message,confirmLabel){
+    dataTransferRunning=false;rescanModalMode=mode;
+    stopImportSpinner();
+    $("#rescanModal").classList.remove("is-scanning");
+    $("#rescanModalTitle").textContent=title;$("#rescanModalMessage").textContent=message;
+    $("#rescanConfirmBtn").disabled=false;$("#rescanConfirmBtn").textContent=confirmLabel;
+    $("#rescanModal").classList.add("show");
+  }
+  // The songs themselves are audio files on your disk, so the library fills once their folder is chosen. Their data reconnects by itself
+  function showDataRestored(){
+    const finished=GPDataVault.takeFinished();
+    if(!finished)return;
+    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="100%";
+    closeDataProgress("dataDone",tr("数据已恢复","Your Data Is Back"),tr(`已恢复 ${finished.tracks} 首歌曲的分析与封面，以及 ${finished.songs} 首歌曲的听歌历史。音乐文件本身仍在你的磁盘上，选择音乐文件夹后歌曲就会出现在音乐库中。`,`Restored analysis and covers for ${finished.tracks} tracks, and listening history for ${finished.songs} songs. The music files themselves stay on your disk: choose your music folder and the songs will appear in your library.`),tr("选择音乐文件夹","Choose Music Folder"));
+    $("#rescanCancelBtn").style.display="";$("#rescanCancelBtn").disabled=false;$("#rescanCancelBtn").textContent=tr("稍后","Later");
+  }
+  $("#dataExportBtn")?.addEventListener("click",async()=>{
+    openDataProgress(tr("正在导出数据","Exporting Your Data"),tr("正在准备…","Getting ready…"));
+    try{
+      persistHistoryStoreNow();
+      const url=URL.createObjectURL(await GPDataVault.exportFile(({percent,...detail})=>paintDataProgress(percent,detail))),link=document.createElement("a");
+      link.href=url;link.download=`Glass Player Data ${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+      $("#rescanProgressFill").style.width="100%";
+      closeDataProgress("done",tr("导出完成","Export Complete"),tr("文件已保存到下载文件夹。","The file was saved to your Downloads folder."),tr("完成","Done"));
+    }catch(error){
+      console.warn("[GP Data]",error);
+      closeDataProgress("error",tr("导出未完成","Export Incomplete"),tr("导出失败，数据没有变化。","The export failed. Nothing was changed."),tr("关闭","Close"));
+    }
+  });
+  $("#dataImportBtn")?.addEventListener("click",()=>$("#dataImportInput")?.click());
+  $("#dataImportInput")?.addEventListener("change",async event=>{
+    const file=event.target.files?.[0];
+    event.target.value="";
+    if(!file)return;
+    openDataProgress(tr("正在导入数据","Importing Your Data"),tr("正在读取文件…","Reading the file…"));
+    try{
+      persistHistoryStoreNow();
+      await GPDataVault.importFile(file,({percent,...detail})=>paintDataProgress(percent*.9,detail));
+      historyStoreCache=null;historyStoreDirty=false;
+      await GPDataVault.flush(({percent,...detail})=>paintDataProgress(90+percent*.1,detail));
+      $("#rescanProgressFill").style.width="100%";
+      location.reload();
+    }catch(error){
+      console.warn("[GP Data]",error);
+      closeDataProgress("error",tr("导入未完成","Import Incomplete"),tr("无法导入这个文件。已经恢复的记录会保留。","This file couldn't be imported. Anything already restored stays."),tr("关闭","Close"));
+    }
   });
   $("#resetPrefsBtn")?.addEventListener("click",()=>{
     themeMode="auto";
@@ -11119,24 +11001,20 @@ window.GPModules.register = function register(name,factory){
   const GP_FONT_LANGUAGE_STACKS=Object.freeze({
     zh:'"PingFang SC", "PingFang TC", "PingFang HK", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", Arial, sans-serif',
     en:'"Segoe UI", Arial, "SF Pro Text", sans-serif',
-    ru:'"Segoe UI", Arial, "SF Pro Text", sans-serif'
   });
   const GP_FONT_SERIF_STACKS=Object.freeze({
     zh:'"Songti SC", "Songti TC", "Noto Serif SC", "Source Han Serif SC", "SimSun", "STSong", "Times New Roman", serif',
     en:'Georgia, "Times New Roman", "Songti SC", "SimSun", serif',
-    ru:'Georgia, "Times New Roman", serif'
   });
   const GP_FONT_MONO_STACKS=Object.freeze({
     zh:'Consolas, "Courier New", "PingFang SC", "Microsoft YaHei", monospace',
     en:'Consolas, "Courier New", monospace',
-    ru:'Consolas, "Courier New", monospace'
   });
   const GP_APPLE_FONT_ROLES=Object.freeze({
     zh:Object.freeze({base:'"SF Pro", "SF Pro Text", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "PingFang SC", "PingFang TC", "Segoe UI", Consolas, monospace'}),
     en:Object.freeze({base:'"SF Pro", "SF Pro Text", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "Segoe UI", Consolas, monospace'}),
-    ru:Object.freeze({base:'"SF Pro", "SF Pro Text", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "Segoe UI", Consolas, monospace'})
   });
-  function fontLanguage(){return uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh";}
+  function fontLanguage(){return uiLanguage==="en"?"en":"zh";}
   function appendFontLanguageFallback(value,language){
     const raw=String(value||"").trim();
     const isMono=/\bmonospace\s*$/i.test(raw);
@@ -11214,6 +11092,7 @@ window.GPModules.register = function register(name,factory){
     ];
     aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>{
       const lines=Array.isArray(value)?value:[value];
+      if(Array.isArray(value))return `<details class="about-engines"><summary><span class="setting-label">${escapeHTML(label)}</span><span class="about-engines-count">${lines.length}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></summary>${lines.map(line=>`<div class="setting-hint">${escapeHTML(line)}</div>`).join("")}</details>`;
       return `<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div>${lines.map(line=>`<div class="setting-hint">${escapeHTML(line)}</div>`).join("")}</div></div>`;
     }).join("");
     aboutRuntimeInfoNode.querySelectorAll(".setting-hint").forEach(node=>node.style.setProperty("display","block","important"));
@@ -11344,7 +11223,7 @@ window.GPModules.register = function register(name,factory){
   function loadPrefs(){
     let p; try{ p = JSON.parse(GPBrowserStorage.getLocal("glassPlayerPrefs")); }catch(e){}
     if(!p) p = {};
-    uiLanguage = p.uiLanguage === "en" ? "en" : p.uiLanguage === "ru" ? "ru" : "zh";
+    uiLanguage = p.uiLanguage === "en" ? "en" : "zh";
     themeMode = ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
     coverDisplayMode = ["rotate","static"].includes(p.coverDisplayMode) ? p.coverDisplayMode : "rotate";
     bgMode = ["glow","color","blur"].includes(p.bgMode) ? p.bgMode : "glow";
@@ -11528,6 +11407,30 @@ window.GPModules.register = function register(name,factory){
   ["Player","Library","History","Settings","Changelog","Sound"].forEach(name=>{GPModules.register(`create${name}View`,deps=>GPModules.createView({name:name.toLowerCase(),refresh:deps?.refresh}));});
   GPModules.register("createSharedControls",function createSharedControls(runtime){return Object.freeze({mount:runtime.mount,refresh:runtime.refresh,destroy:runtime.destroy});});
 ﻿  /* ================= init ================= */
+  function bindWindowTrafficLights(){
+    const lights=[...document.querySelectorAll(".traffic")];
+    if(!lights.length)return;
+    const fullscreenButton=lights.find(button=>button.dataset.windowAction==="fullscreen");
+    lights.forEach(button=>button.addEventListener("click",async()=>{
+      const action=button.dataset.windowAction;
+      if(action!=="fullscreen"){
+        window.dispatchEvent(new CustomEvent("gp:window-action",{detail:{action}}));
+        return;
+      }
+      try{
+        if(document.fullscreenElement)await document.exitFullscreen?.();
+        else await document.documentElement.requestFullscreen?.();
+      }catch(error){}
+    }));
+    const syncFocus=focused=>document.body.classList.toggle("gp-window-focused",focused);
+    window.addEventListener("focus",()=>syncFocus(true));
+    window.addEventListener("blur",()=>syncFocus(false));
+    syncFocus(true);
+    const syncFullscreenState=()=>fullscreenButton?.setAttribute("aria-pressed",String(Boolean(document.fullscreenElement)));
+    document.addEventListener("fullscreenchange",syncFullscreenState,{passive:true});
+    syncFullscreenState();
+  }
+
   GP.changelog.render();
   loadPrefs();
   buildFontPicker();
@@ -11537,6 +11440,7 @@ window.GPModules.register = function register(name,factory){
   drawWaveform();
   applyLanguage();
   GP.ui.mount(document);GP.ui.observe(document.body);
+  bindWindowTrafficLights();
   applyViewportFit();
   initializeSelectionGliders();
   if(document.fonts?.ready)document.fonts.ready.then(()=>requestAnimationFrame(initializeSelectionGliders));
@@ -11617,7 +11521,9 @@ window.GPModules.register = function register(name,factory){
   });
   const engines=Object.freeze({audio:audioEngine,bionic:bionicEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.6.3",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.7.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
+  showDataRestored();
+  GPDataVault.start({beforeReload:()=>{historyStoreCache=null;historyStoreDirty=false;},onStatus:renderDataVaultStatus,onProgress:({percent,...detail})=>{if(rescanModalMode!=="dataRunning")openDataProgress(tr("正在载入你的数据","Loading Your Data"),tr("正在准备…","Getting ready…"));paintDataProgress(percent,detail);}});
 })();
 

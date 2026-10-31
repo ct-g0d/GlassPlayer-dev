@@ -31,13 +31,14 @@
     $("#rescanModal").classList.add("show");requestAnimationFrame(()=>$("#rescanConfirmBtn").focus());
   }
   function closeRescanModal(force=false){
-    if(metadataRescanRunning||importRunning)return;
+    if(metadataRescanRunning||importRunning||dataTransferRunning)return;
     const completedImport=rescanModalMode==="importDone"||rescanModalMode==="importError";
     if(completedImport&&!force)return;
     $("#rescanModal").classList.remove("show","is-scanning");$("#rescanLibraryBtn").classList.remove("is-scanning");rescanModalMode="closed";
     if(completedImport){requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();}
   }
   async function runMetadataRescanFromModal(){
+    if(rescanModalMode==="dataDone"){closeRescanModal();$("#defaultFolderBtn")?.click();return;}
     if(rescanModalMode==="importDone"||rescanModalMode==="importError"){closeRescanModal(true);return;}
     if(rescanModalMode==="done"||rescanModalMode==="error"){closeRescanModal();return;}
     if(rescanModalMode!=="confirm"||metadataRescanRunning)return;
@@ -189,19 +190,16 @@
     eqGeometryFrame=requestAnimationFrame(()=>{
       const stage=$(".eq-curve-stage"),curve=$("#eqCurveVisual"),bands=$("#eqBands");
       if(!stage||!curve||!bands||!stage.offsetWidth)return;
-      const compact=window.matchMedia("(max-width:660px)").matches;
-      const stageRect=stage.getBoundingClientRect(),visualRect=curve.getBoundingClientRect();
-      if(!visualRect.width||!visualRect.height)return;
+      const visualWidth=curve.clientWidth,visualHeight=curve.clientHeight;
+      if(!visualWidth||!visualHeight)return;
       const viewBox=curve.viewBox?.baseVal,viewWidth=viewBox?.width||700,viewHeight=viewBox?.height||180;
-      const scale=Math.min(visualRect.width/viewWidth,visualRect.height/viewHeight);
+      const scale=Math.min(visualWidth/viewWidth,visualHeight/viewHeight);
       const contentWidth=viewWidth*scale,contentHeight=viewHeight*scale;
-      const contentLeft=visualRect.left+(visualRect.width-contentWidth)/2;
-      const contentTop=visualRect.top+(visualRect.height-contentHeight)/2;
-      const plotLeft=contentLeft+50*scale,plotRight=contentLeft+650*scale;
+      const contentTop=parseFloat(getComputedStyle(curve).top)+(visualHeight-contentHeight)/2;
       const plotTop=contentTop+22*scale,plotBottom=contentTop+162*scale;
-      bands.style.left=`${Math.round(plotLeft-stageRect.left)}px`;
-      bands.style.width=`${Math.round(plotRight-plotLeft)}px`;
-      bands.style.right="auto";bands.style.top=`${Math.round(plotTop-stageRect.top)}px`;
+      bands.style.left=`${(stage.clientWidth-contentWidth)/2}px`;
+      bands.style.width=`${contentWidth}px`;
+      bands.style.right="auto";bands.style.top=`${Math.round(plotTop)}px`;
       bands.style.height=`${Math.max(31,Math.round(plotBottom-plotTop+31))}px`;bands.style.bottom="auto";
       bands.dataset.gpGeometry="aligned";
     });
@@ -237,6 +235,7 @@
   const loudnessInfoController=createSoundInfoController("#loudnessInfoBtn","#loudnessInfoPop",renderLoudnessInfo,290);
   document.addEventListener("click",event=>{[spatialInfoController,loudnessInfoController].forEach(controller=>{if(!controller.button.contains(event.target)&&!controller.pop.contains(event.target))controller.hide();});});
   window.addEventListener("resize",()=>{spatialInfoController.position();loudnessInfoController.position();syncTypographyPreviewLayout();syncEQGeometry();syncSpatialModeGeometry();},{passive:true});
+  new ResizeObserver(syncEQGeometry).observe($(".eq-curve-stage"));
   $("#settingsPanel")?.addEventListener("scroll",()=>{spatialInfoController.position();loudnessInfoController.position();},{passive:true});
   function bindDragToggle(button,getValue,setValue){
     if(!button)return;let startX=0,dragging=false,suppressClickUntil=0;
@@ -277,6 +276,83 @@
     keyboardControlsEnabled=!!value;
     $("#keyboardControlsToggle")?.classList.toggle("on",keyboardControlsEnabled);
     savePrefs();
+  });
+  function renderDataVaultStatus({state,savedAt}){
+    const hint=$("#dataVaultHint");
+    if(!hint)return;
+    if(state==="unavailable")hint.textContent=tr("仅 localhost 可用","Only on localhost");
+    else if(state==="conflict")hint.textContent=tr("重新打开后合并","Reopen to merge");
+    else if(state==="failed")hint.textContent=tr("暂时无法保存","Couldn't save");
+    else hint.textContent=savedAt?tr(`上次保存：${new Date(savedAt).toLocaleString()}`,`Last saved: ${new Date(savedAt).toLocaleString()}`):tr("约每小时保存一次","Saves about hourly");
+  }
+  // Data import and export use the music import's progress window
+  let dataTransferRunning=false;
+  function openDataProgress(title,message){
+    closeAllMotionPopovers();
+    dataTransferRunning=true;rescanModalMode="dataRunning";
+    $("#rescanModal").classList.add("is-scanning");
+    $("#rescanModalTitle").textContent=title;$("#rescanModalMessage").textContent=message;
+    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="0%";
+    $("#rescanCancelBtn").style.display="none";
+    $("#rescanConfirmBtn").disabled=true;$("#rescanConfirmBtn").textContent=tr("请稍候…","Please wait…");
+    $("#rescanModal").classList.add("show");
+    startImportSpinner();
+  }
+  function paintDataProgress(percent,{phase,completed,total}={}){
+    $("#rescanProgressFill").style.width=`${Math.max(0,Math.min(100,percent))}%`;
+    const counted=completed!==undefined?` ${completed} / ${total}`:"";
+    $("#rescanModalMessage").textContent=phase==="read"?tr("正在读取文件…","Reading the file…")
+      :phase==="restore"?tr(`正在恢复数据${counted}…`,`Restoring your data${counted}…`)
+      :phase==="disk"?tr(`正在保存到磁盘${counted}…`,`Saving to disk${counted}…`)
+      :phase==="export"?tr(`正在导出数据${counted}…`,`Exporting your data${counted}…`)
+      :$("#rescanModalMessage").textContent;
+  }
+  function closeDataProgress(mode,title,message,confirmLabel){
+    dataTransferRunning=false;rescanModalMode=mode;
+    stopImportSpinner();
+    $("#rescanModal").classList.remove("is-scanning");
+    $("#rescanModalTitle").textContent=title;$("#rescanModalMessage").textContent=message;
+    $("#rescanConfirmBtn").disabled=false;$("#rescanConfirmBtn").textContent=confirmLabel;
+    $("#rescanModal").classList.add("show");
+  }
+  // The songs themselves are audio files on your disk, so the library fills once their folder is chosen. Their data reconnects by itself
+  function showDataRestored(){
+    const finished=GPDataVault.takeFinished();
+    if(!finished)return;
+    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="100%";
+    closeDataProgress("dataDone",tr("数据已恢复","Your Data Is Back"),tr(`已恢复 ${finished.tracks} 首歌曲的分析与封面，以及 ${finished.songs} 首歌曲的听歌历史。音乐文件本身仍在你的磁盘上，选择音乐文件夹后歌曲就会出现在音乐库中。`,`Restored analysis and covers for ${finished.tracks} tracks, and listening history for ${finished.songs} songs. The music files themselves stay on your disk: choose your music folder and the songs will appear in your library.`),tr("选择音乐文件夹","Choose Music Folder"));
+    $("#rescanCancelBtn").style.display="";$("#rescanCancelBtn").disabled=false;$("#rescanCancelBtn").textContent=tr("稍后","Later");
+  }
+  $("#dataExportBtn")?.addEventListener("click",async()=>{
+    openDataProgress(tr("正在导出数据","Exporting Your Data"),tr("正在准备…","Getting ready…"));
+    try{
+      persistHistoryStoreNow();
+      const url=URL.createObjectURL(await GPDataVault.exportFile(({percent,...detail})=>paintDataProgress(percent,detail))),link=document.createElement("a");
+      link.href=url;link.download=`Glass Player Data ${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+      $("#rescanProgressFill").style.width="100%";
+      closeDataProgress("done",tr("导出完成","Export Complete"),tr("文件已保存到下载文件夹。","The file was saved to your Downloads folder."),tr("完成","Done"));
+    }catch(error){
+      console.warn("[GP Data]",error);
+      closeDataProgress("error",tr("导出未完成","Export Incomplete"),tr("导出失败，数据没有变化。","The export failed. Nothing was changed."),tr("关闭","Close"));
+    }
+  });
+  $("#dataImportBtn")?.addEventListener("click",()=>$("#dataImportInput")?.click());
+  $("#dataImportInput")?.addEventListener("change",async event=>{
+    const file=event.target.files?.[0];
+    event.target.value="";
+    if(!file)return;
+    openDataProgress(tr("正在导入数据","Importing Your Data"),tr("正在读取文件…","Reading the file…"));
+    try{
+      persistHistoryStoreNow();
+      await GPDataVault.importFile(file,({percent,...detail})=>paintDataProgress(percent*.9,detail));
+      historyStoreCache=null;historyStoreDirty=false;
+      await GPDataVault.flush(({percent,...detail})=>paintDataProgress(90+percent*.1,detail));
+      $("#rescanProgressFill").style.width="100%";
+      location.reload();
+    }catch(error){
+      console.warn("[GP Data]",error);
+      closeDataProgress("error",tr("导入未完成","Import Incomplete"),tr("无法导入这个文件。已经恢复的记录会保留。","This file couldn't be imported. Anything already restored stays."),tr("关闭","Close"));
+    }
   });
   $("#resetPrefsBtn")?.addEventListener("click",()=>{
     themeMode="auto";
@@ -329,24 +405,20 @@
   const GP_FONT_LANGUAGE_STACKS=Object.freeze({
     zh:'"PingFang SC", "PingFang TC", "PingFang HK", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", Arial, sans-serif',
     en:'"Segoe UI", Arial, "SF Pro Text", sans-serif',
-    ru:'"Segoe UI", Arial, "SF Pro Text", sans-serif'
   });
   const GP_FONT_SERIF_STACKS=Object.freeze({
     zh:'"Songti SC", "Songti TC", "Noto Serif SC", "Source Han Serif SC", "SimSun", "STSong", "Times New Roman", serif',
     en:'Georgia, "Times New Roman", "Songti SC", "SimSun", serif',
-    ru:'Georgia, "Times New Roman", serif'
   });
   const GP_FONT_MONO_STACKS=Object.freeze({
     zh:'Consolas, "Courier New", "PingFang SC", "Microsoft YaHei", monospace',
     en:'Consolas, "Courier New", monospace',
-    ru:'Consolas, "Courier New", monospace'
   });
   const GP_APPLE_FONT_ROLES=Object.freeze({
     zh:Object.freeze({base:'"SF Pro", "SF Pro Text", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "PingFang SC", "PingFang TC", "PingFang HK", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "PingFang SC", "PingFang TC", "Segoe UI", Consolas, monospace'}),
     en:Object.freeze({base:'"SF Pro", "SF Pro Text", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "Segoe UI", Consolas, monospace'}),
-    ru:Object.freeze({base:'"SF Pro", "SF Pro Text", "Segoe UI", Arial, sans-serif',display:'"SF Pro Display", "SF Pro", "Segoe UI", Arial, sans-serif',text:'"SF Pro Text", "SF Pro", "Segoe UI", Arial, sans-serif',mono:'"SF Mono", "SF Pro", "Segoe UI", Consolas, monospace'})
   });
-  function fontLanguage(){return uiLanguage==="ru"?"ru":uiLanguage==="en"?"en":"zh";}
+  function fontLanguage(){return uiLanguage==="en"?"en":"zh";}
   function appendFontLanguageFallback(value,language){
     const raw=String(value||"").trim();
     const isMono=/\bmonospace\s*$/i.test(raw);
@@ -424,6 +496,7 @@
     ];
     aboutRuntimeInfoNode.innerHTML=rows.map(([label,value])=>{
       const lines=Array.isArray(value)?value:[value];
+      if(Array.isArray(value))return `<details class="about-engines"><summary><span class="setting-label">${escapeHTML(label)}</span><span class="about-engines-count">${lines.length}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></summary>${lines.map(line=>`<div class="setting-hint">${escapeHTML(line)}</div>`).join("")}</details>`;
       return `<div class="setting-row settings-note-row"><div class="setting-copy"><div class="setting-label">${escapeHTML(label)}</div>${lines.map(line=>`<div class="setting-hint">${escapeHTML(line)}</div>`).join("")}</div></div>`;
     }).join("");
     aboutRuntimeInfoNode.querySelectorAll(".setting-hint").forEach(node=>node.style.setProperty("display","block","important"));
@@ -554,7 +627,7 @@
   function loadPrefs(){
     let p; try{ p = JSON.parse(GPBrowserStorage.getLocal("glassPlayerPrefs")); }catch(e){}
     if(!p) p = {};
-    uiLanguage = p.uiLanguage === "en" ? "en" : p.uiLanguage === "ru" ? "ru" : "zh";
+    uiLanguage = p.uiLanguage === "en" ? "en" : "zh";
     themeMode = ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
     coverDisplayMode = ["rotate","static"].includes(p.coverDisplayMode) ? p.coverDisplayMode : "rotate";
     bgMode = ["glow","color","blur"].includes(p.bgMode) ? p.bgMode : "glow";

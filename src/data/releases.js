@@ -15,6 +15,32 @@
       ]
     },
     {
+      version:"7.7.1", date:"2026-10-31", kind:"patch",
+      summary:"FINAL PRESSING：这是 Glass Player 最后一个被用心维护的版本。从这里开始，它将并入我的超级应用 MacX。",
+      sections:[
+        {title:"最后一张唱片",items:["7 月 7 日，1.0.0。10 月 31 日，7.7.1。一百一十六天，一百三十二个版本。","这是我第一个真正有意义的 vibe coding 项目。数十亿个 token，全都花在同一件事上：把它打磨成我想要的样子，分毫不差。","我不怎么会写代码。我只知道哪里不对，然后一遍又一遍地说，直到它对为止。转盘、七台引擎、每一条曲线、每一段动效，都是这样磨出来的。","Glass Player 不会就此停转。它会成为 MacX 的一部分，继续转下去。但作为一个独立的作品，它就停在这里，停在我想要的样子。","这张唱片，压制完成。"]},
+        {title:"最后的打磨",items:["侧边栏和面板与窗口四边保持相同的距离，窗口按钮有了属于自己的位置。","均衡器的频率标签现在在任何窗口宽度下都对齐各自的调节点。","数据页精简为三行，关于页的引擎列表收起到一行。","「播放全部」成为歌曲库的常驻按钮，与添加文件和添加文件夹同排；选择歌单时不再多出一条横栏。","「添加到歌单」有了自己的音符图标和动效，不再与「加入播放队列」相同。"]},
+        {title:"留在过去的",items:["年度报告已完整移除，你的听歌历史不受影响。","俄语界面已移除，Glass Player 现在提供中文和英文。"]}
+      ],english:{summary:"FINAL PRESSING is the last intentionally maintained version of Glass Player. From here, it becomes part of my superapp, MacX.",sections:[
+        {title:"The Last Record",items:["July 7, 1.0.0. October 31, 7.7.1. 116 days, 132 versions.","This is my first meaningful vibecoded project. Billions of tokens, all spent on one thing: polishing it into exactly what I wanted.","I can't really write code. I just know when something is wrong, and I kept saying so until it was right. The turntable, the seven engines, every curve and every animation were worn into shape that way.","Glass Player doesn't stop spinning here. It carries on as part of MacX. But as a work of its own, this is where it rests, exactly how I want it.","This record is pressed."]},
+        {title:"The Final Polish",items:["The sidebar and panels now sit the same distance from all four window edges, and the window controls have a place of their own.","Equalizer frequency labels now line up with their points at any window width.","The Data page is down to three rows, and the engine list in About folds into one.","Play All is now a permanent Library button beside Add File and Add Folder, and picking a playlist no longer adds an extra bar.","Add to Playlist has its own music note icon and animation instead of sharing the look of Add to Queue."]},
+        {title:"Left Behind",items:["The Annual Report has been removed completely. Your listening history is untouched.","The Russian interface has been removed. Glass Player now comes in Chinese and English."]}
+      ]}
+    },
+    {
+      version:"7.7.0", date:"2026-10-31", kind:"minor",
+      summary:"LOCALIZATION UPDATE：你的数据现在会保存到本地磁盘，也可以在设置中导出和导入；听歌记录在今天还没有数据时，会打开最近有记录的时段。",
+      sections:[
+        {title:"本地数据",items:["从 localhost 打开时，听歌历史、偏好、分析缓存和封面约每小时保存一次到本地磁盘，只写入有变化的内容，播放时不会写入磁盘。","在新的浏览器中打开时，会自动从磁盘恢复这些数据，并显示进度。"]},
+        {title:"导出与导入",items:["设置的「数据」页新增导出和导入，并使用与导入音乐相同的进度窗口。","导入只会添加和更新记录，不会删除现有记录；听歌次数保留较高的数值，偏好由文件中的设置替换。","恢复完成后会说明恢复了哪些内容，并可直接选择音乐文件夹，让歌曲重新出现在音乐库中。"]},
+        {title:"听歌记录",items:["今天还没有听歌时，页面首次打开会显示最近有记录的时段；你选择的时间范围会保持不变。"]}
+      ],english:{summary:"LOCALIZATION UPDATE saves your data to your local disk and adds export and import in Settings. When today has no listening yet, Listening History opens on the most recent period that does.",sections:[
+        {title:"Local Data",items:["Opened from localhost, your listening history, preferences, analysis cache and covers are saved to your local disk about once an hour, writing only what changed and never during playback.","A new browser restores this data from disk automatically and shows its progress."]},
+        {title:"Export and Import",items:["The Data page in Settings adds Export and Import, using the same progress window as importing music.","Import only adds and updates records and never deletes them. Play counts keep the higher number, and preferences are replaced by the ones in the file.","When a restore finishes, it tells you what came back and lets you choose your music folder so your songs reappear in the library."]},
+        {title:"Listening History",items:["When today has no listening yet, the page first opens on the most recent period that does. A range you choose stays selected."]}
+      ]}
+    },
+    {
       version:"7.6.3", date:"2026-10-20", kind:"patch",
       summary:"HOTFIX BUILD：停止打开 HTML 时自动导入上次保存的默认音乐文件夹；默认文件夹仍可由用户手动选择并导入。",
       sections:[
@@ -2575,6 +2601,8 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.7.1":"FINAL PRESSING is the last intentionally maintained version of Glass Player. From here, it becomes part of my superapp, MacX.",
+    "7.7.0":"LOCALIZATION UPDATE saves your data to your local disk and adds export and import in Settings. When today has no listening yet, Listening History opens on the most recent period that does.",
     "7.6.3":"HOTFIX BUILD stops the app from automatically importing the last saved music folder at startup while keeping manual folder selection available.","7.6.2":"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",
     "7.6.1":"HOTFIX BUILD collapses the Sidebar only when the window becomes too narrow, then restores the saved Sidebar preference when the width recovers.",
     "7.6.0":"KINETIC GLASS keeps startup, artwork, motion, favorites, and PiP stable through rapid view and metadata changes.",
@@ -4030,7 +4058,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.6.3 — HOTFIX BUILD`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.7.1 — FINAL PRESSING`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4045,7 +4073,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.6.3 HOTFIX BUILD.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.7.1 FINAL PRESSING.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}

@@ -19,7 +19,7 @@
           <button class="track-action track-like ripple-target${isLikedTrack(playlist[idx])?" active":""}" data-idx="${idx}" aria-pressed="${isLikedTrack(playlist[idx])}" title="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}" aria-label="${isLikedTrack(playlist[idx])?tr("取消喜欢","Unlike"):tr("喜欢","Like")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
           <button class="track-action queue-next ripple-target" data-idx="${idx}" title="${tr("下一首播放","Play Next")}" aria-label="${tr("下一首播放","Play Next")}"><svg class="rounded-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path class="list-next-triangle" d="M5.9 5.55c-.52-.36-.9-.12-.9.52v11.86c0 .64.38.88.9.52l8.45-5.93c.48-.34.48-.7 0-1.04z"/><path class="list-next-echo" d="M19 5.8v12.4"/><path class="list-next-bar" d="M19 5.8v12.4"/></svg></button>
           <button class="track-action queue-add ripple-target" data-idx="${idx}" title="${tr("加入播放队列","Add to Queue")}" aria-label="${tr("加入播放队列","Add to Queue")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="queue-bars"><path d="M4 6h9M4 12h7M4 18h7"/></g><path class="queue-plus-wave" d="M17 11v8M13 15h8"/><path class="queue-plus" d="M17 11v8M13 15h8"/></svg></button>
-          ${options.playlistRemove?"":`<button class="track-action playlist-add ripple-target" data-idx="${idx}" title="${tr("添加到歌单","Add to playlist")}" aria-label="${tr("添加到歌单","Add to playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h9M4 12h9M4 18h5"/><path d="M17.5 13v7M14 16.5h7"/></svg></button>`}
+          ${options.playlistRemove?"":`<button class="track-action playlist-add ripple-target" data-idx="${idx}" title="${tr("添加到歌单","Add to playlist")}" aria-label="${tr("添加到歌单","Add to playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><g class="playlist-note"><circle cx="6.5" cy="17.5" r="2.5"/><path d="M9 17.5V6l7-2v5"/></g><path class="queue-plus-wave" d="M18 12.5v7M14.5 16h7"/><path class="queue-plus" d="M18 12.5v7M14.5 16h7"/></svg></button>`}
           ${options.playlistRemove?`<button class="track-action playlist-remove ripple-target" data-idx="${idx}" title="${tr("从歌单移除","Remove from playlist")}" aria-label="${tr("从歌单移除","Remove from playlist")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`:""}
         </div>
       </div>`;
@@ -270,7 +270,7 @@
     syncCollectionScope();syncPlaylistUI();
   }
   function syncPlaylistUI(skipRender=false){
-    const label=$("#playlistBtnText"),pop=$("#playlistPop"),bar=$("#collectionBar");
+    const label=$("#playlistBtnText"),pop=$("#playlistPop");
     if(label)label.textContent=`${tr("歌单","Playlists")}：${collectionDisplayName()}`;
     if(pop){
       const rows=[{mode:"all",name:tr("全部歌曲","All Songs"),count:playlist.length},{mode:"liked",name:`♥ ${tr("我喜欢","Liked")}`,count:collectionTrackIndicesForMode("liked").length}].concat(userPlaylists().map(list=>({mode:`pl:${list.id}`,name:list.name,count:collectionTrackIndicesForMode(`pl:${list.id}`).length,id:list.id})));
@@ -293,15 +293,6 @@
       const input=$("#playlistNameInput"),confirm=$("#playlistConfirmBtn"),active=activePlaylist();
       if(input&&document.activeElement!==input)input.value=active?active.name:"";
       if(confirm)confirm.textContent=active?tr("重命名","Rename"):tr("新建歌单","New Playlist");
-    }
-    if(bar){
-      const active=libraryCollectionMode!=="all";
-      bar.classList.toggle("show",active);
-      if(active){
-        const members=collectionTrackIndices();
-        bar.querySelector(".collection-name").textContent=collectionDisplayName();
-        bar.querySelector(".collection-count").textContent=tr(`${members.length} 首`,`${members.length} songs`);
-      }
     }
     if(!skipRender)render(searchInputSafe());
   }

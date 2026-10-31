@@ -21,6 +21,7 @@ New Peregrine interfaces are **Experimental** unless stated otherwise. They retu
 | Module / API | Level | Parameters / return | Errors | Side effects | Callers | Contract test / compatibility |
 |---|---|---|---|---|---|---|
 | StoragePort `open`, cache/features/behavior/model/recommendation methods | Candidate | existing record IDs/records → Promises | unchanged IndexedDB errors | existing database transactions only | Library, Spectrum, History, Neural | method-shape and schema-name regression |
+| GPDataVault `start`, `flush`, `status`, `exportFile`, `importFile` | Candidate | options / File → Promises (export: Blob; import: rows written) | invalid file rejects; disk failures become status `failed` or `conflict` | writes IndexedDB and localStorage on import or reading disk; writes `data/db` through serve.mjs | bootstrap, Settings view | no dedicated contract test yet; architecture checks and runtime round trip |
 | FilePort `pickAudioFiles`, `pickAudioFolder` | Experimental | none → Promise<File[]> | picker cancellation returns empty array | opens existing hidden input | Library Service | input binding test; file:// compatible |
 | PiPPort `supported/request/exit` | Experimental | video or none → Promise | browser PiP errors propagate | native PiP lifecycle | PiP Service | support/bypass test |
 | MediaSessionPort | Experimental | metadata/state/handler | browser errors propagate | updates existing Media Session | Playback Service | capability-guard test |
