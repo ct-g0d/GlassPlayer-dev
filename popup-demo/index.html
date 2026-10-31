@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Popup Demo</title>
+<style>
+  :root{ --accent:#5c7fa8; --text:#fff; --text-2:rgba(235,235,245,.7); --text-3:rgba(235,235,245,.45); --glass:rgba(40,40,44,.49); --border:rgba(255,255,255,.16); }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{ display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); gap:24px; padding:40px; background:radial-gradient(90% 80% at 15% 10%,#1f2d44,transparent),radial-gradient(70% 70% at 90% 90%,#2c3a52,transparent),#0b0e14; color:var(--text); font-family:MiSans,Arial,sans-serif; overflow:hidden; }
+  section{ min-height:0; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:24px; background:var(--glass); padding:24px; }
+  h1{ margin:0 0 18px; font-size:15px; font-weight:700; color:var(--text-2); }
+  #cover{ width:100%; max-width:220px; aspect-ratio:1; align-self:center; border-radius:20px; background-size:cover!important; background-position:center!important; box-shadow:0 14px 34px rgba(0,0,0,.4); transition:background .4s; }
+  #title{ margin-top:20px; font-size:20px; font-weight:700; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #artist{ margin-top:4px; font-size:13px; color:var(--text-2); text-align:center; }
+  #seek{ width:100%; margin:18px 0 4px; accent-color:var(--accent); }
+  .times{ display:flex; justify-content:space-between; font-size:12px; color:var(--text-2); font-variant-numeric:tabular-nums; }
+  .row{ display:flex; justify-content:center; align-items:center; gap:10px; margin-top:14px; }
+  button,.pick{ font:inherit; font-size:13px; font-weight:650; color:var(--text); border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.07); min-height:38px; padding:8px 14px; cursor:pointer; }
+  button:hover,.pick:hover{ background:rgba(255,255,255,.13); }
+  button.primary{ background:var(--accent); border-color:transparent; transition:background .45s; }
+  .pick input{ display:none; }
+  #note{ min-height:18px; margin-top:12px; font-size:12px; color:var(--text-3); text-align:center; }
+  #desk{ position:relative; flex:1; min-height:0; display:grid; place-items:center; border-radius:16px; background:linear-gradient(135deg,#d9b48c,#7c8fb0 48%,#2d3f5e); overflow:hidden; }
+  #preview{ width:480px; height:270px; max-width:100%; border:0; background:transparent; }
+  .hint{ margin:14px 0 0; font-size:12px; color:var(--text-3); }
+  @media (max-width:860px){ html,body{ height:auto; } body{ grid-template-columns:1fr; padding:16px; overflow:auto; } #desk{ min-height:360px; } }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<section>
+  <h1>主窗口（音频在这里播放）</h1>
+  <div id="cover"></div>
+  <div id="title"></div>
+  <div id="artist"></div>
+  <input id="seek" type="range" min="0" max="1000" value="0" aria-label="播放进度">
+  <div class="times"><span id="now">0:00</span><span id="end">0:00</span></div>
+  <div class="row">
+    <button id="prev" type="button">上一首</button>
+    <button id="play" class="primary" type="button">播放</button>
+    <button id="next" type="button">下一首</button>
+    <button id="order" type="button">顺序播放</button>
+  </div>
+  <div class="row">
+    <label class="pick">添加歌曲<input id="files" type="file" accept="audio/*" multiple></label>
+    <button id="popup" type="button">打开弹窗</button>
+  </div>
+  <div id="note"></div>
+</section>
+<section>
+  <h1>弹窗</h1>
+  <div id="desk"><iframe id="preview" src="popup.html" title="弹窗预览"></iframe></div>
+  <p class="hint">这里是页面内预览。在浏览器里打开的弹窗带地址栏；用 Electron 运行才是无边框、置顶的独立窗口。</p>
+</section>
+<script src="tags.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

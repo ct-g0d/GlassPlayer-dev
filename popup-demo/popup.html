@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Glass Player</title>
+<style>
+  :root{ --accent:#5c7fa8; --ease:cubic-bezier(.32,.72,0,1); }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; background:transparent; overflow:hidden; font-family:-apple-system,"SF Pro Display",MiSans,"Segoe UI",Arial,sans-serif; color:#fff; user-select:none; }
+
+  /* The cover never changes size. A clip shape moves over it, so switching views doesn't re-scale the image on every frame */
+  .root{ position:absolute; left:0; bottom:0; width:480px; height:270px; clip-path:inset(0 round 24px); -webkit-app-region:drag; transition:clip-path .6s var(--ease); }
+  .art{ position:absolute; inset:0; background-color:#0b0e14; background-size:cover!important; background-position:center!important; transition:background .5s; }
+
+  /* The liquid glass sheet. popup.js adds the edge refraction once it knows the sheet's size */
+  .panel{ position:absolute; left:8px; right:8px; bottom:8px; height:92px; display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"info controls" "progress progress"; align-items:center; gap:3px 12px; padding:9px 12px 6px 16px; border-radius:16px; overflow:hidden; background:rgba(18,18,22,.2); backdrop-filter:blur(9px); box-shadow:inset 0 1px .5px rgba(255,255,255,.72),inset 1px 0 .5px rgba(255,255,255,.2),inset -1px 0 .5px rgba(255,255,255,.2),inset 0 -1px .5px rgba(255,255,255,.34),inset 0 0 14px rgba(255,255,255,.06); transition:right .6s var(--ease),left .6s var(--ease),bottom .6s var(--ease),height .6s var(--ease),border-radius .6s var(--ease); }
+  #bars{ position:absolute; left:0; bottom:0; width:100%; height:100%; opacity:.42; pointer-events:none; will-change:transform; }
+  .thumb{ display:none; }
+  .info,.controls,.progress,.thumb,.top{ transition:opacity .22s ease; }
+  .switching .info,.switching .controls,.switching .progress,.switching .thumb,.root.switching .top{ opacity:0; }
+  .info,.controls,.progress{ position:relative; }
+  .info{ grid-area:info; min-width:0; text-shadow:0 1px 3px rgba(0,0,0,.4); }
+  #title{ overflow:hidden; font-size:17px; font-weight:650; line-height:1.25; letter-spacing:-.015em; white-space:nowrap; }
+  #titleText{ display:inline-block; }
+  #title.long{ -webkit-mask-image:linear-gradient(90deg,#000 86%,transparent); mask-image:linear-gradient(90deg,#000 86%,transparent); }
+  #title.long #titleText{ animation:marquee var(--travel) 1.4s ease-in-out infinite alternate; }
+  @keyframes marquee{ to{ transform:translateX(var(--distance)); } }
+  #artist{ margin-top:1px; font-size:12.5px; line-height:1.3; color:rgba(255,255,255,.8); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  button{ position:relative; display:grid; place-items:center; padding:0; border:0; color:inherit; cursor:pointer; background:transparent; -webkit-app-region:no-drag; transition:transform .3s var(--ease),background .2s ease; }
+  button:focus-visible{ outline:2px solid #fff; outline-offset:-2px; }
+  .controls{ grid-area:controls; display:flex; align-items:center; gap:0; padding:3px; border-radius:999px; background:rgba(255,255,255,.12); box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3),inset 0 1px .5px rgba(255,255,255,.4); }
+  .controls button{ width:44px; height:40px; border-radius:999px; }
+  .controls button svg{ position:relative; width:18px; height:18px; fill:currentColor; }
+  #order::before,#prev::before,#next::before{ content:""; position:absolute; inset:5px 3px; border-radius:999px; background:transparent; transition:background .2s ease; }
+  #order:hover::before,#prev:hover::before,#next:hover::before{ background:rgba(255,255,255,.2); }
+  #order svg{ position:absolute; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .3s ease; }
+  #order svg.on{ opacity:1; }
+  #play{ width:48px; background:var(--accent); transition:background .45s ease; }
+  /* Play and pause sit on top of each other and crossfade in place */
+  .controls button svg.glyph{ position:absolute; transition:opacity .3s ease; }
+  .glyph-pause,.playing .glyph-play{ opacity:0; }
+  .playing .glyph-pause{ opacity:1; }
+
+  .progress{ grid-area:progress; display:flex; align-items:center; gap:8px; font-size:10.5px; font-weight:550; color:rgba(255,255,255,.8); font-variant-numeric:tabular-nums; }
+  /* A fixed height, so the track can grow on hover without moving the sheet */
+  #seek{ flex:1; height:18px; display:flex; align-items:center; cursor:pointer; -webkit-app-region:no-drag; }
+  .track{ width:100%; height:5px; border-radius:4px; background:rgba(255,255,255,.26); overflow:hidden; will-change:transform; transition:transform .38s var(--ease); }
+  #seek:hover .track{ transform:scaleY(1.8); }
+  #fill{ height:100%; width:0; min-width:5px; border-radius:inherit; background:var(--accent); filter:brightness(1.18) saturate(1.1); transition:width .25s linear,background .45s ease; }
+  .seeking #fill{ transition:background .45s ease; }
+
+  .top{ position:absolute; top:10px; right:10px; display:flex; gap:1px; padding:2px; border-radius:999px; background:rgba(24,24,28,.42); backdrop-filter:blur(10px); opacity:0; }
+  /* Shown only while the pointer is in the top right corner of the window, or for keyboard focus */
+  .awake .top,.top:hover,.top:has(:focus-visible){ opacity:1; }
+  .top button{ width:24px; height:24px; border-radius:50%; }
+  .top button:hover{ background:rgba(255,255,255,.2); }
+  .top svg{ width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; transform:rotate(180deg); }
+  #close svg{ transform:none; }
+  .framed #close{ display:none; }
+
+  /* Small view: the shape, which animates. Its 340x84 is the root's bottom left corner */
+  .mini .root{ clip-path:inset(186px 140px 0 0 round 20px); }
+  .mini .panel{ left:6px; right:146px; bottom:6px; height:72px; border-radius:14px; backdrop-filter:blur(14px); }
+
+  /* Small view: the content, swapped while it's faded out */
+  .compact .panel{ grid-template-columns:auto minmax(0,1fr) auto; grid-template-areas:"thumb info controls"; gap:9px; padding:6px 8px 6px 6px; }
+  .compact .thumb{ display:block; position:relative; grid-area:thumb; height:54px; width:54px; border-radius:8px; background-size:cover!important; background-position:center!important; }
+  .compact #title{ font-size:13.5px; }
+  .compact #artist{ font-size:11.5px; }
+  .compact #order{ display:none; }
+  .compact .controls{ padding:2px; }
+  .compact .controls button{ width:34px; height:32px; }
+  .compact .controls button svg{ width:14px; height:14px; }
+  .compact #order::before,.compact #prev::before,.compact #next::before{ inset:4px 2px; }
+  .compact #play{ width:36px; }
+  .compact .progress{ position:absolute; left:0; right:0; bottom:0; }
+  .compact #now,.compact #end{ display:none; }
+  .compact #seek{ height:8px; align-items:flex-end; }
+  .compact .track{ height:2px; border-radius:0; }
+  .compact .track{ transform-origin:bottom; }
+  .compact #seek:hover .track{ transform:scaleY(2); }
+  .compact #fill{ min-width:0; }
+
+  /* The size button is a short thin line tracing the window's top right corner, with a wider invisible click area */
+  .compact .top{ position:static; display:block; padding:0; border-radius:0; background:none; backdrop-filter:none; }
+  .compact #size{ position:absolute; top:186px; right:140px; width:46px; height:46px; border-radius:0; background:none; clip-path:path("M14,0 H26 A20,20 0 0 1 46,20 V32 A7,7 0 0 1 32,32 V20 A6,6 0 0 0 26,14 H14 A7,7 0 0 1 14,0 Z"); }
+  .compact #size::before{ content:""; position:absolute; inset:0; background:rgba(255,255,255,.62); clip-path:path("M20.5,0 H26 A20,20 0 0 1 46,20 V25.5 A2.5,2.5 0 0 1 41,25.5 V20 A15,15 0 0 0 26,5 H20.5 A2.5,2.5 0 0 1 20.5,0 Z"); transition:background .2s ease; }
+  .compact #size:hover{ background:none; }
+  .compact #size:hover::before{ background:rgba(255,255,255,.92); }
+  .compact #size svg{ display:none; }
+  .compact #close{ position:absolute; top:187px; right:172px; width:18px; height:18px; background:rgba(24,24,28,.42); }
+  .compact #close svg{ width:9px; height:9px; }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none!important; animation:none!important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="lensDefs"></defs></svg>
+<div class="root" id="root">
+  <div class="art" id="art"></div>
+  <div class="panel" id="panel">
+    <canvas id="bars"></canvas>
+    <div class="thumb" id="thumb"></div>
+    <div class="info">
+      <div id="title"><span id="titleText">未选择歌曲</span></div>
+      <div id="artist"></div>
+    </div>
+    <div class="controls">
+      <button id="order" type="button" aria-label="顺序播放" title="顺序播放">
+        <svg class="on" data-order="sequence" viewBox="0 0 24 24"><path d="M4 7h13M4 12h9M4 17h6M16 14l4 3-4 3z"/></svg>
+        <svg data-order="shuffle" viewBox="0 0 24 24"><path d="M3 7h3.5c2 0 3.2 1 4.3 2.7l2.4 4.6c1.100 1.700 2.300 2.700 4.300 2.700H21M3 17h3.500c1.400 0 2.400-.5 3.300-1.400M13.700 8.400C14.600 7.500 15.600 7 17 7h4M18.500 4.500 21 7l-2.500 2.500M18.500 14.500 21 17l-2.500 2.500"/></svg>
+        <svg data-order="one" viewBox="0 0 24 24"><path d="M4 11V9.500A3.500 3.500 0 0 1 7.500 6H19M16 3l3 3-3 3M20 13v1.500a3.500 3.500 0 0 1-3.500 3.500H5M8 21l-3-3 3-3M11 10.500l1.500-1v5.500"/></svg>
+      </button>
+      <button id="prev" type="button" aria-label="上一首"><svg viewBox="0 0 24 24"><path d="M6 5h2.4v14H6zM19 5.8v12.4a.8.8 0 0 1-1.2.7L9.5 12.7a.8.8 0 0 1 0-1.4l8.3-6.2a.8.8 0 0 1 1.2.7z"/></svg></button>
+      <button id="play" type="button" aria-label="播放"><svg class="glyph glyph-play" viewBox="0 0 24 24"><path d="M8 5.6v12.8a.8.8 0 0 0 1.2.7l10-6.4a.8.8 0 0 0 0-1.4l-10-6.4A.8.8 0 0 0 8 5.6z"/></svg><svg class="glyph glyph-pause" viewBox="0 0 24 24"><path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/></svg></button>
+      <button id="next" type="button" aria-label="下一首"><svg viewBox="0 0 24 24"><path d="M15.6 5H18v14h-2.4zM5 5.8v12.4a.8.8 0 0 0 1.2.7l8.3-6.2a.8.8 0 0 0 0-1.4L6.2 5.1a.8.8 0 0 0-1.2.7z"/></svg></button>
+    </div>
+    <div class="progress">
+      <span id="now">0:00</span>
+      <div id="seek" role="slider" aria-label="播放进度"><div class="track"><div id="fill"></div></div></div>
+      <span id="end">0:00</span>
+    </div>
+  </div>
+  <div class="top">
+    <button id="size" type="button" aria-label="缩小"><svg viewBox="0 0 24 24"><path d="M5 19L19 5M12 5h7v7"/></svg></button>
+    <button id="close" type="button" aria-label="关闭"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>
