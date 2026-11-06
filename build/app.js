@@ -10712,7 +10712,7 @@ window.GPModules.register = function register(name,factory){
     }finally{defaultFolderButton.disabled=false;}
   });
 
-  $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=tr(modeLabels[playMode][0],modeLabels[playMode][1]);savePrefs();requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
+  $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=tr(modeLabels[playMode][0],modeLabels[playMode][1]);savePrefs();nexusTheme?.setLang?.(button.dataset.lang);requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
   let themeMode = "auto";
   let autoThemeTimer=0;
   /* The theme is Nexus's, set in its Settings: dark, light, or sun (System Time: light from sunrise to sunset where you are). The Electron
@@ -10760,6 +10760,8 @@ window.GPModules.register = function register(name,factory){
     }));
   });
   // Nexus's theme changed (its Settings, or another app's picker), or the sun flipped System Time
+  // The language is Nexus's too (Settings → Language, or another app's picker): follow it through this picker's own handler
+  nexusTheme?.subscribe((_resolved,state)=>{if(state.lang&&state.lang!==uiLanguage)$(`#languageSeg button[data-lang="${state.lang}"]`)?.click();});
   nexusTheme?.subscribe((_resolved,state)=>{const mode=modeFromNexus(state.theme),changed=mode!==themeMode;themeMode=mode;applyTheme();if(changed){savePrefs();requestAnimationFrame(()=>updateGlider($("#themeSeg"),true));}});
 
   $("#coverSeg").addEventListener("click", (e) => {
@@ -11260,7 +11262,7 @@ window.GPModules.register = function register(name,factory){
   function loadPrefs(){
     let p; try{ p = JSON.parse(GPBrowserStorage.getLocal("glassPlayerPrefs")); }catch(e){}
     if(!p) p = {};
-    uiLanguage = p.uiLanguage === "en" ? "en" : "zh";
+    uiLanguage = nexusTheme?.lang ? nexusTheme.lang() : p.uiLanguage === "en" ? "en" : "zh";   // Nexus's language when there is one
     themeMode = nexusTheme ? modeFromNexus(nexusTheme.mode()) : ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
     coverDisplayMode = ["rotate","static"].includes(p.coverDisplayMode) ? p.coverDisplayMode : "rotate";
     bgMode = ["glow","color","blur"].includes(p.bgMode) ? p.bgMode : "glow";

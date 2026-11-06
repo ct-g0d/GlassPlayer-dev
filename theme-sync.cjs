@@ -5,16 +5,18 @@
 //   main process:  require('./theme-sync.cjs').main(ipcMain, BrowserWindow)
 //   preload:       const nexusTheme = require('./theme-sync.cjs').preload(ipcRenderer)   then expose it to the page as window.nexusTheme
 // Page API: mode() 'dark'|'light'|'sun', resolved() 'dark'|'light' (the sun worked out now), get() { theme, place },
-//           subscribe(cb) cb(resolved, { theme, place }) when the setting changes or the sun flips it, set(mode) writes the shared setting.
+//           subscribe(cb) cb(resolved, { theme, place, lang }) when the setting changes or the sun flips it, set(mode) writes the shared setting.
+// Language rides the same state: lang() 'en'|'zh' (the launcher's Settings → Language), setLang(l) writes it; subscribe also fires when it changes.
 const fs = require('node:fs');
 const path = require('node:path');
 
 const FILE = path.join(process.env.NEXUS_DATA || 'D:/Nexus/data', 'hub.settings.json');
 const MODES = ['dark', 'light', 'sun'];
+const LANGS = ['en', 'zh'];
 
 const clean = (j) => {
   const t = j?.theme, p = j?.place;
-  return { theme: t === 'system' ? 'sun' : MODES.includes(t) ? t : 'dark', place: p && Number.isFinite(p.lat) && Number.isFinite(p.lon) ? { lat: p.lat, lon: p.lon } : null };
+  return { theme: t === 'system' ? 'sun' : MODES.includes(t) ? t : 'dark', lang: j?.lang === 'zh' ? 'zh' : 'en', place: p && Number.isFinite(p.lat) && Number.isFinite(p.lon) ? { lat: p.lat, lon: p.lon } : null };
 };
 
 /* The sun at `place`: the moments it crosses an altitude on the given day, after SunCalc. This is kit.js's sunTimes(), line for line
@@ -58,20 +60,21 @@ function main(ipcMain, BrowserWindow) {
   // Polled, not fs.watch: the launcher saves by writing a temporary file and renaming it over this one, which a watch can miss on Windows
   fs.watchFile(FILE, { interval: 1000, persistent: false }, refresh);
   ipcMain.on('nexus:theme:get', (e) => { e.returnValue = state; });
-  // An app with its own picker writes the shared setting: only `theme` changes, everything else in the file stays
-  ipcMain.handle('nexus:theme:set', async (_e, mode) => {
-    if (!MODES.includes(mode)) return false;
+  // An app with its own picker writes the shared setting: only `theme` (or `lang`) changes, everything else in the file stays
+  const write = (key, value) => {
     let json = {};
     try { json = JSON.parse(fs.readFileSync(FILE, 'utf8')) || {}; } catch {}
-    if (json.theme === mode) return true;
-    json.theme = mode;
+    if (json[key] === value) return true;
+    json[key] = value;
     fs.mkdirSync(path.dirname(FILE), { recursive: true });
     const tmp = `${FILE}.${process.pid}.${Date.now()}.tmp`;
     fs.writeFileSync(tmp, JSON.stringify(json, null, 2), 'utf8');
     fs.renameSync(tmp, FILE);
     refresh();
     return true;
-  });
+  };
+  ipcMain.handle('nexus:theme:set', async (_e, mode) => MODES.includes(mode) && write('theme', mode));
+  ipcMain.handle('nexus:lang:set', async (_e, lang) => LANGS.includes(lang) && write('lang', lang));
 }
 
 function preload(ipcRenderer) {
@@ -88,6 +91,8 @@ function preload(ipcRenderer) {
     get: () => state,
     subscribe: (cb) => { subs.add(cb); return () => subs.delete(cb); },
     set: (mode) => ipcRenderer.invoke('nexus:theme:set', mode),
+    lang: () => state.lang,
+    setLang: (lang) => ipcRenderer.invoke('nexus:lang:set', lang),
   };
 }
 

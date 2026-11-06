@@ -2,6 +2,7 @@
 // Windows only plays the minimize / maximize / restore animations for windows that have WS_SYSMENU,
 // and Electron leaves that style off frameless windows. This adds it back (measured: 5 -> 11 animation
 // frames on minimize, same as Chrome). No-op on other platforms or if koffi is missing.
+// It also gives the window Planner's taskbar identity (below).
 // Same file in Mac X and every standalone app; usage: require('./native-window.cjs')(win)
 
 const GWL_STYLE = -16;
@@ -38,7 +39,24 @@ function addSysMenu(win) {
   u.setPos(hwnd, 0, 0, 0, 0, 0, SWP_FRAMECHANGED_ONLY);
 }
 
+/* One product, Planner: every window of Mac X and of each app carries the same Windows app identity, so they all sit under one
+   taskbar button, shown with Planner's icon and name (a pinned button starts Planner). The apps keep their own names inside */
+const fs = require('node:fs');
+const path = require('node:path');
+const PLANNER_EXE = 'D:\\Nexus\\Planner\\Planner.exe';
+const PLANNER_ICON = [path.join(__dirname, 'planner.ico'), 'D:/Nexus/assets/icons/planner.ico'].find((f) => fs.existsSync(f));
+// The whole process too, so a window that never comes through here (a pop-up) still groups with the rest
+try { if (process.platform === 'win32') require('electron').app.setAppUserModelId('Planner'); } catch {}
+function plannerIdentity(win) {
+  if (process.platform !== 'win32' || win.isDestroyed()) return;
+  try {
+    win.setAppDetails({ appId: 'Planner', relaunchDisplayName: 'Planner', relaunchCommand: `"${PLANNER_EXE}"`,
+      ...(PLANNER_ICON ? { appIconPath: PLANNER_ICON, appIconIndex: 0 } : {}) });
+  } catch (err) { console.warn('[native-window] could not set the Planner identity:', err.message); }
+}
+
 module.exports = function nativeWindowAnimations(win) {
+  plannerIdentity(win);
   addSysMenu(win);
   // Electron can rewrite the style when the window state changes, so put it back each time
   for (const ev of ['show', 'restore', 'maximize', 'unmaximize', 'leave-full-screen']) win.on(ev, () => addSysMenu(win));
