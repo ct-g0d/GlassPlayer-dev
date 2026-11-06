@@ -2,6 +2,14 @@
 (function(){
   "use strict";
 
+  const syncNativeFocus = (focused) => document.body.classList.toggle("gp-window-focused", Boolean(focused));
+  syncNativeFocus(document.hasFocus());
+  window.addEventListener("focus", () => syncNativeFocus(true));
+  window.addEventListener("blur", () => syncNativeFocus(false));
+  window.macxWindow?.onFocus?.(syncNativeFocus);
+
+  const onDisk = location.protocol.startsWith("http") || location.protocol === "app:" || location.protocol === "nexus:" || location.protocol === "file:" || Boolean(window.macxWindow || window.electronAPI || window.__ELECTRON__ || window.glassAPI);
+
   /* ================= state ================= */
   const playlist = [];
   const playQueue = [];             // stable track ids; manual queue has priority over play mode

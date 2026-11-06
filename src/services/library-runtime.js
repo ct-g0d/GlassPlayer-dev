@@ -692,7 +692,7 @@
     };
   }
   async function buildAndCacheTrack(file,contentKey,stats,knownCache,recognition){
-    const url=URL.createObjectURL(file);
+    const url=file.gpUrl||URL.createObjectURL(file);   // music-folder songs stream from disk; picked files get a Blob URL
     try{
       let cached=knownCache||null;
       if(!cached){try{cached=await GPDatabase.getTrackCache(contentKey);}catch(error){stats.storageErrors++;}}
@@ -756,22 +756,16 @@
   function releaseImportBackgroundWork(){
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
   }
+  /* Imports run in the background: no dialog, nothing closed or blocked. The library fills in when the import commits, and
+     a toast says how it went (the start-up load of the remembered music folder says nothing unless it fails). */
+  let importQuiet=false;
   function openImportProgress(total){
     clearTimeout(importCompletionTimer);
-    closeAllMotionPopovers();
-    importRunning=true;rescanModalMode="importRunning";
-    $("#rescanModal").classList.add("is-scanning");
-    $("#rescanModalTitle").textContent=tr("正在导入音乐","Importing Music");
-    $("#rescanModalMessage").textContent=tr(`正在准备识别 ${total} 首歌曲…`,`Preparing to identify ${total} songs…`);
-    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="0%";
-    $("#rescanCancelBtn").style.display="none";
-    $("#rescanConfirmBtn").disabled=true;$("#rescanConfirmBtn").textContent=tr("导入中…","Importing…");
-    $("#rescanModal").classList.add("show");
-    startImportSpinner();
+    importRunning=true;
   }
   let importProgressFrame=0,importProgressState=null;
   function paintImportProgress(){
-    importProgressFrame=0;const state=importProgressState;if(!state)return;
+    importProgressFrame=0;const state=importProgressState;if(!state||rescanModalMode!=="importRunning")return;   // no import dialog any more: nothing to paint
     $("#rescanProgressFill").style.width=`${state.safe}%`;
     $("#rescanModalMessage").textContent=state.phase==="identity"
       ?tr(`正在识别歌曲身份 ${state.completed} / ${state.total}…`,`Identifying songs ${state.completed} / ${state.total}…`)
@@ -783,6 +777,7 @@
   }
   const yieldImportFrame=()=>yieldToInputPriority();
   function updateImportCommitProgress(percent,phase){
+    if(rescanModalMode!=="importRunning")return;   // no import dialog any more
     $("#rescanProgressFill").style.width=`${percent}%`;
     $("#rescanModalMessage").textContent=phase==="render"
       ?tr("正在更新歌单与界面…","Updating library and interface…")
@@ -798,19 +793,17 @@
   }
   function finishImportProgress(stats,error=null){
     if(importProgressFrame)cancelAnimationFrame(importProgressFrame);importProgressFrame=0;importProgressState=null;
-    importRunning=false;rescanModalMode=error?"importError":"importDone";
-    stopImportSpinner();
-    $("#rescanModal").classList.remove("is-scanning");
-    $("#rescanProgressFill").style.width="100%";
-    $("#rescanModalTitle").textContent=error?tr("导入未完成","Import Incomplete"):tr("导入完成","Import Complete");
-    $("#rescanModalMessage").textContent=error
-      ?tr("导入过程中出现错误；已经成功加入的歌曲会保留。","An error interrupted the import. Songs already added remain available.")
-      :tr(`已处理 ${stats?.files||0} 首歌曲，缓存命中 ${stats?.cacheHits||0} 首，新增 ${stats?.cacheMisses||0} 首${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}。`,`Processed ${stats?.files||0} songs, restored ${stats?.cacheHits||0} from cache, added ${stats?.cacheMisses||0}${stats?.duplicates?`, and skipped ${stats.duplicates} duplicates`:""}.`);
-    $("#rescanConfirmBtn").disabled=false;$("#rescanConfirmBtn").textContent=tr("完成","Done");
+    importRunning=false;
+    const quiet=importQuiet;importQuiet=false;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
+    if(error){showToast(tr("导入未完成：已经成功加入的歌曲会保留","Import incomplete: songs already added remain available"));return;}
+    const added=stats?.cacheMisses||0,restored=stats?.cacheHits||0;
+    if(quiet||!(added+restored))return;
+    showToast(tr(`已加入 ${added+restored} 首歌曲${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}`,`Added ${added+restored} songs${stats?.duplicates?`, skipped ${stats.duplicates} duplicates`:""}`));
   }
   async function settleImportProgress(stats,error=null){
-    $("#rescanProgressFill").style.width="100%";
-    $("#rescanModalMessage").textContent=error
+    if(rescanModalMode==="importRunning")$("#rescanProgressFill").style.width="100%";
+    if(rescanModalMode==="importRunning")$("#rescanModalMessage").textContent=error
       ?tr("正在保留已完成的导入结果…","Preserving completed import results…")
       :tr("所有初始化已经完成…","All initialization is complete…");
     await yieldToInputPriority();await new Promise(resolve=>{
@@ -832,11 +825,12 @@
     if(overrideQueue&&!overrideQueue.length)overrideQueue=null;
     if(playMode==="shuffle"&&currentIndex>=0){shuffleTimeline=[currentIndex];shuffleTimelineCursor=0;}
   }
-  async function addFiles(fileList){
+  async function addFiles(fileList,options={}){   // options.quiet: the start-up load of the music folder, no toast; options.pickTrack:false leaves the choice to the resumed session
     const all = Array.from(fileList);
     const audioFiles = all.filter(f => f.type.startsWith("audio/") || /\.(mp3|wav|m4a|flac|ogg|aac|wma)$/i.test(f.name));
     if(audioFiles.length === 0) return;
     if(importRunning||metadataRescanRunning)return;
+    importQuiet=options.quiet===true;
     openImportProgress(audioFiles.length);
 
     const renderStart=libraryRenderCommits;
@@ -875,7 +869,7 @@
     if(duplicates.length){
       stats.duplicates=duplicates.length;
       const firstTitle=parseName(duplicates[0].name).title;
-      showToast(duplicates.length===1?tr(`「${firstTitle}」已经在歌单中`,`“${firstTitle}” is already in the library`):tr(`${duplicates.length} 首歌曲已经在歌单中，未重复添加`,`${duplicates.length} songs were already in the library and were skipped`));
+      if(!importQuiet)showToast(duplicates.length===1?tr(`「${firstTitle}」已经在歌单中`,`“${firstTitle}” is already in the library`):tr(`${duplicates.length} 首歌曲已经在歌单中，未重复添加`,`${duplicates.length} songs were already in the library and were skipped`));
     }
     if(uniqueFiles.length===0){updateImportCommitProgress(99,"organize");await yieldImportFrame();await settleImportProgress(stats);return;}
 
@@ -893,7 +887,7 @@
     invalidateHistoryTrackIndex();pendingImportHistorySync=true;
     updateImportCommitProgress(97,"render");await yieldImportFrame();
     await renderLibraryIncrementally(searchInputSafe());
-    if(currentIndex===-1&&playlist.length>0){
+    if(currentIndex===-1&&playlist.length>0&&options.pickTrack!==false){   // pickTrack:false when a resumed session chooses the song
       const startIndex=playMode==="shuffle"?Math.floor(Math.random()*playlist.length):0;
       loadTrack(startIndex,false);
     }

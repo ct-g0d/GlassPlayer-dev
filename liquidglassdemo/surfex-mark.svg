@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <!-- SurfeX mark: hollow "/" over solid "\" with horizontal needle tips -->
+  <defs>
+    <mask id="hx"><rect width="300" height="300" fill="#fff"/><path d="M179 50L268 50L208 86L121 250L32 250L92 214Z" fill="#000" stroke="#000" stroke-width="16" stroke-linejoin="miter"/></mask>
+    <clipPath id="hc"><path d="M179 50L268 50L208 86L121 250L32 250L92 214Z"/></clipPath>
+  </defs>
+  <path fill="#0b1a2e" mask="url(#hx)" d="M121 50L32 50L92 86L179 250L268 250L208 214Z"/>
+  <path d="M179 50L268 50L208 86L121 250L32 250L92 214Z" fill="none" stroke="#0b1a2e" stroke-width="18" clip-path="url(#hc)"/>
+</svg>

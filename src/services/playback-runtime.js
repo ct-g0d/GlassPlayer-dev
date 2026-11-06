@@ -15,6 +15,7 @@
   let trackDetailRevision=0,trackDetailHoldUntil=0;
   let firstPlaybackQueueAlignment=true;
   function ensureTrackMediaURL(track){
+    if(track?.file?.gpUrl){track.url=track.file.gpUrl;return track.url;}   // a song from the music folder streams from disk
     if(track?.file&&(!track.url||!String(track.url).startsWith("blob:")))track.url=URL.createObjectURL(track.file);
     return track?.url||"";
   }

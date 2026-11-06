@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SurfeX Glass Icon</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; overflow: hidden; font: 12px/1.4 system-ui, sans-serif; }
+  body.light { --ink: #0b1a2e; background: radial-gradient(circle at 45% 35%, #ffffff, #dcdce2 75%); }
+  /* The SurfeX mark sits on the page; the glass refracts it */
+  #mark { position: absolute; left: 50%; top: 50%; width: 420px; height: 420px; translate: -50% -50%; color: var(--ink); }
+  #mark .f { fill: currentColor; }
+  #glass {
+    position: absolute; left: calc(50% - 220px); top: calc(50% - 220px); width: 440px; height: 440px; border-radius: 100px;
+    cursor: grab; touch-action: none;
+    box-shadow: 0 30px 60px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.12);
+  }
+  #glass:active { cursor: grabbing; }
+  .brand { position: fixed; top: 22px; left: 50%; translate: -50% 0; font: 700 15px/1 system-ui, sans-serif; letter-spacing: .5em; color: #888; }
+  .bar { position: fixed; bottom: 14px; left: 50%; translate: -50% 0; display: flex; gap: 8px; align-items: center; color: #888; white-space: nowrap; }
+</style>
+</head>
+<body class="light">
+<div class="brand">SURFEX</div>
+<svg id="mark" viewBox="0 0 300 300"></svg>
+<div id="glass"></div>
+<div class="bar"><span>Drag the glass</span></div>
+<svg width="0" height="0" style="position:absolute"><defs><filter id="lens"></filter></defs></svg>
+
+<script>
+// ---- tuning: kube.io's method, refraction and dispersion a notch above default ----
+const T = {
+  radius: 100,        // corner radius of the slab
+  bezel: 140,         // the refracting rim; inside it the glass is flat and the image passes through clean
+  thickness: 75,      // same edge curvature as before (thickness / bezel), over a narrower rim
+  squircle: 5,        // superellipse exponent for the dome; 5 sits close to the slab's rounded square
+  ior: 1.5,
+  refraction: 1.25,
+  dispersion: 0.14,
+  specular: 0.6,
+  lightAngle: -60,
+};
+
+// SurfeX mark: a sharp X of two straight bands whose tips run out horizontally to needle points.
+// The hollow "/" passes over the solid "\" through a mitred gap; its border sits inside the shape so the tips stay sharp
+const RISE = 'M179 50L268 50L208 86L121 250L32 250L92 214Z';
+const FALL = 'M121 50L32 50L92 86L179 250L268 250L208 214Z';
+document.getElementById('mark').innerHTML = `<mask id="hx"><rect width="300" height="300" fill="#fff"/><path d="${RISE}" fill="#000" stroke="#000" stroke-width="16" stroke-linejoin="miter"/></mask>
+  <clipPath id="hc"><path d="${RISE}"/></clipPath>
+  <path class="f" mask="url(#hx)" d="${FALL}"/>
+  <path d="${RISE}" fill="none" stroke="currentColor" stroke-width="18" clip-path="url(#hc)"/>`;
+
+// ---- displacement + rim-light maps for a rounded square: bezel profile -> Snell -> map ----
+// Convex circle (kube.io): keeps real slope well in from the edge, so the mark's corners bend
+const profile = (t) => Math.sqrt(1 - (1 - t) ** 2);
+function sdRound(x, y, w, h, r) {
+  const qx = Math.abs(x - w / 2) - w / 2 + r, qy = Math.abs(y - h / 2) - h / 2 + r;
+  return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
+}
+function buildMaps(w, h) {
+  const disp = new Float32Array(w * h * 2), spec = new ImageData(w, h);
+  const L = [Math.cos(T.lightAngle * Math.PI / 180), Math.sin(T.lightAngle * Math.PI / 180)];
+  let max = 1e-6;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const x = i + 0.5, y = j + 0.5, d = sdRound(x, y, w, h, T.radius);
+    if (d > 0) continue;
+    // Depth and slope direction come from a superellipse rather than the rounded square's distance: that distance's
+    // direction flips along the diagonals (nearest edge switches), which creased the image there
+    const u = (x - w / 2) / (w / 2), v = (y - h / 2) / (h / 2), n = T.squircle;
+    const rho = Math.pow(Math.abs(u) ** n + Math.abs(v) ** n, 1 / n);
+    const t = ((1 - rho) * (w / 2)) / T.bezel;
+    if (t >= 1 || rho >= 1) continue;
+    const gx = Math.sign(u) * Math.abs(u) ** (n - 1), gy = Math.sign(v) * Math.abs(v) ** (n - 1);
+    const gl = Math.hypot(gx, gy) || 1, nx = gx / gl, ny = gy / gl;
+    const dt = 0.002, slope = T.thickness * (profile(Math.min(1, t + dt)) - profile(Math.max(0, t - dt))) / (2 * dt) / T.bezel;
+    const a1 = Math.min(Math.atan(slope), 1.45), a2 = Math.asin(Math.sin(a1) / T.ior);
+    const mag = T.thickness * profile(t) * Math.tan(a1 - a2);
+    const k = (j * w + i) * 2;
+    disp[k] = nx * mag; disp[k + 1] = ny * mag;
+    max = Math.max(max, mag);
+    const facing = nx * L[0] + ny * L[1];
+    const lit = (Math.max(0, facing) ** 2 + 0.4 * Math.max(0, -facing) ** 2) * Math.sin(a1) ** 2 + 0.6 * Math.exp(d / 1.5);
+    const o = (j * w + i) * 4;
+    spec.data[o] = spec.data[o + 1] = spec.data[o + 2] = 255;
+    spec.data[o + 3] = 255 * Math.min(1, lit * T.specular);
+  }
+  const map = new ImageData(w, h);
+  for (let p = 0; p < w * h; p++) {
+    map.data[p * 4] = 128 + 127 * disp[p * 2] / max;
+    map.data[p * 4 + 1] = 128 + 127 * disp[p * 2 + 1] / max;
+    map.data[p * 4 + 2] = 128;
+    map.data[p * 4 + 3] = 255;
+  }
+  const url = (img) => { const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').putImageData(img, 0, 0); return c.toDataURL(); };
+  return { map: url(map), spec: url(spec), max };
+}
+
+// One pass per color, each bent a little differently (dispersion), recombined, then the rim light
+function buildFilter(el) {
+  const w = el.offsetWidth, h = el.offsetHeight, m = buildMaps(w, h), s = 2 * m.max * T.refraction;
+  const pass = (name, k, row) => `
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="${s * k}" xChannelSelector="R" yChannelSelector="G" result="d${name}"/>
+    <feColorMatrix in="d${name}" type="matrix" values="${row} 0 0 0 1 0" result="${name}"/>`;
+  document.getElementById('lens').outerHTML = `
+  <filter id="lens" x="0" y="0" width="${w}" height="${h}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feImage href="${m.map}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="map"/>
+    ${pass('r', 1 - T.dispersion, '1 0 0 0 0  0 0 0 0 0  0 0 0 0 0 ')}
+    ${pass('g', 1, '0 0 0 0 0  0 1 0 0 0  0 0 0 0 0 ')}
+    ${pass('b', 1 + T.dispersion, '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0 ')}
+    <feBlend in="r" in2="g" mode="screen" result="rg"/>
+    <feBlend in="rg" in2="b" mode="screen" result="rgb"/>
+    <feImage href="${m.spec}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="spec"/>
+    <feBlend in="spec" in2="rgb" mode="screen"/>
+  </filter>`;
+  el.style.backdropFilter = el.style.webkitBackdropFilter = 'url(#lens)';
+}
+
+const glass = document.getElementById('glass');
+let grab = null;
+glass.addEventListener('pointerdown', (e) => { glass.setPointerCapture(e.pointerId); grab = [e.clientX - glass.offsetLeft, e.clientY - glass.offsetTop]; });
+glass.addEventListener('pointermove', (e) => {
+  if (!grab) return;
+  glass.style.left = e.clientX - grab[0] + 'px';
+  glass.style.top = e.clientY - grab[1] + 'px';
+});
+glass.addEventListener('pointerup', () => (grab = null));
+buildFilter(glass);
+</script>
+</body>
+</html>

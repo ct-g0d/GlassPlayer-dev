@@ -1,0 +1,19 @@
+{
+  "name": "glassplayer",
+  "productName": "Glass Player",
+  "version": "7.7.1",
+  "description": "Glass Player - High Fidelity Audio Player with Glass/Acrylic UI",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "powershell -ExecutionPolicy Bypass -File ./build.ps1",
+    "serve": "node serve.mjs"
+  },
+  "keywords": [
+    "glassplayer",
+    "electron",
+    "audio-player"
+  ],
+  "author": "",
+  "license": "ISC"
+}

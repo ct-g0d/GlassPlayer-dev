@@ -1,41 +1,41 @@
-/* ?embed=1: Glass Player framed by the Nexus launcher. Reports the track to Nexus's Now Playing widget, takes
-   play / prev / next back, and follows Nexus's theme (?theme= on load, then { nexus: 'theme' } messages).
-   Owns no product state: it reads what the runtime rendered and presses the runtime's own controls. */
+/* nexus-embed.js — Legacy compatibility wrapper for nexus-bridge.js.
+   Ensures legacy callers, iframes (?embed=1), and direct imports continue
+   working seamlessly without breaking changes. */
+
 (() => {
-  const q = new URLSearchParams(location.search);
-  if (!q.has('embed') || parent === window) return;
-  const $ = (s) => document.querySelector(s);
+  'use strict';
 
-  let last = '', coverSrc = '', coverData = '';
-  // The cover is usually a blob: URL the shell can't load from its origin, so it travels as a small JPEG
-  const cover = () => {
-    const img = [$('#staticCover'), $('#rotorCover')].find((i) => i?.getAttribute('src') && i.naturalWidth);
-    if (!img) return '';
-    if (img.src !== coverSrc) {
-      coverSrc = img.src;
+  if (typeof window === 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
       try {
-        const c = Object.assign(document.createElement('canvas'), { width: 160, height: 160 });
-        c.getContext('2d').drawImage(img, 0, 0, 160, 160);
-        coverData = c.toDataURL('image/jpeg', 0.8);
-      } catch { coverData = ''; }
+        module.exports = require('./nexus-bridge.js');
+      } catch (_) {}
     }
-    return coverData;
-  };
-  setInterval(() => {
-    const state = { nexus: 'nowPlaying', title: $('#nowTitle').textContent.trim(), artist: $('#nowArtist').textContent.trim(), cover: cover(),
-      playing: /<rect/i.test($('#playIcon').innerHTML), loaded: $('#durTime').textContent !== '0:00',
-      cur: $('#curTime').textContent, dur: $('#durTime').textContent, pos: +$('#seek').value / +$('#seek').max };
-    const json = JSON.stringify(state);
-    if (json !== last) { last = json; parent.postMessage(state, '*'); }
-  }, 500);
+    return;
+  }
 
-  // Through the app's own theme switch, so the choice sticks
-  const setTheme = (t) => (t === 'light' || t === 'dark') && $(`#themeSeg [data-v="${t}"]`)?.click();
-  setTheme(q.get('theme'));
-  window.addEventListener('message', (e) => {
-    if (e.source !== parent) return;
-    if (e.data?.nexus === 'theme') return setTheme(e.data.theme);
-    if (e.data?.nexus !== 'control') return;
-    ({ toggle: $('#playBtn'), prev: $('#prevBtn'), next: $('#nextBtn') })[e.data.action]?.click();
-  });
+  // If nexus-bridge.js is already running in the document
+  if (window.__nexusBridgeLoaded && window.NexusBridge) {
+    window.nexusEmbed = window.NexusBridge;
+    return;
+  }
+
+  // If nexus-bridge.js has not been injected yet, inject it dynamically
+  if (typeof document !== 'undefined') {
+    const existingScript = document.querySelector('script[src*="nexus-bridge.js"]');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = (document.currentScript && document.currentScript.src)
+        ? new URL('nexus-bridge.js', document.currentScript.src).href
+        : './nexus-bridge.js';
+      script.async = false;
+      document.head.appendChild(script);
+    }
+  }
+
+  if (typeof module !== 'undefined' && module.exports) {
+    try {
+      module.exports = window.NexusBridge || require('./nexus-bridge.js');
+    } catch (_) {}
+  }
 })();

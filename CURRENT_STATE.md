@@ -1,7 +1,10 @@
 ﻿# Glass Player — Current State
 
-Last documentation update: 2026-10-31 (Pacific/Auckland)
+Last documentation update: 2026-11-06 (Pacific/Auckland)
 
+The 7.8.0 ENCORE UPDATE checkpoint (Electron) remembers a music folder chosen in Settings, loads it
+quietly at start-up with no import window, and resumes the last song, position, queue, page and
+panel paused; see section 24C.
 The 7.7.1 FINAL PRESSING checkpoint is the last intentionally maintained version before
 Glass Player merges into MacX; see section 24B.
 The 7.7.0 LOCALIZATION UPDATE checkpoint adds the local disk database, data export and import
@@ -32,8 +35,8 @@ the complete historical reasoning; use AI_WORKSPACE_HANDOFF.md for that.
 | Field | Current value |
 | --- | --- |
 | Product | Glass Player Gen 7 · Kinetic Glass |
-| Version | 7.7.1 |
-| Release name | FINAL PRESSING |
+| Version | 7.8.0 |
+| Release name | ENCORE UPDATE |
 | Architecture | Peregrine Lake |
 | GP Core | 4.3 — Kinetic Runtime |
 | GP Bionic Engine | 1.0 — Intelligence Core |
@@ -504,6 +507,28 @@ The 7.4.1 pass repaired empty Library collections, stale History labels after me
 - PASS — node --check build/app.js.
 - NOT RUN — Edge/file:// interaction, real audio device verification,
   4K/110% visual comparison and 120 Hz hardware profiling.
+
+## 24C. 7.8.0 ENCORE UPDATE — 2026-11-06
+
+Electron only; the browser build keeps 7.6.3's no-start-up-import rule. main.cjs remembers a music
+folder in data/music-folder.json (Settings > Default Music Folder opens the native dialog through
+glassAPI.music.choose), lists it at every start (music-folder-scan) and serves its songs as
+app://glassplayer/music/<path> through the existing range handler; paths outside the folder or
+non-audio files get 403. The file adapter turns each listed song into a file-shaped object whose
+slice().arrayBuffer() reads by Range request and whose gpUrl the playback runtime and track builder
+use instead of a Blob URL. Owner: Library Service + File Port. The import progress window is gone:
+openImportProgress no longer shows #rescanModal, completion is a toast, and addFiles({quiet:true})
+(the start-up load) says nothing; {pickTrack:false} leaves the first song to the resumed session.
+Bootstrap saves glassPlayerSession (new localStorage key: contentKey of the current song, position,
+manual queue as contentKeys, active view and panel tab) every 2 s and on pagehide, and restores it
+paused after the start-up load. No IndexedDB, schema, Store, queue-owner or audio-graph change.
+Contract tests updated: the no-start-up-import check allows the Electron folder load, new resume
+check, identity moved to 7.8.0. tests/protocol-electron.test.js mock gained getPath, setPath and
+isDestroyed, and its window check now expects the opaque main window. Verified: build, architecture
+checks, 266 contracts, all node tests, and a throwaway Electron copy with six real songs (quiet
+load, range 206, traversal 403, resume across normal closes). NOT RUN: the Settings folder dialog
+itself, a large library's start-up time, Edge/file://, audio device, 4K, 120 Hz. Known: a forced
+kill can lose the last seconds of saved position (Chromium writes localStorage lazily).
 
 ## 24B. 7.7.1 FINAL PRESSING — 2026-10-31
 

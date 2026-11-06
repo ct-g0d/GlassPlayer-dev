@@ -15,6 +15,19 @@
       ]
     },
     {
+      version:"7.8.0", date:"2026-11-06", kind:"minor",
+      summary:"ENCORE UPDATE：Glass Player 现在会记住你的音乐文件夹。打开它，音乐就在你上次离开的地方，暂停着等你按下播放。",
+      sections:[
+        {title:"从上次停下的地方继续",items:["打开时回到上次的歌曲和播放位置，并保持暂停。","播放队列、所在页面和侧边面板也一并恢复。"]},
+        {title:"默认音乐文件夹",items:["在设置中用系统对话框选择一次，之后每次打开都会自动载入。","歌曲直接从磁盘播放，拖动进度条依然即时跳转。"]},
+        {title:"导入",items:["导入在后台进行，不再弹出进度窗口；完成后用一条提示告诉你结果。","启动时载入音乐文件夹不会打扰你。"]}
+      ],english:{summary:"ENCORE UPDATE remembers your music folder. Open Glass Player and your music is right where you left it, paused until you press play.",sections:[
+        {title:"Right Where You Left Off",items:["Opening returns to the last song and the exact place in it, paused.","Your queue, the page you were on and the side panel come back too."]},
+        {title:"Default Music Folder",items:["Choose it once in Settings with the system folder dialog, and it loads every time Glass Player opens.","Songs play straight from disk, and seeking stays instant."]},
+        {title:"Importing",items:["Importing runs in the background with no progress window, and a short notice tells you when it's done.","Loading the music folder at startup happens quietly."]}
+      ]}
+    },
+    {
       version:"7.7.1", date:"2026-10-31", kind:"patch",
       summary:"FINAL PRESSING：这是 Glass Player 最后一个被用心维护的版本。从这里开始，它将并入我的超级应用 MacX。",
       sections:[
@@ -2601,6 +2614,7 @@
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.8.0":"ENCORE UPDATE remembers your music folder and opens right where you left off, paused.",
     "7.7.1":"FINAL PRESSING is the last intentionally maintained version of Glass Player. From here, it becomes part of my superapp, MacX.",
     "7.7.0":"LOCALIZATION UPDATE saves your data to your local disk and adds export and import in Settings. When today has no listening yet, Listening History opens on the most recent period that does.",
     "7.6.3":"HOTFIX BUILD stops the app from automatically importing the last saved music folder at startup while keeping manual folder selection available.","7.6.2":"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",
@@ -4058,7 +4072,7 @@
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.7.1 — FINAL PRESSING`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.8.0 — ENCORE UPDATE`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -4073,7 +4087,7 @@
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.7.1 FINAL PRESSING.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.8.0 ENCORE UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}

@@ -88,9 +88,13 @@
   $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=tr(modeLabels[playMode][0],modeLabels[playMode][1]);savePrefs();requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
   let themeMode = "auto";
   let autoThemeTimer=0;
-  function scheduledAutoTheme(date=new Date()){const hour=date.getHours();return hour>=18||hour<5?"dark":"light";}
+  /* The theme is Nexus's, set in its Settings: dark, light, or sun (System Time: light from sunrise to sunset where you are). The Electron
+     main process reads and watches it (theme-sync.cjs) and the preload hands it over as window.nexusTheme; this picker mirrors it both
+     ways, "auto" here being "sun" there. Without Nexus's bridge (a plain browser) Auto keeps its old clock: light 05:00-18:00 */
+  const nexusTheme=window.nexusTheme,modeFromNexus=m=>m==="sun"?"auto":m,modeToNexus=m=>m==="auto"?"sun":m;
+  function scheduledAutoTheme(date=new Date()){if(nexusTheme)return nexusTheme.resolved();const hour=date.getHours();return hour>=18||hour<5?"dark":"light";}
   function scheduleAutoThemeBoundary(){
-    clearTimeout(autoThemeTimer);if(themeMode!=="auto")return;
+    clearTimeout(autoThemeTimer);if(nexusTheme||themeMode!=="auto")return;   // with Nexus, its subscription below hears the sun cross the horizon
     const now=new Date(),next=new Date(now);next.setMinutes(0,0,0);
     if(now.getHours()<5)next.setHours(5);else if(now.getHours()<18)next.setHours(18);else{next.setDate(next.getDate()+1);next.setHours(5);}
     autoThemeTimer=setTimeout(()=>{if(themeMode==="auto")applyTheme();},Math.max(1000,next-now+50));
@@ -115,7 +119,7 @@
       x:previousActive.offsetLeft,y:previousActive.offsetTop,
       w:previousActive.offsetWidth,h:previousActive.offsetHeight
     }:null;
-    themeMode=b.dataset.v;applyTheme();savePrefs();
+    themeMode=b.dataset.v;applyTheme();savePrefs();nexusTheme?.set(modeToNexus(themeMode));
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       const glider=themeGroup.querySelector(":scope>.segment-glider");
       if(glider&&themeGliderOrigin){
@@ -128,6 +132,8 @@
       updateGlider(themeGroup,true);
     }));
   });
+  // Nexus's theme changed (its Settings, or another app's picker), or the sun flipped System Time
+  nexusTheme?.subscribe((_resolved,state)=>{const mode=modeFromNexus(state.theme),changed=mode!==themeMode;themeMode=mode;applyTheme();if(changed){savePrefs();requestAnimationFrame(()=>updateGlider($("#themeSeg"),true));}});
 
   $("#coverSeg").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if(!b) return;
@@ -355,7 +361,7 @@
     }
   });
   $("#resetPrefsBtn")?.addEventListener("click",()=>{
-    themeMode="auto";
+    themeMode=nexusTheme?modeFromNexus(nexusTheme.mode()):"auto";   // the theme belongs to Nexus: reset follows it rather than changing it
     coverDisplayMode="rotate";
     bgMode="glow";
     adaptiveColorOn=true;
@@ -628,7 +634,7 @@
     let p; try{ p = JSON.parse(GPBrowserStorage.getLocal("glassPlayerPrefs")); }catch(e){}
     if(!p) p = {};
     uiLanguage = p.uiLanguage === "en" ? "en" : "zh";
-    themeMode = ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
+    themeMode = nexusTheme ? modeFromNexus(nexusTheme.mode()) : ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
     coverDisplayMode = ["rotate","static"].includes(p.coverDisplayMode) ? p.coverDisplayMode : "rotate";
     bgMode = ["glow","color","blur"].includes(p.bgMode) ? p.bgMode : "glow";
     $$("#coverSeg button").forEach(b => b.classList.toggle("active", b.dataset.v===coverDisplayMode));

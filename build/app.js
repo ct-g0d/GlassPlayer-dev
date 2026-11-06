@@ -377,7 +377,7 @@ window.GPModules.register = function register(name,factory){
     const STORES=Object.freeze({trackCache:"contentKey",trackFeatures:"contentKey",behaviorEvents:"id",userModel:"id",recommendations:"id"});
     const HISTORY="glassPlayerHistory",PREFS="glassPlayerPrefs",SIDEBAR="glassPlayerSidebarCollapsed",REVISION="glassPlayerDiskRevision";
     const EXTENSIONS=Object.freeze({"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/gif":"gif"});
-    const onDisk=location.protocol.startsWith("http");
+    const onDisk = location.protocol.startsWith("http") || location.protocol === "app:" || location.protocol === "nexus:" || location.protocol === "file:" || Boolean(window.macxWindow || window.electronAPI || window.__ELECTRON__ || window.glassAPI);
     const adapter=()=>GPDatabase.requireAdapter();
     let lastFlushAt=Date.now(),flushing=null,importing=false,reporter=null,coverRefs=null,savedAt=0,state=onDisk?"ready":"unavailable",notify=()=>{};
     const setState=value=>{state=value;notify(status());};
@@ -549,13 +549,17 @@ window.GPModules.register = function register(name,factory){
         savedAt=manifest?.savedAt||0;
         if(manifest&&manifest.revision!==knownRevision()){
           const replace=await localIsEmpty();
-          reporter=replace?onProgress:null;   // a browser that only needs topping up does it quietly
-          await pullFromDisk(manifest,replace);
-          reporter=null;
-          if(replace)await markFinished();
-          beforeReload?.();
-          location.reload();
-          return;
+          if(replace){
+            reporter=onProgress;
+            await pullFromDisk(manifest,true);
+            reporter=null;
+            await markFinished();
+            beforeReload?.();
+            location.reload();
+            return;
+          }
+          // IndexedDB is the live copy. Do not reread the full disk backup or reload the player when it already has data.
+          GPBrowserStorage.setLocal(REVISION,String(manifest.revision));
         }
         if(!manifest)setTimeout(flush,60000);
         notify(status());
@@ -761,7 +765,7 @@ window.GPModules.register = function register(name,factory){
   GPDatabase.use(gpIndexedDB);
   const GP=window.GP={
     generation:7,
-    version:"7.7.1",
+    version:"7.8.0",
     architecture:"Peregrine Lake",
     engines:{core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,recognition:"GP Bionic ID 1.0",neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`},
     paths:{core:["audio.js","database.js","analyzer.js","recognition.js"],ui:["timeline.js"],storage:["indexeddb.js"]},
@@ -833,26 +837,44 @@ window.GPModules.register = function register(name,factory){
   GPModules.register("createBrowserFileAdapter",function createBrowserFileAdapter({fileInput,folderInput,storage}){
     const DEFAULT_MUSIC_FOLDER_ID="defaultMusicFolder";
     function pick(input){return new Promise(resolve=>{if(!input){resolve([]);return;}const done=()=>{input.removeEventListener("change",done);resolve(Array.from(input.files||[]));};input.addEventListener("change",done,{once:true});input.click();});}
-    function supportsPersistedAudioFolder(){return typeof globalThis.showDirectoryPicker==="function"&&typeof storage?.getRecommendation==="function"&&typeof storage?.saveRecommendation==="function";}
+    function supportsPersistedAudioFolder(){if(globalThis.glassAPI?.music)return true;return typeof globalThis.showDirectoryPicker==="function"&&typeof storage?.getRecommendation==="function"&&typeof storage?.saveRecommendation==="function";}
     async function hasReadPermission(handle){try{return handle?.kind==="directory"&&await handle.queryPermission({mode:"read"})==="granted";}catch(error){return false;}}
     async function filesFromDirectory(handle){
       const files=[];
       async function visit(directory){for await(const entry of directory.values()){if(entry.kind==="file")files.push(await entry.getFile());else if(entry.kind==="directory")await visit(entry);}}
       await visit(handle);return files;
     }
+    /* Electron: the music folder is remembered by the main process (a native folder dialog, no permission prompt) and listed
+       again at every start-up. Each song becomes a file-shaped object that reads its bytes from app://…/music/<path> with
+       Range requests, so recognition reads only the few samples it needs, and playback streams the same URL (gpUrl). */
+    const nativeMusic=globalThis.glassAPI?.music||null;
+    const AUDIO_TYPES={mp3:"audio/mpeg",flac:"audio/flac",wav:"audio/wav",ogg:"audio/ogg",m4a:"audio/mp4",aac:"audio/aac",wma:"audio/x-ms-wma",opus:"audio/opus"};
+    function diskFile(entry,folderName){
+      const url=`${location.origin}/music/${entry.rel.split("/").map(encodeURIComponent).join("/")}`,size=entry.size;
+      const read=(start,end)=>end<=start?Promise.resolve(new ArrayBuffer(0)):fetch(url,{headers:{Range:`bytes=${start}-${end-1}`}}).then(response=>{if(!response.ok)throw new Error(`Cannot read ${entry.rel} (${response.status})`);return response.arrayBuffer();});
+      const clamp=(value,fallback,length)=>{if(value===undefined)return fallback;value=Math.trunc(Number(value)||0);return value<0?Math.max(0,length+value):Math.min(value,length);};
+      const part=(offset,length,type)=>({size:length,type,arrayBuffer:()=>read(offset,offset+length),
+        slice:(start,end,sliceType="")=>{const s=clamp(start,0,length),e=Math.max(s,clamp(end,length,length));return part(offset+s,e-s,sliceType);}});
+      const ext=(entry.name.split(".").pop()||"").toLowerCase(),whole=part(0,size,AUDIO_TYPES[ext]||"");
+      return Object.freeze({...whole,name:entry.name,lastModified:entry.lastModified,webkitRelativePath:`${folderName}/${entry.rel}`,gpUrl:url,
+        arrayBuffer:()=>fetch(url).then(response=>response.arrayBuffer()),stream:()=>{const body=new TransformStream();fetch(url).then(response=>response.body.pipeTo(body.writable));return body.readable;}});
+    }
+    async function nativeFolderFiles(){const listing=await nativeMusic.scan();return listing?listing.files.map(entry=>diskFile(entry,listing.name)):[];}
     async function pickAndRememberAudioFolder(){
+      if(nativeMusic){if(!await nativeMusic.choose())throw Object.assign(new Error("No folder chosen"),{name:"AbortError"});return nativeFolderFiles();}
       if(!supportsPersistedAudioFolder())return pick(folderInput);
       const handle=await globalThis.showDirectoryPicker({mode:"read"});
       if(await hasReadPermission(handle))try{await storage.saveRecommendation({id:DEFAULT_MUSIC_FOLDER_ID,folderHandle:handle,savedAt:Date.now()});}catch(error){console.warn("Default music folder persistence failed",error);}
       return filesFromDirectory(handle);
     }
     async function restoreRememberedAudioFolder(){
+      if(nativeMusic){try{return await nativeFolderFiles();}catch(error){console.warn("Music folder listing failed",error);return [];}}
       if(!supportsPersistedAudioFolder())return [];
       let record=null;try{record=await storage.getRecommendation(DEFAULT_MUSIC_FOLDER_ID);}catch(error){return [];}
       const handle=record?.folderHandle;if(!await hasReadPermission(handle))return [];
       try{return await filesFromDirectory(handle);}catch(error){return [];}
     }
-    return Object.freeze({pickAudioFiles:()=>pick(fileInput),pickAudioFolder:()=>pick(folderInput),supportsPersistedAudioFolder,pickAndRememberAudioFolder,restoreRememberedAudioFolder});
+    return Object.freeze({pickAudioFiles:()=>pick(fileInput),pickAudioFolder:()=>pick(folderInput),supportsPersistedAudioFolder,pickAndRememberAudioFolder,restoreRememberedAudioFolder,hasNativeMusicFolder:()=>!!nativeMusic});
   });
   GPModules.register("createBrowserPiPAdapter",function createBrowserPiPAdapter(){return Object.freeze({supported:()=>document.pictureInPictureEnabled===true,request:video=>video.requestPictureInPicture(),exit:()=>document.pictureInPictureElement?document.exitPictureInPicture():Promise.resolve()});});
   GPModules.register("createStoragePort",function createStoragePort(database){return Object.freeze({open:()=>database.requireAdapter().open(),getLocal:key=>GPBrowserStorage.getLocal(key),setLocal:(key,value)=>GPBrowserStorage.setLocal(key,value),removeLocal:key=>GPBrowserStorage.removeLocal(key),getTrackCache:key=>database.getTrackCache(key),saveTrackCache:value=>database.saveTrackCache(value),getTrackCacheByFileIdentity:key=>database.getTrackCacheByFileIdentity(key),getTrackCacheBySpectrumId:key=>database.getTrackCacheBySpectrumId(key),getTrackFeatures:key=>database.getTrackFeatures(key),saveTrackFeatures:value=>database.saveTrackFeatures(value),addBehaviorEvent:value=>database.addBehaviorEvent(value),getBehaviorEvents:(...args)=>database.getBehaviorEvents(...args),getUserModel:id=>database.getUserModel(id),saveUserModel:value=>database.saveUserModel(value),getRecommendation:id=>database.getRecommendations(id),saveRecommendation:value=>database.saveRecommendations(value)});});
@@ -864,7 +886,7 @@ window.GPModules.register = function register(name,factory){
     "排序：原始顺序":"Sort: Original","原始顺序":"Original order","歌手 A–Z":"Artist A–Z","歌名 A–Z":"Title A–Z",
     "今天":"Today","本周":"This Week","本月":"This Month","本年":"This Year","全部":"All","听歌时间":"Listening Time","最近最爱":"Recent Favorites","听歌数据":"Listening Data","播放次数":"Plays","最常听歌曲":"Most Played Song","最爱艺人":"Favorite Artist","昨日对比":"Compared with Yesterday","听歌时长排行 Top 10":"Top 10 Listening Time","Top 3":"Top 3","较大封面与听歌数据":"Larger covers with listening data","第 4–10 名列表":"Ranks 4–10","歌曲":"Song","时长 / 播放次数":"Duration / Plays","暂无更多歌曲":"No more songs in this range",
     "听歌时长排行 Top 50":"Top 50 Listening Time","选定时间段内的听歌时长":"Listening time in selected range",
-    "外观":"Appearance","界面语言":"Interface Language","外观模式":"Appearance Mode","浅色":"Light","深色":"Dark","自动":"Auto","音频":"Audio","音乐库":"Music Library","数据":"Data","高级":"Advanced","关于":"About","设置分类":"Settings Categories","音效面板":"Sound panel","本地数据":"Local Data","本地保存":"Saved locally","音效与空间音频":"Sound and Spatial Audio",
+    "外观":"Appearance","界面语言":"Interface Language","外观模式":"Appearance Mode","浅色":"Light","深色":"Dark","系统时间":"System Time","音频":"Audio","音乐库":"Music Library","数据":"Data","高级":"Advanced","关于":"About","设置分类":"Settings Categories","音效面板":"Sound panel","本地数据":"Local Data","本地保存":"Saved locally","音效与空间音频":"Sound and Spatial Audio",
     "主题色":"Accent Color","背景效果":"Background Effect","灵动光晕":"Ambient Glow","封面取色":"Cover Color","封面虚化":"Blurred Cover",
     "播放行为":"Playback","专辑封面显示方式":"Album Art Display","随唱片旋转":"Rotate with Disc","静态展示":"Static Cover",
     "交叉淡入淡出":"Crossfade","时长":"Duration",
@@ -893,7 +915,7 @@ window.GPModules.register = function register(name,factory){
     "Bose QC Earbuds 2024 补偿：收窄 150-400Hz 并提亮高频":"Bose QC Earbuds 2024 compensation: tighten 150–400 Hz and brighten treble"
   };
   Object.assign(UI_EN,{
-    "选择 Glass Player 的界面语言。":"Choose the Glass Player interface language.","在浅色、深色或根据时间自动切换。":"Switch between Light, Dark or an automatic schedule.","选择界面使用的 Accent 颜色。":"Choose the Accent color used by the interface.","灵动光晕、封面取色或封面虚化。":"Ambient Glow, Cover Color or Blurred Cover.","让 UI 主题色跟随当前歌曲封面，并自动保持文字对比度。":"Match the UI accent to the current cover while preserving text contrast.","选择唱片旋转或静态封面展示。":"Choose a rotating disc or a static cover.","在相邻歌曲之间平滑过渡。":"Transition smoothly between adjacent songs.","均衡器、设备预设、空间音频和响度均衡仍由播放器右侧的“音效”面板统一控制，避免建立第二套音频状态。":"Equalizer, device presets, Spatial Audio and loudness balance remain in the Player Sound panel so there is one audio state.","本地数据":"Local Data","播放历史、偏好和音频分析缓存保存在当前设备的本地存储中；本次版本不改变数据结构。":"Listening history, preferences and audio-analysis caches stay in local storage; this release does not change the data schema.","本地保存":"Saved locally","Apple 字体会按 SF Pro Display、SF Pro Text、PingFang 和 SF Mono 的角色分配显示。":"Apple typography assigns SF Pro Display, SF Pro Text, PingFang and SF Mono by text role.","调整界面字体的大小。":"Adjust the interface font size.","在可读性和信息密度之间调整。":"Balance readability and information density.","音效与空间音频":"Sound and Spatial Audio","音效面板":"Sound panel",
+    "选择 Glass Player 的界面语言。":"Choose the Glass Player interface language.","在浅色、深色或根据日出日落自动切换。":"Switch between Light, Dark or follow sunrise and sunset.","选择界面使用的 Accent 颜色。":"Choose the Accent color used by the interface.","灵动光晕、封面取色或封面虚化。":"Ambient Glow, Cover Color or Blurred Cover.","让 UI 主题色跟随当前歌曲封面，并自动保持文字对比度。":"Match the UI accent to the current cover while preserving text contrast.","选择唱片旋转或静态封面展示。":"Choose a rotating disc or a static cover.","在相邻歌曲之间平滑过渡。":"Transition smoothly between adjacent songs.","均衡器、设备预设、空间音频和响度均衡仍由播放器右侧的“音效”面板统一控制，避免建立第二套音频状态。":"Equalizer, device presets, Spatial Audio and loudness balance remain in the Player Sound panel so there is one audio state.","本地数据":"Local Data","播放历史、偏好和音频分析缓存保存在当前设备的本地存储中；本次版本不改变数据结构。":"Listening history, preferences and audio-analysis caches stay in local storage; this release does not change the data schema.","本地保存":"Saved locally","Apple 字体会按 SF Pro Display、SF Pro Text、PingFang 和 SF Mono 的角色分配显示。":"Apple typography assigns SF Pro Display, SF Pro Text, PingFang and SF Mono by text role.","调整界面字体的大小。":"Adjust the interface font size.","在可读性和信息密度之间调整。":"Balance readability and information density.","音效与空间音频":"Sound and Spatial Audio","音效面板":"Sound panel",
     "空间音效":"Spatial Audio","空间音效开关":"Spatial Audio toggle","了解空间音效":"About Spatial Audio","声音":"Sound","设备":"Devices",
     "自动响度均衡":"Automatic loudness balance","了解响度均衡":"About Loudness Balance",
     "桌面音响":"Desktop Speakers","监听音箱":"Studio Monitors","宽阔舞台":"Wide Stage",
@@ -905,7 +927,7 @@ window.GPModules.register = function register(name,factory){
   
 
 
-  Object.assign(UI_EN,{"版本 7.7.1":"Ver. 7.7.1","当前版本 7.7.1 — FINAL PRESSING":"Current Version 7.7.1 — FINAL PRESSING","版本 7.7.1 — FINAL PRESSING":"Ver. 7.7.1 — FINAL PRESSING","FINAL PRESSING":"FINAL PRESSING"});
+  Object.assign(UI_EN,{"版本 7.8.0":"Ver. 7.8.0","当前版本 7.8.0 — ENCORE UPDATE":"Current Version 7.8.0 — ENCORE UPDATE","版本 7.8.0 — ENCORE UPDATE":"Ver. 7.8.0 — ENCORE UPDATE","ENCORE UPDATE":"ENCORE UPDATE","FINAL PRESSING":"FINAL PRESSING"});
   Object.assign(UI_EN,{"版本 7.7.0":"Ver. 7.7.0","当前版本 7.7.0 — LOCALIZATION UPDATE":"Current Version 7.7.0 — LOCALIZATION UPDATE","版本 7.7.0 — LOCALIZATION UPDATE":"Ver. 7.7.0 — LOCALIZATION UPDATE","LOCALIZATION UPDATE":"LOCALIZATION UPDATE"});
   Object.assign(UI_EN,{"导出与导入":"Export and Import","约每小时保存一次":"Saves about hourly","磁盘数据库":"Disk Database","约每小时保存一次到 data/db，只写入有变化的内容。":"Saved to data/db about once an hour, writing only what changed.","导出数据":"Export Data","把听歌历史、偏好、分析缓存和封面保存为一个文件。":"Save your listening history, preferences, analysis cache and covers as one file.","导出":"Export","导入数据":"Import Data","从导出的文件恢复。只会添加和更新，不会删除现有记录；偏好会被文件中的设置替换。":"Restore from an exported file. It only adds and updates, never deletes records. Preferences are replaced by the ones in the file.","导入":"Import"});
   Object.assign(UI_EN,{"无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report","高刷新率流动视觉":"Fluid 120Hz Motion","平滑连续播放":"Seamless Continuous Playback","按键播控":"Keyboard Controls","重置界面偏好":"Reset Interface Preferences","恢复默认":"Restore Defaults","已恢复默认设置":"Settings restored to defaults"});
@@ -966,6 +988,19 @@ window.GPModules.register = function register(name,factory){
           "届时仍保持 Core / UI / Storage 边界，以 storage/sqlite.js 替换 storage/indexeddb.js，避免重写播放器界面、Neural模型和上层业务。"
         ]}
       ]
+    },
+    {
+      version:"7.8.0", date:"2026-11-06", kind:"minor",
+      summary:"ENCORE UPDATE：Glass Player 现在会记住你的音乐文件夹。打开它，音乐就在你上次离开的地方，暂停着等你按下播放。",
+      sections:[
+        {title:"从上次停下的地方继续",items:["打开时回到上次的歌曲和播放位置，并保持暂停。","播放队列、所在页面和侧边面板也一并恢复。"]},
+        {title:"默认音乐文件夹",items:["在设置中用系统对话框选择一次，之后每次打开都会自动载入。","歌曲直接从磁盘播放，拖动进度条依然即时跳转。"]},
+        {title:"导入",items:["导入在后台进行，不再弹出进度窗口；完成后用一条提示告诉你结果。","启动时载入音乐文件夹不会打扰你。"]}
+      ],english:{summary:"ENCORE UPDATE remembers your music folder. Open Glass Player and your music is right where you left it, paused until you press play.",sections:[
+        {title:"Right Where You Left Off",items:["Opening returns to the last song and the exact place in it, paused.","Your queue, the page you were on and the side panel come back too."]},
+        {title:"Default Music Folder",items:["Choose it once in Settings with the system folder dialog, and it loads every time Glass Player opens.","Songs play straight from disk, and seeking stays instant."]},
+        {title:"Importing",items:["Importing runs in the background with no progress window, and a short notice tells you when it's done.","Loading the music folder at startup happens quietly."]}
+      ]}
     },
     {
       version:"7.7.1", date:"2026-10-31", kind:"patch",
@@ -3554,6 +3589,7 @@ window.GPModules.register = function register(name,factory){
 
   const RELEASE_EN={
     "Unreleased":"GP Gen 8–9+ roadmap: cached acoustic features continue to improve recommendations before the Electron, SQLite and EXE migration in Gen 9+.",
+    "7.8.0":"ENCORE UPDATE remembers your music folder and opens right where you left off, paused.",
     "7.7.1":"FINAL PRESSING is the last intentionally maintained version of Glass Player. From here, it becomes part of my superapp, MacX.",
     "7.7.0":"LOCALIZATION UPDATE saves your data to your local disk and adds export and import in Settings. When today has no listening yet, Listening History opens on the most recent period that does.",
     "7.6.3":"HOTFIX BUILD stops the app from automatically importing the last saved music folder at startup while keeping manual folder selection available.","7.6.2":"REBRAND UPDATE debuts GP Bionic Engine 1.0, unifying track recognition, acoustic analysis, listening modeling and queue flow under a refreshed engine identity.",
@@ -5011,7 +5047,7 @@ window.GPModules.register = function register(name,factory){
   }
   function buildChangelogText(){
     const english=uiLanguage!=="zh";
-    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.7.1 — FINAL PRESSING`,""];
+    const lines=[`Glass Player ${english?"Complete Changelog":"完整更新日志"}`,`${english?"Current Version":"当前版本"}: 7.8.0 — ENCORE UPDATE`,""];
     GP.changelog.getReleases().forEach(release=>{
       const date=english&&release.date==="待定"?"TBD":release.date;
       const englishDetail=english?(release.english||RELEASE_EN_DETAIL[release.version]):null;
@@ -5026,7 +5062,7 @@ window.GPModules.register = function register(name,factory){
   function exportChangelog(){
     const blob=new Blob(["\uFEFF",buildChangelogText()],{type:"text/plain;charset=utf-8"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="Glass Player Changelog 7.7.1 FINAL PRESSING.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
+    link.href=url;link.download="Glass Player Changelog 7.8.0 ENCORE UPDATE.txt";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
     showToast(tr("完整更新日志已导出","Complete changelog exported"));
   }
     function cloneRelease(release){if(!release)return null;return Object.freeze({...release,sections:Object.freeze(release.sections.map(section=>Object.freeze({...section,items:Object.freeze([...section.items])})))});}
@@ -8702,7 +8738,7 @@ window.GPModules.register = function register(name,factory){
     };
   }
   async function buildAndCacheTrack(file,contentKey,stats,knownCache,recognition){
-    const url=URL.createObjectURL(file);
+    const url=file.gpUrl||URL.createObjectURL(file);   // music-folder songs stream from disk; picked files get a Blob URL
     try{
       let cached=knownCache||null;
       if(!cached){try{cached=await GPDatabase.getTrackCache(contentKey);}catch(error){stats.storageErrors++;}}
@@ -8766,22 +8802,16 @@ window.GPModules.register = function register(name,factory){
   function releaseImportBackgroundWork(){
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
   }
+  /* Imports run in the background: no dialog, nothing closed or blocked. The library fills in when the import commits, and
+     a toast says how it went (the start-up load of the remembered music folder says nothing unless it fails). */
+  let importQuiet=false;
   function openImportProgress(total){
     clearTimeout(importCompletionTimer);
-    closeAllMotionPopovers();
-    importRunning=true;rescanModalMode="importRunning";
-    $("#rescanModal").classList.add("is-scanning");
-    $("#rescanModalTitle").textContent=tr("正在导入音乐","Importing Music");
-    $("#rescanModalMessage").textContent=tr(`正在准备识别 ${total} 首歌曲…`,`Preparing to identify ${total} songs…`);
-    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="0%";
-    $("#rescanCancelBtn").style.display="none";
-    $("#rescanConfirmBtn").disabled=true;$("#rescanConfirmBtn").textContent=tr("导入中…","Importing…");
-    $("#rescanModal").classList.add("show");
-    startImportSpinner();
+    importRunning=true;
   }
   let importProgressFrame=0,importProgressState=null;
   function paintImportProgress(){
-    importProgressFrame=0;const state=importProgressState;if(!state)return;
+    importProgressFrame=0;const state=importProgressState;if(!state||rescanModalMode!=="importRunning")return;   // no import dialog any more: nothing to paint
     $("#rescanProgressFill").style.width=`${state.safe}%`;
     $("#rescanModalMessage").textContent=state.phase==="identity"
       ?tr(`正在识别歌曲身份 ${state.completed} / ${state.total}…`,`Identifying songs ${state.completed} / ${state.total}…`)
@@ -8793,6 +8823,7 @@ window.GPModules.register = function register(name,factory){
   }
   const yieldImportFrame=()=>yieldToInputPriority();
   function updateImportCommitProgress(percent,phase){
+    if(rescanModalMode!=="importRunning")return;   // no import dialog any more
     $("#rescanProgressFill").style.width=`${percent}%`;
     $("#rescanModalMessage").textContent=phase==="render"
       ?tr("正在更新歌单与界面…","Updating library and interface…")
@@ -8808,19 +8839,17 @@ window.GPModules.register = function register(name,factory){
   }
   function finishImportProgress(stats,error=null){
     if(importProgressFrame)cancelAnimationFrame(importProgressFrame);importProgressFrame=0;importProgressState=null;
-    importRunning=false;rescanModalMode=error?"importError":"importDone";
-    stopImportSpinner();
-    $("#rescanModal").classList.remove("is-scanning");
-    $("#rescanProgressFill").style.width="100%";
-    $("#rescanModalTitle").textContent=error?tr("导入未完成","Import Incomplete"):tr("导入完成","Import Complete");
-    $("#rescanModalMessage").textContent=error
-      ?tr("导入过程中出现错误；已经成功加入的歌曲会保留。","An error interrupted the import. Songs already added remain available.")
-      :tr(`已处理 ${stats?.files||0} 首歌曲，缓存命中 ${stats?.cacheHits||0} 首，新增 ${stats?.cacheMisses||0} 首${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}。`,`Processed ${stats?.files||0} songs, restored ${stats?.cacheHits||0} from cache, added ${stats?.cacheMisses||0}${stats?.duplicates?`, and skipped ${stats.duplicates} duplicates`:""}.`);
-    $("#rescanConfirmBtn").disabled=false;$("#rescanConfirmBtn").textContent=tr("完成","Done");
+    importRunning=false;
+    const quiet=importQuiet;importQuiet=false;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
+    if(error){showToast(tr("导入未完成：已经成功加入的歌曲会保留","Import incomplete: songs already added remain available"));return;}
+    const added=stats?.cacheMisses||0,restored=stats?.cacheHits||0;
+    if(quiet||!(added+restored))return;
+    showToast(tr(`已加入 ${added+restored} 首歌曲${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}`,`Added ${added+restored} songs${stats?.duplicates?`, skipped ${stats.duplicates} duplicates`:""}`));
   }
   async function settleImportProgress(stats,error=null){
-    $("#rescanProgressFill").style.width="100%";
-    $("#rescanModalMessage").textContent=error
+    if(rescanModalMode==="importRunning")$("#rescanProgressFill").style.width="100%";
+    if(rescanModalMode==="importRunning")$("#rescanModalMessage").textContent=error
       ?tr("正在保留已完成的导入结果…","Preserving completed import results…")
       :tr("所有初始化已经完成…","All initialization is complete…");
     await yieldToInputPriority();await new Promise(resolve=>{
@@ -8842,11 +8871,12 @@ window.GPModules.register = function register(name,factory){
     if(overrideQueue&&!overrideQueue.length)overrideQueue=null;
     if(playMode==="shuffle"&&currentIndex>=0){shuffleTimeline=[currentIndex];shuffleTimelineCursor=0;}
   }
-  async function addFiles(fileList){
+  async function addFiles(fileList,options={}){   // options.quiet: the start-up load of the music folder, no toast; options.pickTrack:false leaves the choice to the resumed session
     const all = Array.from(fileList);
     const audioFiles = all.filter(f => f.type.startsWith("audio/") || /\.(mp3|wav|m4a|flac|ogg|aac|wma)$/i.test(f.name));
     if(audioFiles.length === 0) return;
     if(importRunning||metadataRescanRunning)return;
+    importQuiet=options.quiet===true;
     openImportProgress(audioFiles.length);
 
     const renderStart=libraryRenderCommits;
@@ -8885,7 +8915,7 @@ window.GPModules.register = function register(name,factory){
     if(duplicates.length){
       stats.duplicates=duplicates.length;
       const firstTitle=parseName(duplicates[0].name).title;
-      showToast(duplicates.length===1?tr(`「${firstTitle}」已经在歌单中`,`“${firstTitle}” is already in the library`):tr(`${duplicates.length} 首歌曲已经在歌单中，未重复添加`,`${duplicates.length} songs were already in the library and were skipped`));
+      if(!importQuiet)showToast(duplicates.length===1?tr(`「${firstTitle}」已经在歌单中`,`“${firstTitle}” is already in the library`):tr(`${duplicates.length} 首歌曲已经在歌单中，未重复添加`,`${duplicates.length} songs were already in the library and were skipped`));
     }
     if(uniqueFiles.length===0){updateImportCommitProgress(99,"organize");await yieldImportFrame();await settleImportProgress(stats);return;}
 
@@ -8903,7 +8933,7 @@ window.GPModules.register = function register(name,factory){
     invalidateHistoryTrackIndex();pendingImportHistorySync=true;
     updateImportCommitProgress(97,"render");await yieldImportFrame();
     await renderLibraryIncrementally(searchInputSafe());
-    if(currentIndex===-1&&playlist.length>0){
+    if(currentIndex===-1&&playlist.length>0&&options.pickTrack!==false){   // pickTrack:false when a resumed session chooses the song
       const startIndex=playMode==="shuffle"?Math.floor(Math.random()*playlist.length):0;
       loadTrack(startIndex,false);
     }
@@ -9130,6 +9160,7 @@ window.GPModules.register = function register(name,factory){
   let trackDetailRevision=0,trackDetailHoldUntil=0;
   let firstPlaybackQueueAlignment=true;
   function ensureTrackMediaURL(track){
+    if(track?.file?.gpUrl){track.url=track.file.gpUrl;return track.url;}   // a song from the music folder streams from disk
     if(track?.file&&(!track.url||!String(track.url).startsWith("blob:")))track.url=URL.createObjectURL(track.file);
     return track?.url||"";
   }
@@ -10684,9 +10715,13 @@ window.GPModules.register = function register(name,factory){
   $("#languageSeg").addEventListener("click",e=>{const button=e.target.closest("button");if(!button)return;GP.i18n.setLanguage(button.dataset.lang);syncSortUI();renderRecommendList();$("#modeLabel").textContent=tr(modeLabels[playMode][0],modeLabels[playMode][1]);savePrefs();requestAnimationFrame(()=>{GLIDER_SELECTORS.filter(selector=>selector!=="#languageSeg").forEach(selector=>updateGlider($(selector),false));updateGlider($("#languageSeg"),true);updateNavGlider(false);});});
   let themeMode = "auto";
   let autoThemeTimer=0;
-  function scheduledAutoTheme(date=new Date()){const hour=date.getHours();return hour>=18||hour<5?"dark":"light";}
+  /* The theme is Nexus's, set in its Settings: dark, light, or sun (System Time: light from sunrise to sunset where you are). The Electron
+     main process reads and watches it (theme-sync.cjs) and the preload hands it over as window.nexusTheme; this picker mirrors it both
+     ways, "auto" here being "sun" there. Without Nexus's bridge (a plain browser) Auto keeps its old clock: light 05:00-18:00 */
+  const nexusTheme=window.nexusTheme,modeFromNexus=m=>m==="sun"?"auto":m,modeToNexus=m=>m==="auto"?"sun":m;
+  function scheduledAutoTheme(date=new Date()){if(nexusTheme)return nexusTheme.resolved();const hour=date.getHours();return hour>=18||hour<5?"dark":"light";}
   function scheduleAutoThemeBoundary(){
-    clearTimeout(autoThemeTimer);if(themeMode!=="auto")return;
+    clearTimeout(autoThemeTimer);if(nexusTheme||themeMode!=="auto")return;   // with Nexus, its subscription below hears the sun cross the horizon
     const now=new Date(),next=new Date(now);next.setMinutes(0,0,0);
     if(now.getHours()<5)next.setHours(5);else if(now.getHours()<18)next.setHours(18);else{next.setDate(next.getDate()+1);next.setHours(5);}
     autoThemeTimer=setTimeout(()=>{if(themeMode==="auto")applyTheme();},Math.max(1000,next-now+50));
@@ -10711,7 +10746,7 @@ window.GPModules.register = function register(name,factory){
       x:previousActive.offsetLeft,y:previousActive.offsetTop,
       w:previousActive.offsetWidth,h:previousActive.offsetHeight
     }:null;
-    themeMode=b.dataset.v;applyTheme();savePrefs();
+    themeMode=b.dataset.v;applyTheme();savePrefs();nexusTheme?.set(modeToNexus(themeMode));
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       const glider=themeGroup.querySelector(":scope>.segment-glider");
       if(glider&&themeGliderOrigin){
@@ -10724,6 +10759,8 @@ window.GPModules.register = function register(name,factory){
       updateGlider(themeGroup,true);
     }));
   });
+  // Nexus's theme changed (its Settings, or another app's picker), or the sun flipped System Time
+  nexusTheme?.subscribe((_resolved,state)=>{const mode=modeFromNexus(state.theme),changed=mode!==themeMode;themeMode=mode;applyTheme();if(changed){savePrefs();requestAnimationFrame(()=>updateGlider($("#themeSeg"),true));}});
 
   $("#coverSeg").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if(!b) return;
@@ -10951,7 +10988,7 @@ window.GPModules.register = function register(name,factory){
     }
   });
   $("#resetPrefsBtn")?.addEventListener("click",()=>{
-    themeMode="auto";
+    themeMode=nexusTheme?modeFromNexus(nexusTheme.mode()):"auto";   // the theme belongs to Nexus: reset follows it rather than changing it
     coverDisplayMode="rotate";
     bgMode="glow";
     adaptiveColorOn=true;
@@ -11224,7 +11261,7 @@ window.GPModules.register = function register(name,factory){
     let p; try{ p = JSON.parse(GPBrowserStorage.getLocal("glassPlayerPrefs")); }catch(e){}
     if(!p) p = {};
     uiLanguage = p.uiLanguage === "en" ? "en" : "zh";
-    themeMode = ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
+    themeMode = nexusTheme ? modeFromNexus(nexusTheme.mode()) : ["auto","light","dark"].includes(p.themeMode) ? p.themeMode : "auto";
     coverDisplayMode = ["rotate","static"].includes(p.coverDisplayMode) ? p.coverDisplayMode : "rotate";
     bgMode = ["glow","color","blur"].includes(p.bgMode) ? p.bgMode : "glow";
     $$("#coverSeg button").forEach(b => b.classList.toggle("active", b.dataset.v===coverDisplayMode));
@@ -11521,8 +11558,55 @@ window.GPModules.register = function register(name,factory){
   });
   const engines=Object.freeze({audio:audioEngine,bionic:bionicEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.7.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.8.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
+  /* Resume where you left off, paused (as CinemaX does): the song and the place in it, the manual queue, the page and the side
+     panel. Saved as you go under glassPlayerSession; songs are found again by their audio identity (contentKey), as track ids
+     are numbered afresh each run. Nothing is saved until the start-up restore has run, so an empty first frame can't overwrite it */
+  const SESSION_KEY="glassPlayerSession";let sessionReady=false,lastSession="";
+  const keyOfTrackId=id=>playlist.find(track=>track.id===id)?.contentKey||null;
+  function saveSession(){
+    if(!sessionReady)return;
+    const text=JSON.stringify({track:playlist[currentIndex]?.contentKey||null,position:Math.round((Number(audio.currentTime)||0)*10)/10,
+      queue:playQueue.map(keyOfTrackId).filter(Boolean),manualQueue:manualQueueActive,
+      view:$(".view.active")?.dataset.view||"player",panel:$("#panelTabs .active")?.dataset.tab||"queue"});
+    if(text===lastSession)return;lastSession=text;
+    try{GPBrowserStorage.setLocal(SESSION_KEY,text);}catch(error){}
+  }
+  const readSession=()=>{try{return JSON.parse(GPBrowserStorage.getLocal(SESSION_KEY)||"null");}catch(error){return null;}};
+  function restoreSession(){
+    const saved=readSession();
+    if(saved){
+      const indexOf=key=>key?playlist.findIndex(track=>track.contentKey===key):-1;
+      const queued=(saved.queue||[]).map(indexOf).filter(index=>index>=0).map(index=>playlist[index].id);
+      if(queued.length){playQueue.splice(0,playQueue.length,...queued);manualQueueActive=saved.manualQueue!==false;renderMiniQueue({instantPosition:true});}
+      const index=indexOf(saved.track),at=Number(saved.position)||0;
+      if(index>=0){
+        loadTrack(index,false);   // loaded, not playing
+        if(at>0){const deck=audio,seek=()=>{if(deck===audio)deck.currentTime=Math.min(at,Math.max(0,(Number(deck.duration)||at+1)-1));};deck.readyState>=1?seek():deck.addEventListener("loadedmetadata",seek,{once:true});}
+      }
+    }
+    // The saved song is gone (or there was none): pick one as an import would have (the first, or a random one in shuffle)
+    if(currentIndex===-1&&playlist.length>0)loadTrack(playMode==="shuffle"?Math.floor(Math.random()*playlist.length):0,false);
+    if(saved){
+      // The page through its sidebar button where it has one (that also moves the sidebar highlight), else directly
+      if(saved.view&&saved.view!==($(".view.active")?.dataset.view||"player")&&$(`.view[data-view="${saved.view}"]`)){
+        const nav=$(`.nav-item[data-view="${saved.view}"]`);nav?nav.click():switchPrimaryView(saved.view);
+      }
+      if(saved.panel)$(`#panelTabs [data-tab="${saved.panel}"]:not(.active)`)?.click();
+    }
+    sessionReady=true;lastSession="";saveSession();
+  }
+  setInterval(saveSession,2000);
+  addEventListener("pagehide",saveSession);document.addEventListener("visibilitychange",()=>{if(document.hidden)saveSession();});
+  /* Electron: the remembered music folder loads at start-up, quietly in the background (no import dialog), and the session
+     resumes once it has. The browser build keeps 7.6.3's rule: it never imports by itself, so only the page and panel resume */
+  const nativeFolder=fileAdapter.hasNativeMusicFolder();
+  const startupLibrary=nativeFolder?fileAdapter.restoreRememberedAudioFolder().then(files=>files.length?addFiles(files,{quiet:true,pickTrack:!readSession()?.track}):null):Promise.resolve();
+  startupLibrary.catch(error=>console.warn("[GP] Music folder load failed",error)).finally(restoreSession);
+  if(nativeFolder)globalThis.glassAPI.music.get().then(dir=>{const hint=$("#defaultFolderHint");if(hint)hint.textContent=dir
+    ?tr(`打开 Glass Player 时自动载入：${dir}`,`Loads when Glass Player opens: ${dir}`)
+    :tr("选择后，每次打开 Glass Player 都会自动载入，并回到上次的位置。","Once chosen, it loads every time Glass Player opens, right where you left off.");}).catch(()=>{});
   showDataRestored();
   GPDataVault.start({beforeReload:()=>{historyStoreCache=null;historyStoreDirty=false;},onStatus:renderDataVaultStatus,onProgress:({percent,...detail})=>{if(rescanModalMode!=="dataRunning")openDataProgress(tr("正在载入你的数据","Loading Your Data"),tr("正在准备…","Getting ready…"));paintDataProgress(percent,detail);}});
 })();

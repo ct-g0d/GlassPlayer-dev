@@ -113,8 +113,55 @@
   });
   const engines=Object.freeze({audio:audioEngine,bionic:bionicEngine,recognition:recognitionEngine,spectrum:spectrumAnalyzer,spatial:spatialRuntime,motion:motionEngine});
   const context=GPModules.createAppContext({store,bus,actions,selectors,contracts,adapters,engines,services});
-  const publicFacade=Object.freeze({generation:7,version:"7.7.1",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
+  const publicFacade=Object.freeze({generation:7,version:"7.8.0",architecture:"Peregrine Lake",genreRelations:GP.genreRelations,engines:Object.freeze({core:"GP Core 4.3 — Kinetic Runtime",bionic:"GP Bionic Engine 1.0 — Intelligence Core",fusion:`GP Fusion Engine ${GP_FUSION_ENGINE_VERSION} — Playlist Flow`,motion:"GP Motion Engine 4.2 — Kinetic Motion",spatial:"GP Spatial Engine 1.1 — Room",spectrum:`GP Spectrum Engine ${GP_SPECTRUM_ENGINE_VERSION} — Signal`,neural:`GP Neural Engine ${GP_NEURAL_ENGINE_VERSION} — Listening DNA`}),commands:Object.freeze({play:playbackService.play,pause:playbackService.pause,next:playbackService.next,previous:playbackService.previous,chooseDefaultMusicFolder}),selectors,getState:store.getState});
   window.GP=publicFacade;
+  /* Resume where you left off, paused (as CinemaX does): the song and the place in it, the manual queue, the page and the side
+     panel. Saved as you go under glassPlayerSession; songs are found again by their audio identity (contentKey), as track ids
+     are numbered afresh each run. Nothing is saved until the start-up restore has run, so an empty first frame can't overwrite it */
+  const SESSION_KEY="glassPlayerSession";let sessionReady=false,lastSession="";
+  const keyOfTrackId=id=>playlist.find(track=>track.id===id)?.contentKey||null;
+  function saveSession(){
+    if(!sessionReady)return;
+    const text=JSON.stringify({track:playlist[currentIndex]?.contentKey||null,position:Math.round((Number(audio.currentTime)||0)*10)/10,
+      queue:playQueue.map(keyOfTrackId).filter(Boolean),manualQueue:manualQueueActive,
+      view:$(".view.active")?.dataset.view||"player",panel:$("#panelTabs .active")?.dataset.tab||"queue"});
+    if(text===lastSession)return;lastSession=text;
+    try{GPBrowserStorage.setLocal(SESSION_KEY,text);}catch(error){}
+  }
+  const readSession=()=>{try{return JSON.parse(GPBrowserStorage.getLocal(SESSION_KEY)||"null");}catch(error){return null;}};
+  function restoreSession(){
+    const saved=readSession();
+    if(saved){
+      const indexOf=key=>key?playlist.findIndex(track=>track.contentKey===key):-1;
+      const queued=(saved.queue||[]).map(indexOf).filter(index=>index>=0).map(index=>playlist[index].id);
+      if(queued.length){playQueue.splice(0,playQueue.length,...queued);manualQueueActive=saved.manualQueue!==false;renderMiniQueue({instantPosition:true});}
+      const index=indexOf(saved.track),at=Number(saved.position)||0;
+      if(index>=0){
+        loadTrack(index,false);   // loaded, not playing
+        if(at>0){const deck=audio,seek=()=>{if(deck===audio)deck.currentTime=Math.min(at,Math.max(0,(Number(deck.duration)||at+1)-1));};deck.readyState>=1?seek():deck.addEventListener("loadedmetadata",seek,{once:true});}
+      }
+    }
+    // The saved song is gone (or there was none): pick one as an import would have (the first, or a random one in shuffle)
+    if(currentIndex===-1&&playlist.length>0)loadTrack(playMode==="shuffle"?Math.floor(Math.random()*playlist.length):0,false);
+    if(saved){
+      // The page through its sidebar button where it has one (that also moves the sidebar highlight), else directly
+      if(saved.view&&saved.view!==($(".view.active")?.dataset.view||"player")&&$(`.view[data-view="${saved.view}"]`)){
+        const nav=$(`.nav-item[data-view="${saved.view}"]`);nav?nav.click():switchPrimaryView(saved.view);
+      }
+      if(saved.panel)$(`#panelTabs [data-tab="${saved.panel}"]:not(.active)`)?.click();
+    }
+    sessionReady=true;lastSession="";saveSession();
+  }
+  setInterval(saveSession,2000);
+  addEventListener("pagehide",saveSession);document.addEventListener("visibilitychange",()=>{if(document.hidden)saveSession();});
+  /* Electron: the remembered music folder loads at start-up, quietly in the background (no import dialog), and the session
+     resumes once it has. The browser build keeps 7.6.3's rule: it never imports by itself, so only the page and panel resume */
+  const nativeFolder=fileAdapter.hasNativeMusicFolder();
+  const startupLibrary=nativeFolder?fileAdapter.restoreRememberedAudioFolder().then(files=>files.length?addFiles(files,{quiet:true,pickTrack:!readSession()?.track}):null):Promise.resolve();
+  startupLibrary.catch(error=>console.warn("[GP] Music folder load failed",error)).finally(restoreSession);
+  if(nativeFolder)globalThis.glassAPI.music.get().then(dir=>{const hint=$("#defaultFolderHint");if(hint)hint.textContent=dir
+    ?tr(`打开 Glass Player 时自动载入：${dir}`,`Loads when Glass Player opens: ${dir}`)
+    :tr("选择后，每次打开 Glass Player 都会自动载入，并回到上次的位置。","Once chosen, it loads every time Glass Player opens, right where you left off.");}).catch(()=>{});
   showDataRestored();
   GPDataVault.start({beforeReload:()=>{historyStoreCache=null;historyStoreDirty=false;},onStatus:renderDataVaultStatus,onProgress:({percent,...detail})=>{if(rescanModalMode!=="dataRunning")openDataProgress(tr("正在载入你的数据","Loading Your Data"),tr("正在准备…","Getting ready…"));paintDataProgress(percent,detail);}});
 })();

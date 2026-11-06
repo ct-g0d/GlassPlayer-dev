@@ -1,0 +1,358 @@
+/* Inspector - technical sheet for the current stream, in CinemaX card language. */
+
+.insp-header-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 24px 22px 0 0;
+}
+
+.app-frame[data-collapsed="true"] .insp-header-pills {
+  display: none;
+}
+
+.insp-scroll {
+  padding-top: 10px;
+}
+
+/* Hero */
+
+.insp-hero {
+  padding: 14px 18px 10px;
+  overflow: hidden;
+}
+
+.insp-hero-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.insp-cover {
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.24),
+    0 0 0 0.5px rgba(255, 255, 255, 0.12);
+}
+
+.insp-hero-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.insp-hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.insp-title {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  color: var(--label);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insp-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.insp-like {
+  width: 28px;
+  height: 28px;
+}
+
+.insp-queue {
+  height: 28px;
+  padding: 0 10px;
+  gap: 5px;
+  font-size: 11.5px;
+}
+
+.insp-artist {
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--label-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insp-line {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--label-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insp-line .mono {
+  font-size: 10.5px;
+}
+
+.insp-hero-pills {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+  max-height: 18px;
+  overflow: hidden;
+}
+
+.insp-wave {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+  margin-top: 6px;
+  opacity: 0.92;
+  mask-image: linear-gradient(to right, transparent 0, #000 2.5%, #000 97.5%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 2.5%, #000 97.5%, transparent 100%);
+}
+
+.insp-bar {
+  flex: 1 1 0;
+  min-width: 1px;
+  border-radius: 2px 2px 1px 1px;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--accent) 16%, transparent),
+    color-mix(in srgb, var(--accent) 38%, transparent)
+  );
+}
+
+.insp-bar.is-played {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--accent) 58%, transparent),
+    var(--accent)
+  );
+}
+
+/* KPI row */
+
+.insp-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.insp-kpis .kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 84px;
+  padding: 12px 14px;
+  overflow: hidden;
+}
+
+.insp-kpis .kpi-label {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--label-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insp-kpis .kpi-value {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  color: var(--label);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.insp-kpis .kpi-unit {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--label-2);
+}
+
+.insp-kpis .kpi-note {
+  margin-top: auto;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--label-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Detail cards */
+
+.insp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.insp-card {
+  min-width: 0;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.insp-card h3 {
+  margin: 0 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--label);
+}
+
+.insp-card dl {
+  min-width: 0;
+}
+
+.insp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--separator);
+}
+
+.insp-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
+}
+
+.insp-row dt {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--label-2);
+  white-space: nowrap;
+}
+
+.insp-row dd {
+  min-width: 0;
+  max-width: 62%;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--label);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.insp-row dd.insp-accent {
+  color: var(--accent);
+}
+
+.insp-energy {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.insp-meter {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--control-track);
+  overflow: hidden;
+}
+
+.insp-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 52%, transparent),
+    var(--accent)
+  );
+}
+
+/* Signal chain */
+
+.insp-chain {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 10px 14px;
+}
+
+.insp-chain-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--label-2);
+  white-space: nowrap;
+}
+
+.insp-chain-title svg {
+  color: var(--accent);
+}
+
+.insp-chain-nodes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.insp-chain-nodes .pill {
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+.insp-arrow {
+  flex: 0 0 auto;
+  color: var(--label-3);
+}
+
+.insp-chain-note {
+  margin-left: auto;
+  font-size: 10px;
+  white-space: nowrap;
+}

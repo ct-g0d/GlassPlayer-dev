@@ -1,0 +1,266 @@
+/* CinemaX design tokens, copied from D:\CinemaX\src\index.css and docs\stitch_baseline\cinemax_minimalist_player\DESIGN.md.
+   The window geometry is fixed to the CinemaX Tauri window: 1080 x 580. */
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --app-w: 1080px;
+  --app-h: 580px;
+  --window-radius: 22px;
+  --sidebar-w: 232px;
+  --header-h: 72px;
+  --gutter: 32px;
+  --panel-radius: 16px;
+  --card-radius: 16px;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-sidebar: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --accent: #0a84ff;
+  --accent-rgb: 10, 132, 255;
+  --green: #30d158;
+  --danger: #ff453a;
+  --warning: #ffd60a;
+  --canvas: #0b0b0d;
+  --content: #0e0e10;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-hover: rgba(255, 255, 255, 0.065);
+  --pill: rgba(255, 255, 255, 0.18);
+  --glass: rgba(40, 40, 44, 0.65);
+  --glass-panel: rgba(24, 24, 27, 0.58);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --elevated: #1d1d20;
+  --fg: #ffffff;
+  --label: #f5f5f7;
+  --label-2: #98989d;
+  --label-3: #636366;
+  --separator: rgba(255, 255, 255, 0.08);
+  --control-track: rgba(255, 255, 255, 0.07);
+  --control-hover: rgba(255, 255, 255, 0.1);
+  --shadow-panel: 0 16px 44px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --scrim: rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+.app-frame[data-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0b0b0d;
+  --content: #0e0e10;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-hover: rgba(255, 255, 255, 0.065);
+  --pill: rgba(255, 255, 255, 0.18);
+  --glass: rgba(40, 40, 44, 0.65);
+  --glass-panel: rgba(24, 24, 27, 0.58);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --elevated: #1d1d20;
+  --fg: #ffffff;
+  --label: #f5f5f7;
+  --label-2: #98989d;
+  --label-3: #636366;
+  --separator: rgba(255, 255, 255, 0.08);
+  --control-track: rgba(255, 255, 255, 0.07);
+  --control-hover: rgba(255, 255, 255, 0.1);
+  --shadow-panel: 0 16px 44px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --scrim: rgba(0, 0, 0, 0.5);
+}
+
+.app-frame[data-theme="light"],
+[data-theme="light"] {
+  color-scheme: light;
+  --canvas: #e8e8ed;
+  --content: #f5f5f7;
+  --card: #ffffff;
+  --card-hover: rgba(0, 0, 0, 0.025);
+  --pill: #ffffff;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-panel: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(0, 0, 0, 0.09);
+  --glass-highlight: rgba(255, 255, 255, 0.65);
+  --elevated: #fbfbfd;
+  --fg: #000000;
+  --label: #1d1d1f;
+  --label-2: #6e6e73;
+  --label-3: #a1a1a6;
+  --separator: rgba(0, 0, 0, 0.08);
+  --control-track: rgba(0, 0, 0, 0.05);
+  --control-hover: rgba(0, 0, 0, 0.06);
+  --shadow-panel: 0 16px 44px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --scrim: rgba(0, 0, 0, 0.25);
+}
+
+/* Liquid Glass approximation from CinemaX: vibrancy backdrop, specular top-left edge,
+   faint bounce at bottom-right, soft inner depth. No true refraction. */
+.liquid-glass {
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(1.8) brightness(1.06);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8) brightness(1.06);
+  box-shadow:
+    0 16px 44px rgba(0, 0, 0, 0.42),
+    0 2px 8px rgba(0, 0, 0, 0.22),
+    inset 0 -20px 30px -24px rgba(0, 0, 0, 0.35);
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 0.5px;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.05) 18%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 72%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+[data-theme="light"] .liquid-glass {
+  backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
+  box-shadow:
+    0 16px 44px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 0.5px rgba(0, 0, 0, 0.07),
+    inset 0 -20px 30px -24px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .liquid-glass::before {
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.18) 22%,
+    rgba(255, 255, 255, 0) 45%,
+    rgba(255, 255, 255, 0) 75%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+}
+
+/* Sidebar ink keeps WCAG contrast over the glass in both themes. */
+.sidebar-ink {
+  --label-2: #c1c1c1;
+  --label-3: #9b9b9b;
+}
+
+[data-theme="light"] .sidebar-ink {
+  --label-2: #4a4a4a;
+  --label-3: #666666;
+}
+
+@property --side {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 232px;
+}
+
+@property --lead {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 264px;
+}
+
+@property --sidek {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --fade-top {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --fade-bottom {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+.app-frame {
+  --side: 232px;
+  --lead: 264px;
+  --sidek: 1;
+  --pad: calc(var(--side) + 32px);
+  transition:
+    --side 0.45s var(--ease-sidebar),
+    --lead 0.45s var(--ease-sidebar),
+    --sidek 0.45s var(--ease-sidebar);
+}
+
+.app-frame[data-collapsed="true"] {
+  --side: 0px;
+  --lead: 124px;
+  --sidek: 0;
+  transition-delay: 0.1s;
+}
+
+.scroll-fade {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade-top),
+    #000 calc(100% - var(--fade-bottom)),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade-top),
+    #000 calc(100% - var(--fade-bottom)),
+    transparent 100%
+  );
+  transition: --fade-top 0.25s ease, --fade-bottom 0.25s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+}
+
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+@keyframes windowIn {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+}
+
+@keyframes windowOut {
+  to { opacity: 0; transform: scale(0.97); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+}
+
+@keyframes spinDisc {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.1s !important;
+  }
+}

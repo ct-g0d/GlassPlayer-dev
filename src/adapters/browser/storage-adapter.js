@@ -121,7 +121,7 @@
     const STORES=Object.freeze({trackCache:"contentKey",trackFeatures:"contentKey",behaviorEvents:"id",userModel:"id",recommendations:"id"});
     const HISTORY="glassPlayerHistory",PREFS="glassPlayerPrefs",SIDEBAR="glassPlayerSidebarCollapsed",REVISION="glassPlayerDiskRevision";
     const EXTENSIONS=Object.freeze({"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/gif":"gif"});
-    const onDisk=location.protocol.startsWith("http");
+    const onDisk = location.protocol.startsWith("http") || location.protocol === "app:" || location.protocol === "nexus:" || location.protocol === "file:" || Boolean(window.macxWindow || window.electronAPI || window.__ELECTRON__ || window.glassAPI);
     const adapter=()=>GPDatabase.requireAdapter();
     let lastFlushAt=Date.now(),flushing=null,importing=false,reporter=null,coverRefs=null,savedAt=0,state=onDisk?"ready":"unavailable",notify=()=>{};
     const setState=value=>{state=value;notify(status());};
@@ -293,13 +293,17 @@
         savedAt=manifest?.savedAt||0;
         if(manifest&&manifest.revision!==knownRevision()){
           const replace=await localIsEmpty();
-          reporter=replace?onProgress:null;   // a browser that only needs topping up does it quietly
-          await pullFromDisk(manifest,replace);
-          reporter=null;
-          if(replace)await markFinished();
-          beforeReload?.();
-          location.reload();
-          return;
+          if(replace){
+            reporter=onProgress;
+            await pullFromDisk(manifest,true);
+            reporter=null;
+            await markFinished();
+            beforeReload?.();
+            location.reload();
+            return;
+          }
+          // IndexedDB is the live copy. Do not reread the full disk backup or reload the player when it already has data.
+          GPBrowserStorage.setLocal(REVISION,String(manifest.revision));
         }
         if(!manifest)setTimeout(flush,60000);
         notify(status());

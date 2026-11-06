@@ -12,6 +12,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "1440", "--bind", "127.0.0.1", "--directory", "D:/CinemaX/dist-web"],
       "port": 1440
+    },
+    {
+      "name": "installex-ref",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "1442", "--bind", "127.0.0.1", "--directory", "D:/Software/Installex/next"],
+      "port": 1442
     }
   ]
 }

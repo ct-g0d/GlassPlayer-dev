@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Music Glass Icon</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; overflow: hidden; font: 12px/1.4 system-ui, sans-serif; background: #fff; }
+  /* The note sits on the page; the glass refracts it */
+  #mark { position: absolute; left: 50%; top: 50%; width: 440px; height: 440px; translate: -50% -50%; }
+  #mark * { fill: #0a0f2a; }
+  #glass {
+    position: absolute; left: calc(50% - 220px); top: calc(50% - 220px); width: 440px; height: 440px; border-radius: 100px;
+    cursor: grab; touch-action: none;
+    /* Clear slab: a hairline outer edge and a soft lift */
+    box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.07), 0 24px 50px rgba(0,0,0,.08), 0 2px 5px rgba(0,0,0,.06);
+  }
+  #glass:active { cursor: grabbing; }
+  .bar { position: fixed; bottom: 14px; left: 50%; translate: -50% 0; color: #888; }
+</style>
+</head>
+<body>
+<!-- Beamed eighth notes: two stems, a beam rising to the right, two tilted oval heads -->
+<svg id="mark" viewBox="0 0 300 300">
+  <g stroke="#0a0f2a" stroke-width="6" stroke-linejoin="round">
+    <path d="M100 76L216 40L216 70L116 101L116 205L100 205Z"/>
+    <rect x="200" y="50" width="16" height="132"/>
+    <ellipse cx="80" cy="207" rx="38" ry="29" transform="rotate(-22 80 207)"/>
+    <ellipse cx="180" cy="184" rx="38" ry="29" transform="rotate(-22 180 184)"/>
+  </g>
+</svg>
+<div id="glass"></div>
+<div class="bar">Drag the glass</div>
+<svg width="0" height="0" style="position:absolute"><defs><filter id="lens"></filter></defs></svg>
+
+<script>
+// ---- tuning, read off the Apple Music icon ----
+// Its rim pulls the note OUT toward the edge and smears it round the corners, so the rim samples inward
+// (the other demos sample outward, which squeezes the content away from the edge).
+const T = {
+  radius: 100,        // corner radius of the slab, ~23% of its size
+  bezel: 100,         // the refracting rim, ~23% of the tile; inside it the glass is flat and the stems stay straight
+  pull: 105,          // how far in the very edge looks: the top rim shows the beam, the right rim its curled corner
+  falloff: 2,         // pull fades as (1 - t)^falloff. pull > bezel folds the rim like thick glass: the edge shows
+                      // the deep beam while the band just inside it still shows white, giving the cyan inner fringe
+  squircle: 4,        // superellipse exponent for the dome; rounder than the others, matching the soft corners
+  refraction: 1.0,
+  dispersion: 0.1,    // in the fold blue pulls this much less than red: cyan/violet on the inner side of the smear
+  specular: 0.55,
+  edgeRamp: 20,      // width of the outer sliver where red's pull ramps back to zero; green and blue ramp
+                      // faster, so the sliver goes yellow then red into the dark, the warm line on the outer edge
+  lipInset: 12,       // the bright glossy ring sitting just inside the outer edge
+  lightAngle: -60,
+};
+
+function sdRound(x, y, w, h, r) {
+  const qx = Math.abs(x - w / 2) - w / 2 + r, qy = Math.abs(y - h / 2) - h / 2 + r;
+  return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
+}
+// Per channel: how hard it pulls in the fold, and how wide its outer ramp is
+const CH = [[1 + T.dispersion, 1], [1, 0.7], [1 - T.dispersion, 0.4]];
+function buildMaps(w, h) {
+  const disp = CH.map(() => new Float32Array(w * h * 2)), spec = new ImageData(w, h);
+  const L = [Math.cos(T.lightAngle * Math.PI / 180), Math.sin(T.lightAngle * Math.PI / 180)];
+  let max = 1e-6;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const x = i + 0.5, y = j + 0.5, d = sdRound(x, y, w, h, T.radius);
+    if (d > 0) continue;
+    const o = (j * w + i) * 4;
+    spec.data[o] = spec.data[o + 1] = spec.data[o + 2] = 255;
+    // Glossy lip: a thin bright ring just inside the edge, plus the edge catch-light itself
+    const lip = 0.55 * Math.exp(-(((d + T.lipInset) / 2.2) ** 2)) + 0.6 * Math.exp(d / 1.5);
+    const u = (x - w / 2) / (w / 2), v = (y - h / 2) / (h / 2), n = T.squircle;
+    const rho = Math.pow(Math.abs(u) ** n + Math.abs(v) ** n, 1 / n);
+    const t = ((1 - rho) * (w / 2)) / T.bezel;
+    if (t >= 1 || rho >= 1) { spec.data[o + 3] = 255 * Math.min(1, lip * T.specular); continue; }
+    const gx = Math.sign(u) * Math.abs(u) ** (n - 1), gy = Math.sign(v) * Math.abs(v) ** (n - 1);
+    const gl = Math.hypot(gx, gy) || 1, nx = gx / gl, ny = gy / gl;
+    // Magnifier rim: strongest at the edge, fading to nothing where the flat face starts,
+    // except the outer sliver where each channel's pull ramps back to zero
+    const edge = (1 - t) ** T.falloff, k = (j * w + i) * 2;
+    CH.forEach(([scale, ramp], c) => {
+      const mag = T.pull * scale * edge * Math.min(1, -d / (T.edgeRamp * ramp));
+      disp[c][k] = -nx * mag; disp[c][k + 1] = -ny * mag;
+      max = Math.max(max, mag);
+    });
+    const facing = nx * L[0] + ny * L[1];
+    const lit = (Math.max(0, facing) ** 2 + 0.4 * Math.max(0, -facing) ** 2) * edge ** 4 + lip;
+    spec.data[o + 3] = 255 * Math.min(1, lit * T.specular);
+  }
+  const url = (img) => { const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').putImageData(img, 0, 0); return c.toDataURL(); };
+  const maps = disp.map((dc) => {
+    const map = new ImageData(w, h);
+    for (let p = 0; p < w * h; p++) {
+      map.data[p * 4] = 128 + 127 * dc[p * 2] / max;
+      map.data[p * 4 + 1] = 128 + 127 * dc[p * 2 + 1] / max;
+      map.data[p * 4 + 2] = 128;
+      map.data[p * 4 + 3] = 255;
+    }
+    return url(map);
+  });
+  return { maps, spec: url(spec), max };
+}
+
+// One pass per color, each through its own map (dispersion), recombined, then the rim light
+function buildFilter(el) {
+  const w = el.offsetWidth, h = el.offsetHeight, m = buildMaps(w, h), s = 2 * m.max * T.refraction;
+  const pass = (c, row) => `
+    <feImage href="${m.maps[c]}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="m${c}"/>
+    <feDisplacementMap in="SourceGraphic" in2="m${c}" scale="${s}" xChannelSelector="R" yChannelSelector="G" result="d${c}"/>
+    <feColorMatrix in="d${c}" type="matrix" values="${row} 0 0 0 1 0" result="c${c}"/>`;
+  document.getElementById('lens').outerHTML = `
+  <filter id="lens" x="0" y="0" width="${w}" height="${h}" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    ${pass(0, '1 0 0 0 0  0 0 0 0 0  0 0 0 0 0 ')}
+    ${pass(1, '0 0 0 0 0  0 1 0 0 0  0 0 0 0 0 ')}
+    ${pass(2, '0 0 0 0 0  0 0 0 0 0  0 0 1 0 0 ')}
+    <feBlend in="c0" in2="c1" mode="screen" result="rg"/>
+    <feBlend in="rg" in2="c2" mode="screen" result="rgb"/>
+    <feImage href="${m.spec}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" result="spec"/>
+    <feBlend in="spec" in2="rgb" mode="screen"/>
+  </filter>`;
+  el.style.backdropFilter = el.style.webkitBackdropFilter = 'url(#lens)';
+}
+
+const glass = document.getElementById('glass');
+let grab = null;
+glass.addEventListener('pointerdown', (e) => { glass.setPointerCapture(e.pointerId); grab = [e.clientX - glass.offsetLeft, e.clientY - glass.offsetTop]; });
+glass.addEventListener('pointermove', (e) => {
+  if (!grab) return;
+  glass.style.left = e.clientX - grab[0] + 'px';
+  glass.style.top = e.clientY - grab[1] + 'px';
+});
+glass.addEventListener('pointerup', () => (grab = null));
+buildFilter(glass);
+</script>
+</body>
+</html>

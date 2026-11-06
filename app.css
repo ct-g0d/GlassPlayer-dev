@@ -72,8 +72,9 @@
     position:relative; z-index:1; display:flex; overflow:hidden;
     width:100vw; height:100vh; transform-origin:top left;
   }
-  .window-controls{ position:absolute; top:0; left:0; z-index:50; height:40px; display:flex; align-items:center; gap:8px; padding-left:14px; user-select:none; }
-  .traffic{ position:relative; width:14px; height:14px; padding:0; border:0; border-radius:50%; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); transition:transform .15s ease; }
+  #window-drag-region{ position:fixed; top:0; left:0; right:0; height:40px; z-index:49; -webkit-app-region:drag; }
+  .window-controls{ position:absolute; top:0; left:0; z-index:50; height:40px; display:flex; align-items:center; gap:8px; padding-left:14px; user-select:none; -webkit-app-region:no-drag; }
+  .traffic{ position:relative; width:14px; height:14px; padding:0; border:0; border-radius:50%; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); transition:transform .15s ease; -webkit-app-region:no-drag; }
   .traffic::before{ content:""; position:absolute; inset:-4px; }
   .traffic img{ position:absolute; inset:0; width:14px; height:14px; pointer-events:none; }
   .traffic-unfocused{ opacity:1; }
@@ -136,7 +137,7 @@
   .ripple-target{ transition:transform 170ms cubic-bezier(.2,.8,.2,1); }
 
   /* ---------- sidebar ---------- */
-  .sidebar{ --sidebar-pad:12px; --sidebar-pad-total:24px; width:var(--sidebar-w); flex-shrink:0; margin:40px 0 40px 40px; padding:20px var(--sidebar-pad) 12px; display:flex; flex-direction:column; gap:4px; position:relative; z-index:2; height:calc(100% - 80px); overflow:hidden; transition:width .52s cubic-bezier(.22,.78,.2,1),margin-right .52s cubic-bezier(.22,.78,.2,1),background-color .3s ease,border-color .3s ease,box-shadow .3s ease; contain:layout paint; isolation:isolate; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:translateZ(0); will-change:width,margin-right; }
+  .sidebar{ --sidebar-pad:12px; --sidebar-pad-total:24px; width:var(--sidebar-w); flex-shrink:0; margin:40px 0 12px 12px; padding:20px var(--sidebar-pad) 12px; display:flex; flex-direction:column; gap:4px; position:relative; z-index:2; height:calc(100% - 52px); overflow:hidden; transition:width .52s cubic-bezier(.22,.78,.2,1),margin-right .52s cubic-bezier(.22,.78,.2,1),background-color .3s ease,border-color .3s ease,box-shadow .3s ease; contain:layout paint; isolation:isolate; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:translateZ(0); will-change:width,margin-right; }
   .brand{ display:flex; align-items:center; gap:10px; min-width:0; padding:6px 5px 22px 10px; white-space:nowrap; position:relative; }
   .brand-logo{ width:32px; height:32px; flex:0 0 32px; overflow:visible; filter:drop-shadow(0 4px 10px rgba(var(--accent-rgb),.45)); transform:scale(1); transition:filter .3s ease,opacity .24s ease,transform .34s cubic-bezier(.2,.78,.2,1),width .52s cubic-bezier(.22,.78,.2,1),flex-basis .52s cubic-bezier(.22,.78,.2,1); }
   .brand-name{ min-width:0; max-width:120px; overflow:hidden; font-weight:750; font-size:1.01em; letter-spacing:-0.01em; opacity:1; visibility:visible; transition:opacity .14s ease,max-width .52s cubic-bezier(.22,.78,.2,1),visibility 0s linear; }
@@ -235,7 +236,7 @@
   .sidebar.sidebar-hint-flight .sidebar-toggle{ opacity:0; }
 
   /* ---------- main area / views ---------- */
-  .main-area{ flex:1; min-width:0; height:100%; overflow:hidden; position:relative; z-index:1; padding:40px 40px 40px clamp(16px,2vw,30px); display:grid; }
+  .main-area{ flex:1; min-width:0; height:100%; overflow:hidden; position:relative; z-index:1; padding:40px 12px 12px clamp(12px,1.2vw,18px); display:grid; }   /* top kept for the window lights; panels run close to the other three edges */
   .main-area::-webkit-scrollbar{ width:5px; }
   .main-area::-webkit-scrollbar-thumb{ background:var(--divider); border-radius:3px; }
   .view{ display:none; grid-area:1/1; width:100%; max-width:980px; margin:0 auto; height:100%; min-height:0; transform:none; backface-visibility:visible; -webkit-backface-visibility:visible; }

@@ -1,2 +1,5 @@
 .tmp.driveupload/
 /data/
+node_modules/
+dist/
+*.log
