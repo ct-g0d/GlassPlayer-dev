@@ -10,13 +10,13 @@
     {
       "name": "cinemax-ref",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "1440", "--bind", "127.0.0.1", "--directory", "D:/CinemaX/dist-web"],
+      "runtimeArgs": ["-m", "http.server", "1440", "--bind", "127.0.0.1", "--directory", "D:/Dev/Nexus/prior-macx/CinemaX/dist-web"],
       "port": 1440
     },
     {
       "name": "installex-ref",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "1442", "--bind", "127.0.0.1", "--directory", "D:/Software/Installex/next"],
+      "runtimeArgs": ["-m", "http.server", "1442", "--bind", "127.0.0.1", "--directory", "D:/Dev/Nexus/prior-macx/InstalleX/next"],
       "port": 1442
     }
   ]

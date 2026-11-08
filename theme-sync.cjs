@@ -1,5 +1,5 @@
 // One theme for Mac X and every app: the launcher's Settings → Theme (dark, light, or 'sun' = System Time: light from sunrise to
-// sunset at the saved place, else 06:00-18:00). The setting lives in the launcher's hub.settings.json (D:\Nexus\data, or NEXUS_DATA);
+// sunset at the saved place, else 06:00-18:00). The setting lives in the launcher's hub.settings.json (D:\Dev\Nexus\data, or NEXUS_DATA);
 // each app's main process reads it, watches it and tells its windows, so a change anywhere reaches every open app within a second or two.
 // Same file in Mac X and every app (the build scripts copy it); usage:
 //   main process:  require('./theme-sync.cjs').main(ipcMain, BrowserWindow)
@@ -10,7 +10,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const FILE = path.join(process.env.NEXUS_DATA || 'D:/Nexus/data', 'hub.settings.json');
+const FILE = path.join(process.env.NEXUS_DATA || 'D:/Dev/Nexus/data', 'hub.settings.json');
 const MODES = ['dark', 'light', 'sun'];
 const LANGS = ['en', 'zh'];
 

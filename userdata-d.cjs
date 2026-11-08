@@ -1,13 +1,13 @@
 // Keeps everything an app writes on D instead of C: its Chromium profile (Local Storage, IndexedDB, caches; C:\Users\<you>\AppData\
 // Roaming before), its temp files and those of the tools it runs (ffmpeg, yt-dlp), its logs and crash dumps, and what it saves
-// for you (screenshots, exports, downloads: D:\Nexus\Downloads, not C:\Users\<you>\Downloads).
+// for you (screenshots, exports, downloads: D:\Dev\Nexus\Downloads, not C:\Users\<you>\Downloads).
 // Call it first, before app is ready and before anything else asks for a path. The first launch after the move copies the old
 // profile across (through a temporary folder, so a copy that fails halfway is tried again next time instead of leaving half a
 // profile); the copy on C is left as it was.
 const fs = require('node:fs');
 const path = require('node:path');
 
-const ROOT = process.env.NEXUS_USERDATA || 'D:/Nexus/UserData';   // movable like NEXUS_DATA (a test run uses its own)
+const ROOT = process.env.NEXUS_USERDATA || 'D:/Dev/Nexus/UserData';   // movable like NEXUS_DATA (a test run uses its own)
 const DOWNLOADS = process.env.NEXUS_DOWNLOADS || path.join(path.dirname(ROOT), 'Downloads');
 const SKIP = /[\\/](Singleton\w*|lockfile|DevToolsActivePort)$/;   // per-run lock files, not data
 

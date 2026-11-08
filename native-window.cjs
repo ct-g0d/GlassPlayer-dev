@@ -43,8 +43,8 @@ function addSysMenu(win) {
    taskbar button, shown with Planner's icon and name (a pinned button starts Planner). The apps keep their own names inside */
 const fs = require('node:fs');
 const path = require('node:path');
-const PLANNER_EXE = 'D:\\Nexus\\Planner\\Planner.exe';
-const PLANNER_ICON = [path.join(__dirname, 'planner.ico'), 'D:/Nexus/assets/icons/planner.ico'].find((f) => fs.existsSync(f));
+const PLANNER_EXE = 'D:\\Dev\\Nexus\\Planner\\Planner.exe';
+const PLANNER_ICON = [path.join(__dirname, 'planner.ico'), 'D:/Dev/Nexus/assets/icons/planner.ico'].find((f) => fs.existsSync(f));
 // The whole process too, so a window that never comes through here (a pop-up) still groups with the rest
 try { if (process.platform === 'win32') require('electron').app.setAppUserModelId('Planner'); } catch {}
 function plannerIdentity(win) {

@@ -11,7 +11,7 @@
  */
 
 const { app, BrowserWindow, protocol, ipcMain, screen, dialog } = require('electron');
-require('./userdata-d.cjs')(app, 'glassplayer');   // Chromium profile (Local Storage, IndexedDB, caches) on D (D:/Nexus/UserData), not C
+require('./userdata-d.cjs')(app, 'glassplayer');   // Chromium profile (Local Storage, IndexedDB, caches) on D (D:/Dev/Nexus/UserData), not C
 require('./gpu-warmup.cjs')(app);   // first animations smooth: shaders compiled as each page loads
 const path = require('node:path');
 const fs = require('node:fs');
@@ -376,7 +376,7 @@ function createMainWindow() {
 app.whenReady().then(() => {
   setupProtocolHandler();
   setupIpcHandlers();
-  require('./theme-sync.cjs').main(ipcMain, BrowserWindow);   // the theme shared with Nexus and its apps (D:/Nexus/data/hub.settings.json)
+  require('./theme-sync.cjs').main(ipcMain, BrowserWindow);   // the theme shared with Nexus and its apps (D:/Dev/Nexus/data/hub.settings.json)
   createMainWindow();
 
   app.on('activate', () => {
