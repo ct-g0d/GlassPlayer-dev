@@ -1,2 +1,14 @@
 .tmp.driveupload/
 /data/
+
+# Local testing, demos, and backups
+.workbuddy-ai/
+GlassPlayer-CinemaX-Demo/
+liquid glass testing/
+liquidglassdemo/
+glassplayer-history-backup.json
+restore-history.html
+*.bat
+*.docx
+desktop.ini
+.DS_Store

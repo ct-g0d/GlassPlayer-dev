@@ -72,10 +72,11 @@
     position:relative; z-index:1; display:flex; overflow:hidden;
     width:100vw; height:100vh; transform-origin:top left;
   }
-  .window-controls{ position:absolute; top:0; left:0; z-index:50; height:40px; display:flex; align-items:center; gap:8px; padding-left:14px; user-select:none; }
-  .traffic{ position:relative; width:14px; height:14px; padding:0; border:0; border-radius:50%; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); transition:transform .15s ease; }
+  #window-drag-region{ position:fixed; top:4px; left:0; right:0; height:36px; z-index:49; -webkit-app-region:drag; }
+  .window-controls{ position:absolute; top:0; left:0; z-index:50; height:40px; display:flex; align-items:center; gap:8px; padding-left:14px; user-select:none; -webkit-app-region:no-drag; }
+  .traffic{ position:relative; width:16px; height:16px; padding:0; border:0; border-radius:50%; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); transition:transform .15s ease; -webkit-app-region:no-drag; }
   .traffic::before{ content:""; position:absolute; inset:-4px; }
-  .traffic img{ position:absolute; inset:0; width:14px; height:14px; pointer-events:none; }
+  .traffic img{ position:absolute; inset:0; width:16px; height:16px; pointer-events:none; }
   .traffic-unfocused{ opacity:1; }
   .traffic-base{ opacity:1; transition:opacity .3s ease; }
   .traffic-hover{ opacity:0; transition:opacity .15s ease; }

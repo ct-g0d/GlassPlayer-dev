@@ -2,6 +2,12 @@
 (function(){
   "use strict";
 
+  const syncNativeFocus = (focused) => document.body.classList.toggle("gp-window-focused", Boolean(focused));
+  syncNativeFocus(document.hasFocus());
+  window.addEventListener("focus", () => syncNativeFocus(true));
+  window.addEventListener("blur", () => syncNativeFocus(false));
+  window.macxWindow?.onFocus?.(syncNativeFocus);
+
   /* ================= state ================= */
   const playlist = [];
   const playQueue = [];             // stable track ids; manual queue has priority over play mode

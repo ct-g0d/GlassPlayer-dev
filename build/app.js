@@ -549,13 +549,17 @@ window.GPModules.register = function register(name,factory){
         savedAt=manifest?.savedAt||0;
         if(manifest&&manifest.revision!==knownRevision()){
           const replace=await localIsEmpty();
-          reporter=replace?onProgress:null;   // a browser that only needs topping up does it quietly
-          await pullFromDisk(manifest,replace);
-          reporter=null;
-          if(replace)await markFinished();
-          beforeReload?.();
-          location.reload();
-          return;
+          if(replace){
+            reporter=onProgress;
+            await pullFromDisk(manifest,true);
+            reporter=null;
+            await markFinished();
+            beforeReload?.();
+            location.reload();
+            return;
+          }
+          // IndexedDB is the live copy. Do not reread the full disk backup or reload the player when it already has data.
+          GPBrowserStorage.setLocal(REVISION,String(manifest.revision));
         }
         if(!manifest)setTimeout(flush,60000);
         notify(status());
