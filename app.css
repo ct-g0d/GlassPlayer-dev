@@ -1280,7 +1280,7 @@ input[type="range"]:not(.eq-slider).dragging::-webkit-slider-thumb{ margin-top:-
   .settings-layout{ width:100%; max-width:var(--gp-primary-content-width); margin-inline:auto; }
   .settings-content{ max-width:var(--gp-primary-content-width); }
 
-  #languageSeg{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; max-width:360px; }
+  #languageSeg{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; max-width:240px; }
   #languageSeg button{ width:100%; min-width:0; padding-inline:8px; }
 
   .settings-content .setting-hint,.settings-content .metadata-rescan-copy>span,.recommend-head>p,.data-sub,.history-ranking-caption,.pip-support-detail,.settings-note{ display:none!important; }
@@ -1349,7 +1349,7 @@ input[type="range"]:not(.eq-slider).dragging::-webkit-slider-thumb{ margin-top:-
      owners while giving their controls stable room at 100%, 110% and narrow
      window sizes. */
 
-  #languageSeg{ width:360px; max-width:100%; }
+  #languageSeg{ width:240px; max-width:100%; }
   .settings-pane[data-settings-pane="advanced"] .setting-group:has(#fontPreview){ grid-template-rows:auto auto; row-gap:12px; }
   .settings-pane[data-settings-pane="advanced"] .setting-group:has(#fontPreview)>#fontPreview{ grid-column:1/-1; grid-row:1; align-self:start; justify-self:center; width:340px; max-width:100%; margin:0; text-align:center; }
   .settings-pane[data-settings-pane="advanced"] .setting-group:has(#fontPreview)>.setting-label{ grid-column:1; grid-row:2; }

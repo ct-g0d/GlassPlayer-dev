@@ -931,6 +931,7 @@ window.GPModules.register = function register(name,factory){
   Object.assign(UI_EN,{"版本 7.7.0":"Ver. 7.7.0","当前版本 7.7.0 — LOCALIZATION UPDATE":"Current Version 7.7.0 — LOCALIZATION UPDATE","版本 7.7.0 — LOCALIZATION UPDATE":"Ver. 7.7.0 — LOCALIZATION UPDATE","LOCALIZATION UPDATE":"LOCALIZATION UPDATE"});
   Object.assign(UI_EN,{"导出与导入":"Export and Import","约每小时保存一次":"Saves about hourly","磁盘数据库":"Disk Database","约每小时保存一次到 data/db，只写入有变化的内容。":"Saved to data/db about once an hour, writing only what changed.","导出数据":"Export Data","把听歌历史、偏好、分析缓存和封面保存为一个文件。":"Save your listening history, preferences, analysis cache and covers as one file.","导出":"Export","导入数据":"Import Data","从导出的文件恢复。只会添加和更新，不会删除现有记录；偏好会被文件中的设置替换。":"Restore from an exported file. It only adds and updates, never deletes records. Preferences are replaced by the ones in the file.","导入":"Import"});
   Object.assign(UI_EN,{"无损":"Lossless","播放全部":"Play All","新建歌单":"New Playlist","新建歌单…":"New Playlist…","新建歌单名称":"New playlist name","重命名":"Rename","删除歌单":"Delete playlist","未命名歌单":"Untitled Playlist","歌单：全部歌曲":"Playlists: All Songs","还没有自建歌单，先去歌单里新建一个吧":"No custom playlists yet — create one from Playlists","下载报告":"Download Report","高刷新率流动视觉":"Fluid 120Hz Motion","平滑连续播放":"Seamless Continuous Playback","按键播控":"Keyboard Controls","重置界面偏好":"Reset Interface Preferences","恢复默认":"Restore Defaults","已恢复默认设置":"Settings restored to defaults"});
+  Object.assign(UI_EN,{"启用 120Hz 流畅动效与光斑流动":"Smooth 120Hz motion and flowing glow","基于硬件刷新率自适应调度，在支持高刷的显示设备上呈现丝滑的玻璃界面交互。":"Follows your display's refresh rate, so the glass interface moves smoothly on high-refresh screens."});
   const i18nTextOriginal=new WeakMap();
   const i18nAttrOriginal=new WeakMap();
   function translatedValue(key){if(uiLanguage==="zh")return key;return UI_EN[key]||key;}
@@ -11090,13 +11091,24 @@ window.GPModules.register = function register(name,factory){
     const match=String(stack||"").match(/^\s*(?:"([^"]+)"|'([^']+)'|([^,]+))/);
     return (match?.[1]||match?.[2]||match?.[3]||"").trim();
   }
+  // Is this family really there? Either the app carries it (assets/fonts/fonts.css), or text set in it measures differently
+  // from the generic fonts it would otherwise fall back to. document.fonts.check() can't say: it answers true for any
+  // family that has no @font-face, installed or not.
+  function fontFamilyAvailable(family){
+    if([...(document.fonts||[])].some(face=>face.family.replace(/["']/g,"")===family))return true;
+    const context=document.createElement("canvas").getContext("2d"),sample="mmmmmmmmmmlli WwQq 0123";
+    return ["monospace","serif","sans-serif"].some(generic=>{
+      context.font=`72px ${generic}`;const fallbackWidth=context.measureText(sample).width;
+      context.font=`72px "${family}", ${generic}`;return context.measureText(sample).width!==fallbackWidth;
+    });
+  }
   function verifyFontAvailable(stack){
     // 7.4.0: a missing family used to fail silently (CJK kept PingFang while
     // the Apple profile fell back to Segoe UI). Tell the user instead.
     try{
       const family=primaryStackFamily(stack),generic=family.toLowerCase();
       if(!family||generic==="sans-serif"||generic==="serif"||generic==="monospace")return;
-      if(document.fonts?.check&&!document.fonts.check(`16px "${family.replace(/"/g,"")}"`))showToast(tr(`系统未安装「${family}」，已使用回退字体`,`“${family}” is not installed; using a fallback font`));
+      if(!fontFamilyAvailable(family.replace(/"/g,"")))showToast(tr(`系统未安装「${family}」，已使用回退字体`,`“${family}” is not installed; using a fallback font`));
     }catch(error){}
   }
   function syncFontPicker(){
@@ -11159,7 +11171,7 @@ window.GPModules.register = function register(name,factory){
       let available=true;
       try{
         const family=primaryStackFamily(button.dataset.fontValue);
-        if(family&&document.fonts?.check)available=document.fonts.check(`16px "${family.replace(/"/g,"")}"`);
+        if(family)available=fontFamilyAvailable(family.replace(/"/g,""));
       }catch(error){available=true;}
       button.dataset.available=available?"1":"0";
       if(available)button.removeAttribute("title");

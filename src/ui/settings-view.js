@@ -463,13 +463,24 @@
     const match=String(stack||"").match(/^\s*(?:"([^"]+)"|'([^']+)'|([^,]+))/);
     return (match?.[1]||match?.[2]||match?.[3]||"").trim();
   }
+  // Is this family really there? Either the app carries it (assets/fonts/fonts.css), or text set in it measures differently
+  // from the generic fonts it would otherwise fall back to. document.fonts.check() can't say: it answers true for any
+  // family that has no @font-face, installed or not.
+  function fontFamilyAvailable(family){
+    if([...(document.fonts||[])].some(face=>face.family.replace(/["']/g,"")===family))return true;
+    const context=document.createElement("canvas").getContext("2d"),sample="mmmmmmmmmmlli WwQq 0123";
+    return ["monospace","serif","sans-serif"].some(generic=>{
+      context.font=`72px ${generic}`;const fallbackWidth=context.measureText(sample).width;
+      context.font=`72px "${family}", ${generic}`;return context.measureText(sample).width!==fallbackWidth;
+    });
+  }
   function verifyFontAvailable(stack){
     // 7.4.0: a missing family used to fail silently (CJK kept PingFang while
     // the Apple profile fell back to Segoe UI). Tell the user instead.
     try{
       const family=primaryStackFamily(stack),generic=family.toLowerCase();
       if(!family||generic==="sans-serif"||generic==="serif"||generic==="monospace")return;
-      if(document.fonts?.check&&!document.fonts.check(`16px "${family.replace(/"/g,"")}"`))showToast(tr(`系统未安装「${family}」，已使用回退字体`,`“${family}” is not installed; using a fallback font`));
+      if(!fontFamilyAvailable(family.replace(/"/g,"")))showToast(tr(`系统未安装「${family}」，已使用回退字体`,`“${family}” is not installed; using a fallback font`));
     }catch(error){}
   }
   function syncFontPicker(){
@@ -532,7 +543,7 @@
       let available=true;
       try{
         const family=primaryStackFamily(button.dataset.fontValue);
-        if(family&&document.fonts?.check)available=document.fonts.check(`16px "${family.replace(/"/g,"")}"`);
+        if(family)available=fontFamilyAvailable(family.replace(/"/g,""));
       }catch(error){available=true;}
       button.dataset.available=available?"1":"0";
       if(available)button.removeAttribute("title");
