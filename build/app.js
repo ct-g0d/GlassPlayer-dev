@@ -8915,6 +8915,7 @@ window.GPModules.register = function register(name,factory){
     importQuiet=options.quiet===true;
     importAutoClose=options.autoClose===true;
     openImportProgress(audioFiles.length);
+    try{
 
     const renderStart=libraryRenderCommits;
     const startedAt=performance.now();
@@ -8993,6 +8994,10 @@ window.GPModules.register = function register(name,factory){
     // decoding continues in the background slot and refreshes Daily Mix when
     // done, so large imports no longer block the modal.
     queueSpectrumAnalysis(tracks,{foreground:false});
+    }catch(error){
+      if(importRunning)finishImportProgress(null,error);
+      throw error;
+    }
   }
 
   let metadataRescanRunning=false;
