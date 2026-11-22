@@ -154,11 +154,11 @@
   }
   setInterval(saveSession,2000);
   addEventListener("pagehide",saveSession);document.addEventListener("visibilitychange",()=>{if(document.hidden)saveSession();});
-  /* Electron: the remembered music folder loads at start-up, quietly in the background (no import dialog), and the session
-     resumes once it has. The browser build keeps 7.6.3's rule: it never imports by itself, so only the page and panel resume */
+  /* Electron: the remembered music folder loads at start-up with the live progress modal (closing automatically when done),
+     and the session resumes once it has. The browser build keeps 7.6.3's rule: it never imports by itself, so only the page and panel resume */
   const nativeFolder=fileAdapter.hasNativeMusicFolder();
-  const startupLibrary=nativeFolder?fileAdapter.restoreRememberedAudioFolder().then(files=>files.length?addFiles(files,{quiet:true,pickTrack:!readSession()?.track}):null):Promise.resolve();
-  startupLibrary.catch(error=>console.warn("[GP] Music folder load failed",error)).finally(restoreSession);
+  const startupLibrary=nativeFolder?fileAdapter.restoreRememberedAudioFolder().then(files=>files.length?addFiles(files,{quiet:true,pickTrack:!readSession()?.track,autoClose:true}):null):Promise.resolve();
+  startupLibrary.catch(error=>{console.warn("[GP] Music folder load failed",error);if(importRunning)finishImportProgress(null,error);}).finally(restoreSession);
   if(nativeFolder)globalThis.glassAPI.music.get().then(dir=>{const hint=$("#defaultFolderHint");if(hint)hint.textContent=dir
     ?tr(`打开 Glass Player 时自动载入：${dir}`,`Loads when Glass Player opens: ${dir}`)
     :tr("选择后，每次打开 Glass Player 都会自动载入，并回到上次的位置。","Once chosen, it loads every time Glass Player opens, right where you left off.");}).catch(()=>{});

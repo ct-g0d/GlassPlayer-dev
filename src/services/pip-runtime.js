@@ -102,8 +102,34 @@
      PiP path without duplicating Audio, Web Audio or Spectrum analysis. */
   let gpVideoPipCanvas=null,gpVideoPipContext=null,gpVideoPipVideo=null,gpVideoPipTrack=null;
   let gpVideoPipCover=null,gpVideoPipCoverSource="",gpVideoPipPalette=null,gpVideoPipTargetPlayback=false,gpVideoPipOpening=false,gpVideoPipFramePulse=false,gpVideoPipThemeObserver=null,gpVideoPipRefreshFrame=0,gpVideoPipWindow=null,gpVideoPipResizeHandler=null,gpVideoPipPulseTimer=0,gpVideoPipLastRender=0;
-  let gpVideoPipBackgroundCanvas=null,gpVideoPipBackgroundContext=null,gpVideoPipBackgroundKey="",gpVideoPipMotionFrame=0,gpVideoPipLastMotionFrame=0,gpVideoPipMarqueeKey="",gpVideoPipMarqueeStart=0;
+  let gpVideoPipBackgroundCanvas=null,gpVideoPipBackgroundContext=null,gpVideoPipBlurScratch=null,gpVideoPipBackgroundKey="",gpVideoPipMotionFrame=0,gpVideoPipLastMotionFrame=0,gpVideoPipMarqueeKey="",gpVideoPipMarqueeStart=0;
   const GP_VIDEO_PIP_DESIGN_WIDTH=1280,GP_VIDEO_PIP_DESIGN_HEIGHT=720,GP_VIDEO_PIP_WIDTH=1920,GP_VIDEO_PIP_HEIGHT=1080,GP_VIDEO_PIP_BACKGROUND_BLUR=58;
+  function drawTraditionalPiPBlurredCover(bgCtx,cover,width,height,bg,dark){
+    /* Match the main window's Blurred Cover: preserve the album cover's aspect ratio (cover fit)
+       and pre-blur on a 16:9 low-resolution scratch canvas before upscaling, avoiding horizontal
+       stretching and edge/banding artifacts. */
+    const sampleWidth=384,sampleHeight=216,overscan=42;
+    if(!gpVideoPipBlurScratch)gpVideoPipBlurScratch=document.createElement("canvas");
+    if(gpVideoPipBlurScratch.width!==sampleWidth)gpVideoPipBlurScratch.width=sampleWidth;
+    if(gpVideoPipBlurScratch.height!==sampleHeight)gpVideoPipBlurScratch.height=sampleHeight;
+    const sampleCtx=gpVideoPipBlurScratch.getContext("2d",{alpha:false});
+    sampleCtx.setTransform(1,0,0,1,0,0);sampleCtx.filter="none";sampleCtx.fillStyle=bg;sampleCtx.fillRect(0,0,sampleWidth,sampleHeight);
+    const targetWidth=sampleWidth+overscan*2,targetHeight=sampleHeight+overscan*2;
+    const imageRatio=cover.naturalWidth/Math.max(1,cover.naturalHeight),targetRatio=targetWidth/targetHeight;
+    let drawWidth,drawHeight;
+    if(imageRatio>targetRatio){drawHeight=targetHeight;drawWidth=drawHeight*imageRatio;}
+    else{drawWidth=targetWidth;drawHeight=drawWidth/imageRatio;}
+    sampleCtx.save();
+    sampleCtx.filter=`blur(28px) saturate(${dark?108:126}%) brightness(${dark?.78:1.03})`;
+    sampleCtx.drawImage(cover,(sampleWidth-drawWidth)/2,(sampleHeight-drawHeight)/2,drawWidth,drawHeight);
+    sampleCtx.restore();
+    bgCtx.save();
+    bgCtx.imageSmoothingEnabled=true;bgCtx.imageSmoothingQuality="high";
+    bgCtx.drawImage(gpVideoPipBlurScratch,0,0,width,height);
+    bgCtx.fillStyle=dark?"rgba(4,6,9,.32)":"rgba(238,240,244,.14)";
+    bgCtx.fillRect(0,0,width,height);
+    bgCtx.restore();
+  }
   function configureTraditionalPiPCanvas(){if(!gpVideoPipCanvas)return;if(gpVideoPipCanvas.width!==GP_VIDEO_PIP_WIDTH||gpVideoPipCanvas.height!==GP_VIDEO_PIP_HEIGHT){gpVideoPipCanvas.width=GP_VIDEO_PIP_WIDTH;gpVideoPipCanvas.height=GP_VIDEO_PIP_HEIGHT;gpVideoPipContext=gpVideoPipCanvas.getContext("2d",{alpha:false,desynchronized:true});}if(!gpVideoPipBackgroundCanvas){gpVideoPipBackgroundCanvas=document.createElement("canvas");gpVideoPipBackgroundCanvas.width=GP_VIDEO_PIP_WIDTH;gpVideoPipBackgroundCanvas.height=GP_VIDEO_PIP_HEIGHT;gpVideoPipBackgroundContext=gpVideoPipBackgroundCanvas.getContext("2d",{alpha:false,desynchronized:true});}}
   function scheduleTraditionalPiPRefresh(forceTheme=false){if(!gpVideoPipCanvas)return;cancelAnimationFrame(gpVideoPipRefreshFrame);gpVideoPipRefreshFrame=requestAnimationFrame(()=>{gpVideoPipRefreshFrame=0;syncTraditionalPiP(forceTheme);});}
   function pulseTraditionalPiPFrame(){
@@ -123,7 +149,7 @@
     const paletteSignature=(gpVideoPipPalette||[]).flat().join(","),backgroundKey=[bgMode,dark,bg,accentRgb,gpVideoPipCoverSource,gpVideoPipCover?.complete?1:0,paletteSignature].join("|");
     if(backgroundKey!==gpVideoPipBackgroundKey){
       gpVideoPipBackgroundKey=backgroundKey;bgCtx.setTransform(scale,0,0,scale,0,0);bgCtx.imageSmoothingEnabled=true;bgCtx.imageSmoothingQuality="high";bgCtx.clearRect(0,0,width,height);bgCtx.fillStyle=bg;bgCtx.fillRect(0,0,width,height);
-      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){bgCtx.save();bgCtx.filter=`blur(${GP_VIDEO_PIP_BACKGROUND_BLUR}px) saturate(${dark?1.25:1.38}) brightness(${dark ? 0.48 : 1.02})`;bgCtx.globalAlpha=dark ? 0.88 : 0.72;bgCtx.drawImage(gpVideoPipCover,-96,-96,width+192,height+192);bgCtx.restore();bgCtx.fillStyle=dark?"rgba(4,6,9,.46)":"rgba(255,255,255,.10)";bgCtx.fillRect(0,0,width,height);}
+      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){drawTraditionalPiPBlurredCover(bgCtx,gpVideoPipCover,width,height,bg,dark);}
       else{const fallback=currentAccentRgb(),palette=bgMode==="color"&&gpVideoPipPalette?.length?gpVideoPipPalette:[fallback,mixRgb(fallback,dark?[255,255,255]:[0,0,0],.2),mixRgb(fallback,dark?[0,0,0]:[255,255,255],.28)],points=bgMode==="color"?[[.08,.05,.78,.58],[.92,.18,.66,.5],[.48,1,.72,.46]]:[[.14,.12,.58,.34],[.86,.24,.5,.23],[.48,.94,.62,.2]];points.forEach((point,index)=>{const color=palette[index%palette.length],gradient=bgCtx.createRadialGradient(width*point[0],height*point[1],0,width*point[0],height*point[1],width*point[2]);gradient.addColorStop(0,`rgba(${color.join(",")},${dark?point[3]*.72:point[3]})`);gradient.addColorStop(1,"rgba(0,0,0,0)");bgCtx.fillStyle=gradient;bgCtx.fillRect(0,0,width,height);});bgCtx.fillStyle=dark?"rgba(3,5,8,.24)":"rgba(255,255,255,.08)";bgCtx.fillRect(0,0,width,height);}
     }
     ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(gpVideoPipBackgroundCanvas,0,0);ctx.setTransform(scale,0,0,scale,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
@@ -165,7 +191,7 @@
     if(document.pictureInPictureElement===gpVideoPipVideo){gpVideoPipTargetPlayback=!!isPlaying;if(isPlaying&&gpVideoPipVideo.paused)gpVideoPipVideo.play().catch(()=>{});else if(isPlaying)startTraditionalPiPMotion();else{stopTraditionalPiPMotion();if(!gpVideoPipVideo.paused&&!gpVideoPipFramePulse)gpVideoPipVideo.pause();else if(gpVideoPipVideo.paused&&shouldRender)pulseTraditionalPiPFrame();}}
   }
   function cleanupTraditionalPiP(){
-    gpVideoPipOpening=false;gpVideoPipTargetPlayback=false;gpVideoPipFramePulse=false;gpVideoPipLastRender=0;clearTimeout(gpVideoPipPulseTimer);gpVideoPipPulseTimer=0;cancelAnimationFrame(gpVideoPipRefreshFrame);gpVideoPipRefreshFrame=0;cancelAnimationFrame(gpVideoPipMotionFrame);gpVideoPipMotionFrame=0;gpVideoPipLastMotionFrame=0;gpVideoPipThemeObserver?.disconnect();gpVideoPipThemeObserver=null;if(gpVideoPipWindow&&gpVideoPipResizeHandler)gpVideoPipWindow.removeEventListener("resize",gpVideoPipResizeHandler);gpVideoPipWindow=null;gpVideoPipResizeHandler=null;try{gpVideoPipTrack?.stop();}catch(error){}if(gpVideoPipVideo){gpVideoPipVideo.srcObject=null;gpVideoPipVideo.remove();}gpVideoPipCanvas?.remove();gpVideoPipCanvas=null;gpVideoPipContext=null;gpVideoPipVideo=null;gpVideoPipTrack=null;gpVideoPipCover=null;gpVideoPipCoverSource="";gpVideoPipPalette=null;gpVideoPipBackgroundCanvas=null;gpVideoPipBackgroundContext=null;gpVideoPipBackgroundKey="";gpVideoPipMarqueeKey="";gpVideoPipMarqueeStart=0;$("#pipLaunchBtn").classList.remove("active");
+    gpVideoPipOpening=false;gpVideoPipTargetPlayback=false;gpVideoPipFramePulse=false;gpVideoPipLastRender=0;clearTimeout(gpVideoPipPulseTimer);gpVideoPipPulseTimer=0;cancelAnimationFrame(gpVideoPipRefreshFrame);gpVideoPipRefreshFrame=0;cancelAnimationFrame(gpVideoPipMotionFrame);gpVideoPipMotionFrame=0;gpVideoPipLastMotionFrame=0;gpVideoPipThemeObserver?.disconnect();gpVideoPipThemeObserver=null;if(gpVideoPipWindow&&gpVideoPipResizeHandler)gpVideoPipWindow.removeEventListener("resize",gpVideoPipResizeHandler);gpVideoPipWindow=null;gpVideoPipResizeHandler=null;try{gpVideoPipTrack?.stop();}catch(error){}if(gpVideoPipVideo){gpVideoPipVideo.srcObject=null;gpVideoPipVideo.remove();}gpVideoPipCanvas?.remove();gpVideoPipCanvas=null;gpVideoPipContext=null;gpVideoPipVideo=null;gpVideoPipTrack=null;gpVideoPipCover=null;gpVideoPipCoverSource="";gpVideoPipPalette=null;gpVideoPipBackgroundCanvas=null;gpVideoPipBackgroundContext=null;gpVideoPipBlurScratch=null;gpVideoPipBackgroundKey="";gpVideoPipMarqueeKey="";gpVideoPipMarqueeStart=0;$("#pipLaunchBtn").classList.remove("active");
   }
   async function toggleTraditionalPiP(){
     if(document.pictureInPictureElement){await document.exitPictureInPicture().catch(()=>{});return;}
