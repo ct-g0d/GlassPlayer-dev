@@ -8803,20 +8803,37 @@ window.GPModules.register = function register(name,factory){
   function releaseImportBackgroundWork(){
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
   }
-  /* Imports run in the background: no dialog, nothing closed or blocked. The library fills in when the import commits, and
-     a toast says how it went (the start-up load of the remembered music folder says nothing unless it fails). */
-  let importQuiet=false;
+  /* Manual imports show the progress modal and wait for Done; start-up auto-load shows the same live x/xx progress modal
+     and closes it automatically once loading completes (staying open only on error). Updating the existing text node's data
+     avoids childList mutations so app-splash.cjs can fade out and reveal the live progress modal immediately. */
+  let importQuiet=false,importAutoClose=false;
+  function setImportModalText(element,text){
+    if(!element)return;
+    if(element.childNodes.length===1&&element.firstChild.nodeType===3)element.firstChild.data=text;
+    else element.textContent=text;
+  }
   function openImportProgress(total){
     clearTimeout(importCompletionTimer);
+    closeAllMotionPopovers();
     importRunning=true;
+    if(typeof dataTransferRunning!=="undefined"&&dataTransferRunning)return;
+    rescanModalMode="importRunning";
+    $("#rescanModal").classList.add("is-scanning");
+    setImportModalText($("#rescanModalTitle"),tr("正在导入音乐","Importing Music"));
+    setImportModalText($("#rescanModalMessage"),tr(`正在准备识别 ${total} 首歌曲…`,`Preparing to identify ${total} songs…`));
+    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="0%";
+    $("#rescanCancelBtn").style.display="none";
+    $("#rescanConfirmBtn").disabled=true;setImportModalText($("#rescanConfirmBtn"),tr("导入中…","Importing…"));
+    $("#rescanModal").classList.add("show");
+    startImportSpinner();
   }
   let importProgressFrame=0,importProgressState=null;
   function paintImportProgress(){
-    importProgressFrame=0;const state=importProgressState;if(!state||rescanModalMode!=="importRunning")return;   // no import dialog any more: nothing to paint
+    importProgressFrame=0;const state=importProgressState;if(!state||rescanModalMode!=="importRunning")return;
     $("#rescanProgressFill").style.width=`${state.safe}%`;
-    $("#rescanModalMessage").textContent=state.phase==="identity"
+    setImportModalText($("#rescanModalMessage"),state.phase==="identity"
       ?tr(`正在识别歌曲身份 ${state.completed} / ${state.total}…`,`Identifying songs ${state.completed} / ${state.total}…`)
-      :tr(`正在恢复或读取歌曲信息 ${state.completed} / ${state.total}…`,`Restoring or reading song data ${state.completed} / ${state.total}…`);
+      :tr(`正在恢复或读取歌曲信息 ${state.completed} / ${state.total}…`,`Restoring or reading song data ${state.completed} / ${state.total}…`));
   }
   function updateImportProgress(percent,completed,total,phase){
     importProgressState={safe:Math.max(0,Math.min(100,percent)),completed,total,phase};
@@ -8824,9 +8841,9 @@ window.GPModules.register = function register(name,factory){
   }
   const yieldImportFrame=()=>yieldToInputPriority();
   function updateImportCommitProgress(percent,phase){
-    if(rescanModalMode!=="importRunning")return;   // no import dialog any more
+    if(rescanModalMode!=="importRunning")return;
     $("#rescanProgressFill").style.width=`${percent}%`;
-    $("#rescanModalMessage").textContent=phase==="render"
+    setImportModalText($("#rescanModalMessage"),phase==="render"
       ?tr("正在更新歌单与界面…","Updating library and interface…")
       :phase==="analysis"
         ?tr("正在完成音频特征分析…","Completing audio feature analysis…")
@@ -8836,23 +8853,41 @@ window.GPModules.register = function register(name,factory){
             ?tr("正在生成并保存每日推荐…","Generating and saving Daily Mix…")
         :phase==="organize"
           ?tr("正在整理历史、推荐与背景…","Finalizing history, recommendations and background…")
-          :tr("正在安全保存导入结果…","Saving imported songs…");
+          :tr("正在安全保存导入结果…","Saving imported songs…"));
   }
   function finishImportProgress(stats,error=null){
     if(importProgressFrame)cancelAnimationFrame(importProgressFrame);importProgressFrame=0;importProgressState=null;
     importRunning=false;
-    const quiet=importQuiet;importQuiet=false;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
-    if(error){showToast(tr("导入未完成：已经成功加入的歌曲会保留","Import incomplete: songs already added remain available"));return;}
-    const added=stats?.cacheMisses||0,restored=stats?.cacheHits||0;
-    if(quiet||!(added+restored))return;
-    showToast(tr(`已加入 ${added+restored} 首歌曲${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}`,`Added ${added+restored} songs${stats?.duplicates?`, skipped ${stats.duplicates} duplicates`:""}`));
+    const autoClose=importAutoClose;importQuiet=false;importAutoClose=false;
+    stopImportSpinner();
+    const modalActive=rescanModalMode==="importRunning";
+    if(modalActive&&autoClose&&!error){
+      $("#rescanModal").classList.remove("show","is-scanning");
+      rescanModalMode="closed";
+      requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
+      return;
+    }
+    if(modalActive||error){
+      rescanModalMode=error?"importError":"importDone";
+      $("#rescanModal").classList.remove("is-scanning");
+      $("#rescanCancelBtn").style.display="none";
+      $("#rescanProgress").classList.add("show");
+      $("#rescanProgressFill").style.width="100%";
+      setImportModalText($("#rescanModalTitle"),error?tr("导入未完成","Import Incomplete"):tr("导入完成","Import Complete"));
+      setImportModalText($("#rescanModalMessage"),error
+        ?tr("导入过程中出现错误；已经成功加入的歌曲会保留。","An error interrupted the import. Songs already added remain available.")
+        :tr(`已处理 ${stats?.files||0} 首歌曲，缓存命中 ${stats?.cacheHits||0} 首，新增 ${stats?.cacheMisses||0} 首${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}。`,`Processed ${stats?.files||0} songs, restored ${stats?.cacheHits||0} from cache, added ${stats?.cacheMisses||0}${stats?.duplicates?`, and skipped ${stats.duplicates} duplicates`:""}.`));
+      $("#rescanConfirmBtn").disabled=false;setImportModalText($("#rescanConfirmBtn"),tr("完成","Done"));
+      $("#rescanModal").classList.add("show");
+    }else{
+      requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
+    }
   }
   async function settleImportProgress(stats,error=null){
     if(rescanModalMode==="importRunning")$("#rescanProgressFill").style.width="100%";
-    if(rescanModalMode==="importRunning")$("#rescanModalMessage").textContent=error
+    if(rescanModalMode==="importRunning")setImportModalText($("#rescanModalMessage"),error
       ?tr("正在保留已完成的导入结果…","Preserving completed import results…")
-      :tr("所有初始化已经完成…","All initialization is complete…");
+      :tr("所有初始化已经完成…","All initialization is complete…"));
     await yieldToInputPriority();await new Promise(resolve=>{
       // 7.3.2: close on paint commit instead of a fixed 240 ms wait.
       if(!document.hidden&&typeof requestAnimationFrame==="function")requestAnimationFrame(()=>requestAnimationFrame(resolve));
@@ -8872,13 +8907,15 @@ window.GPModules.register = function register(name,factory){
     if(overrideQueue&&!overrideQueue.length)overrideQueue=null;
     if(playMode==="shuffle"&&currentIndex>=0){shuffleTimeline=[currentIndex];shuffleTimelineCursor=0;}
   }
-  async function addFiles(fileList,options={}){   // options.quiet: the start-up load of the music folder, no toast; options.pickTrack:false leaves the choice to the resumed session
+  async function addFiles(fileList,options={}){   // options.quiet: skip duplicate toast; options.autoClose: close the progress modal automatically on completion; options.pickTrack:false leaves the choice to the resumed session
     const all = Array.from(fileList);
     const audioFiles = all.filter(f => f.type.startsWith("audio/") || /\.(mp3|wav|m4a|flac|ogg|aac|wma)$/i.test(f.name));
     if(audioFiles.length === 0) return;
     if(importRunning||metadataRescanRunning)return;
     importQuiet=options.quiet===true;
+    importAutoClose=options.autoClose===true;
     openImportProgress(audioFiles.length);
+    try{
 
     const renderStart=libraryRenderCommits;
     const startedAt=performance.now();
@@ -8957,6 +8994,10 @@ window.GPModules.register = function register(name,factory){
     // decoding continues in the background slot and refreshes Daily Mix when
     // done, so large imports no longer block the modal.
     queueSpectrumAnalysis(tracks,{foreground:false});
+    }catch(error){
+      if(importRunning)finishImportProgress(null,error);
+      throw error;
+    }
   }
 
   let metadataRescanRunning=false;
@@ -10414,8 +10455,34 @@ window.GPModules.register = function register(name,factory){
      PiP path without duplicating Audio, Web Audio or Spectrum analysis. */
   let gpVideoPipCanvas=null,gpVideoPipContext=null,gpVideoPipVideo=null,gpVideoPipTrack=null;
   let gpVideoPipCover=null,gpVideoPipCoverSource="",gpVideoPipPalette=null,gpVideoPipTargetPlayback=false,gpVideoPipOpening=false,gpVideoPipFramePulse=false,gpVideoPipThemeObserver=null,gpVideoPipRefreshFrame=0,gpVideoPipWindow=null,gpVideoPipResizeHandler=null,gpVideoPipPulseTimer=0,gpVideoPipLastRender=0;
-  let gpVideoPipBackgroundCanvas=null,gpVideoPipBackgroundContext=null,gpVideoPipBackgroundKey="",gpVideoPipMotionFrame=0,gpVideoPipLastMotionFrame=0,gpVideoPipMarqueeKey="",gpVideoPipMarqueeStart=0;
+  let gpVideoPipBackgroundCanvas=null,gpVideoPipBackgroundContext=null,gpVideoPipBlurScratch=null,gpVideoPipBackgroundKey="",gpVideoPipMotionFrame=0,gpVideoPipLastMotionFrame=0,gpVideoPipMarqueeKey="",gpVideoPipMarqueeStart=0;
   const GP_VIDEO_PIP_DESIGN_WIDTH=1280,GP_VIDEO_PIP_DESIGN_HEIGHT=720,GP_VIDEO_PIP_WIDTH=1920,GP_VIDEO_PIP_HEIGHT=1080,GP_VIDEO_PIP_BACKGROUND_BLUR=58;
+  function drawTraditionalPiPBlurredCover(bgCtx,cover,width,height,bg,dark){
+    /* Match the main window's Blurred Cover: preserve the album cover's aspect ratio (cover fit)
+       and pre-blur on a 16:9 low-resolution scratch canvas before upscaling, avoiding horizontal
+       stretching and edge/banding artifacts. */
+    const sampleWidth=384,sampleHeight=216,overscan=42;
+    if(!gpVideoPipBlurScratch)gpVideoPipBlurScratch=document.createElement("canvas");
+    if(gpVideoPipBlurScratch.width!==sampleWidth)gpVideoPipBlurScratch.width=sampleWidth;
+    if(gpVideoPipBlurScratch.height!==sampleHeight)gpVideoPipBlurScratch.height=sampleHeight;
+    const sampleCtx=gpVideoPipBlurScratch.getContext("2d",{alpha:false});
+    sampleCtx.setTransform(1,0,0,1,0,0);sampleCtx.filter="none";sampleCtx.fillStyle=bg;sampleCtx.fillRect(0,0,sampleWidth,sampleHeight);
+    const targetWidth=sampleWidth+overscan*2,targetHeight=sampleHeight+overscan*2;
+    const imageRatio=cover.naturalWidth/Math.max(1,cover.naturalHeight),targetRatio=targetWidth/targetHeight;
+    let drawWidth,drawHeight;
+    if(imageRatio>targetRatio){drawHeight=targetHeight;drawWidth=drawHeight*imageRatio;}
+    else{drawWidth=targetWidth;drawHeight=drawWidth/imageRatio;}
+    sampleCtx.save();
+    sampleCtx.filter=`blur(28px) saturate(${dark?108:126}%) brightness(${dark?.78:1.03})`;
+    sampleCtx.drawImage(cover,(sampleWidth-drawWidth)/2,(sampleHeight-drawHeight)/2,drawWidth,drawHeight);
+    sampleCtx.restore();
+    bgCtx.save();
+    bgCtx.imageSmoothingEnabled=true;bgCtx.imageSmoothingQuality="high";
+    bgCtx.drawImage(gpVideoPipBlurScratch,0,0,width,height);
+    bgCtx.fillStyle=dark?"rgba(4,6,9,.32)":"rgba(238,240,244,.14)";
+    bgCtx.fillRect(0,0,width,height);
+    bgCtx.restore();
+  }
   function configureTraditionalPiPCanvas(){if(!gpVideoPipCanvas)return;if(gpVideoPipCanvas.width!==GP_VIDEO_PIP_WIDTH||gpVideoPipCanvas.height!==GP_VIDEO_PIP_HEIGHT){gpVideoPipCanvas.width=GP_VIDEO_PIP_WIDTH;gpVideoPipCanvas.height=GP_VIDEO_PIP_HEIGHT;gpVideoPipContext=gpVideoPipCanvas.getContext("2d",{alpha:false,desynchronized:true});}if(!gpVideoPipBackgroundCanvas){gpVideoPipBackgroundCanvas=document.createElement("canvas");gpVideoPipBackgroundCanvas.width=GP_VIDEO_PIP_WIDTH;gpVideoPipBackgroundCanvas.height=GP_VIDEO_PIP_HEIGHT;gpVideoPipBackgroundContext=gpVideoPipBackgroundCanvas.getContext("2d",{alpha:false,desynchronized:true});}}
   function scheduleTraditionalPiPRefresh(forceTheme=false){if(!gpVideoPipCanvas)return;cancelAnimationFrame(gpVideoPipRefreshFrame);gpVideoPipRefreshFrame=requestAnimationFrame(()=>{gpVideoPipRefreshFrame=0;syncTraditionalPiP(forceTheme);});}
   function pulseTraditionalPiPFrame(){
@@ -10435,7 +10502,7 @@ window.GPModules.register = function register(name,factory){
     const paletteSignature=(gpVideoPipPalette||[]).flat().join(","),backgroundKey=[bgMode,dark,bg,accentRgb,gpVideoPipCoverSource,gpVideoPipCover?.complete?1:0,paletteSignature].join("|");
     if(backgroundKey!==gpVideoPipBackgroundKey){
       gpVideoPipBackgroundKey=backgroundKey;bgCtx.setTransform(scale,0,0,scale,0,0);bgCtx.imageSmoothingEnabled=true;bgCtx.imageSmoothingQuality="high";bgCtx.clearRect(0,0,width,height);bgCtx.fillStyle=bg;bgCtx.fillRect(0,0,width,height);
-      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){bgCtx.save();bgCtx.filter=`blur(${GP_VIDEO_PIP_BACKGROUND_BLUR}px) saturate(${dark?1.25:1.38}) brightness(${dark ? 0.48 : 1.02})`;bgCtx.globalAlpha=dark ? 0.88 : 0.72;bgCtx.drawImage(gpVideoPipCover,-96,-96,width+192,height+192);bgCtx.restore();bgCtx.fillStyle=dark?"rgba(4,6,9,.46)":"rgba(255,255,255,.10)";bgCtx.fillRect(0,0,width,height);}
+      if(bgMode==="blur"&&gpVideoPipCover?.complete&&gpVideoPipCover.naturalWidth){drawTraditionalPiPBlurredCover(bgCtx,gpVideoPipCover,width,height,bg,dark);}
       else{const fallback=currentAccentRgb(),palette=bgMode==="color"&&gpVideoPipPalette?.length?gpVideoPipPalette:[fallback,mixRgb(fallback,dark?[255,255,255]:[0,0,0],.2),mixRgb(fallback,dark?[0,0,0]:[255,255,255],.28)],points=bgMode==="color"?[[.08,.05,.78,.58],[.92,.18,.66,.5],[.48,1,.72,.46]]:[[.14,.12,.58,.34],[.86,.24,.5,.23],[.48,.94,.62,.2]];points.forEach((point,index)=>{const color=palette[index%palette.length],gradient=bgCtx.createRadialGradient(width*point[0],height*point[1],0,width*point[0],height*point[1],width*point[2]);gradient.addColorStop(0,`rgba(${color.join(",")},${dark?point[3]*.72:point[3]})`);gradient.addColorStop(1,"rgba(0,0,0,0)");bgCtx.fillStyle=gradient;bgCtx.fillRect(0,0,width,height);});bgCtx.fillStyle=dark?"rgba(3,5,8,.24)":"rgba(255,255,255,.08)";bgCtx.fillRect(0,0,width,height);}
     }
     ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(gpVideoPipBackgroundCanvas,0,0);ctx.setTransform(scale,0,0,scale,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
@@ -10477,7 +10544,7 @@ window.GPModules.register = function register(name,factory){
     if(document.pictureInPictureElement===gpVideoPipVideo){gpVideoPipTargetPlayback=!!isPlaying;if(isPlaying&&gpVideoPipVideo.paused)gpVideoPipVideo.play().catch(()=>{});else if(isPlaying)startTraditionalPiPMotion();else{stopTraditionalPiPMotion();if(!gpVideoPipVideo.paused&&!gpVideoPipFramePulse)gpVideoPipVideo.pause();else if(gpVideoPipVideo.paused&&shouldRender)pulseTraditionalPiPFrame();}}
   }
   function cleanupTraditionalPiP(){
-    gpVideoPipOpening=false;gpVideoPipTargetPlayback=false;gpVideoPipFramePulse=false;gpVideoPipLastRender=0;clearTimeout(gpVideoPipPulseTimer);gpVideoPipPulseTimer=0;cancelAnimationFrame(gpVideoPipRefreshFrame);gpVideoPipRefreshFrame=0;cancelAnimationFrame(gpVideoPipMotionFrame);gpVideoPipMotionFrame=0;gpVideoPipLastMotionFrame=0;gpVideoPipThemeObserver?.disconnect();gpVideoPipThemeObserver=null;if(gpVideoPipWindow&&gpVideoPipResizeHandler)gpVideoPipWindow.removeEventListener("resize",gpVideoPipResizeHandler);gpVideoPipWindow=null;gpVideoPipResizeHandler=null;try{gpVideoPipTrack?.stop();}catch(error){}if(gpVideoPipVideo){gpVideoPipVideo.srcObject=null;gpVideoPipVideo.remove();}gpVideoPipCanvas?.remove();gpVideoPipCanvas=null;gpVideoPipContext=null;gpVideoPipVideo=null;gpVideoPipTrack=null;gpVideoPipCover=null;gpVideoPipCoverSource="";gpVideoPipPalette=null;gpVideoPipBackgroundCanvas=null;gpVideoPipBackgroundContext=null;gpVideoPipBackgroundKey="";gpVideoPipMarqueeKey="";gpVideoPipMarqueeStart=0;$("#pipLaunchBtn").classList.remove("active");
+    gpVideoPipOpening=false;gpVideoPipTargetPlayback=false;gpVideoPipFramePulse=false;gpVideoPipLastRender=0;clearTimeout(gpVideoPipPulseTimer);gpVideoPipPulseTimer=0;cancelAnimationFrame(gpVideoPipRefreshFrame);gpVideoPipRefreshFrame=0;cancelAnimationFrame(gpVideoPipMotionFrame);gpVideoPipMotionFrame=0;gpVideoPipLastMotionFrame=0;gpVideoPipThemeObserver?.disconnect();gpVideoPipThemeObserver=null;if(gpVideoPipWindow&&gpVideoPipResizeHandler)gpVideoPipWindow.removeEventListener("resize",gpVideoPipResizeHandler);gpVideoPipWindow=null;gpVideoPipResizeHandler=null;try{gpVideoPipTrack?.stop();}catch(error){}if(gpVideoPipVideo){gpVideoPipVideo.srcObject=null;gpVideoPipVideo.remove();}gpVideoPipCanvas?.remove();gpVideoPipCanvas=null;gpVideoPipContext=null;gpVideoPipVideo=null;gpVideoPipTrack=null;gpVideoPipCover=null;gpVideoPipCoverSource="";gpVideoPipPalette=null;gpVideoPipBackgroundCanvas=null;gpVideoPipBackgroundContext=null;gpVideoPipBlurScratch=null;gpVideoPipBackgroundKey="";gpVideoPipMarqueeKey="";gpVideoPipMarqueeStart=0;$("#pipLaunchBtn").classList.remove("active");
   }
   async function toggleTraditionalPiP(){
     if(document.pictureInPictureElement){await document.exitPictureInPicture().catch(()=>{});return;}
@@ -11613,11 +11680,11 @@ window.GPModules.register = function register(name,factory){
   }
   setInterval(saveSession,2000);
   addEventListener("pagehide",saveSession);document.addEventListener("visibilitychange",()=>{if(document.hidden)saveSession();});
-  /* Electron: the remembered music folder loads at start-up, quietly in the background (no import dialog), and the session
-     resumes once it has. The browser build keeps 7.6.3's rule: it never imports by itself, so only the page and panel resume */
+  /* Electron: the remembered music folder loads at start-up with the live progress modal (closing automatically when done),
+     and the session resumes once it has. The browser build keeps 7.6.3's rule: it never imports by itself, so only the page and panel resume */
   const nativeFolder=fileAdapter.hasNativeMusicFolder();
-  const startupLibrary=nativeFolder?fileAdapter.restoreRememberedAudioFolder().then(files=>files.length?addFiles(files,{quiet:true,pickTrack:!readSession()?.track}):null):Promise.resolve();
-  startupLibrary.catch(error=>console.warn("[GP] Music folder load failed",error)).finally(restoreSession);
+  const startupLibrary=nativeFolder?fileAdapter.restoreRememberedAudioFolder().then(files=>files.length?addFiles(files,{quiet:true,pickTrack:!readSession()?.track,autoClose:true}):null):Promise.resolve();
+  startupLibrary.catch(error=>{console.warn("[GP] Music folder load failed",error);if(importRunning)finishImportProgress(null,error);}).finally(restoreSession);
   if(nativeFolder)globalThis.glassAPI.music.get().then(dir=>{const hint=$("#defaultFolderHint");if(hint)hint.textContent=dir
     ?tr(`打开 Glass Player 时自动载入：${dir}`,`Loads when Glass Player opens: ${dir}`)
     :tr("选择后，每次打开 Glass Player 都会自动载入，并回到上次的位置。","Once chosen, it loads every time Glass Player opens, right where you left off.");}).catch(()=>{});

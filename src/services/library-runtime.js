@@ -756,20 +756,37 @@
   function releaseImportBackgroundWork(){
     pendingPostImportTracks.length=0;pendingImportHistorySync=false;
   }
-  /* Imports run in the background: no dialog, nothing closed or blocked. The library fills in when the import commits, and
-     a toast says how it went (the start-up load of the remembered music folder says nothing unless it fails). */
-  let importQuiet=false;
+  /* Manual imports show the progress modal and wait for Done; start-up auto-load shows the same live x/xx progress modal
+     and closes it automatically once loading completes (staying open only on error). Updating the existing text node's data
+     avoids childList mutations so app-splash.cjs can fade out and reveal the live progress modal immediately. */
+  let importQuiet=false,importAutoClose=false;
+  function setImportModalText(element,text){
+    if(!element)return;
+    if(element.childNodes.length===1&&element.firstChild.nodeType===3)element.firstChild.data=text;
+    else element.textContent=text;
+  }
   function openImportProgress(total){
     clearTimeout(importCompletionTimer);
+    closeAllMotionPopovers();
     importRunning=true;
+    if(typeof dataTransferRunning!=="undefined"&&dataTransferRunning)return;
+    rescanModalMode="importRunning";
+    $("#rescanModal").classList.add("is-scanning");
+    setImportModalText($("#rescanModalTitle"),tr("正在导入音乐","Importing Music"));
+    setImportModalText($("#rescanModalMessage"),tr(`正在准备识别 ${total} 首歌曲…`,`Preparing to identify ${total} songs…`));
+    $("#rescanProgress").classList.add("show");$("#rescanProgressFill").style.width="0%";
+    $("#rescanCancelBtn").style.display="none";
+    $("#rescanConfirmBtn").disabled=true;setImportModalText($("#rescanConfirmBtn"),tr("导入中…","Importing…"));
+    $("#rescanModal").classList.add("show");
+    startImportSpinner();
   }
   let importProgressFrame=0,importProgressState=null;
   function paintImportProgress(){
-    importProgressFrame=0;const state=importProgressState;if(!state||rescanModalMode!=="importRunning")return;   // no import dialog any more: nothing to paint
+    importProgressFrame=0;const state=importProgressState;if(!state||rescanModalMode!=="importRunning")return;
     $("#rescanProgressFill").style.width=`${state.safe}%`;
-    $("#rescanModalMessage").textContent=state.phase==="identity"
+    setImportModalText($("#rescanModalMessage"),state.phase==="identity"
       ?tr(`正在识别歌曲身份 ${state.completed} / ${state.total}…`,`Identifying songs ${state.completed} / ${state.total}…`)
-      :tr(`正在恢复或读取歌曲信息 ${state.completed} / ${state.total}…`,`Restoring or reading song data ${state.completed} / ${state.total}…`);
+      :tr(`正在恢复或读取歌曲信息 ${state.completed} / ${state.total}…`,`Restoring or reading song data ${state.completed} / ${state.total}…`));
   }
   function updateImportProgress(percent,completed,total,phase){
     importProgressState={safe:Math.max(0,Math.min(100,percent)),completed,total,phase};
@@ -777,9 +794,9 @@
   }
   const yieldImportFrame=()=>yieldToInputPriority();
   function updateImportCommitProgress(percent,phase){
-    if(rescanModalMode!=="importRunning")return;   // no import dialog any more
+    if(rescanModalMode!=="importRunning")return;
     $("#rescanProgressFill").style.width=`${percent}%`;
-    $("#rescanModalMessage").textContent=phase==="render"
+    setImportModalText($("#rescanModalMessage"),phase==="render"
       ?tr("正在更新歌单与界面…","Updating library and interface…")
       :phase==="analysis"
         ?tr("正在完成音频特征分析…","Completing audio feature analysis…")
@@ -789,23 +806,41 @@
             ?tr("正在生成并保存每日推荐…","Generating and saving Daily Mix…")
         :phase==="organize"
           ?tr("正在整理历史、推荐与背景…","Finalizing history, recommendations and background…")
-          :tr("正在安全保存导入结果…","Saving imported songs…");
+          :tr("正在安全保存导入结果…","Saving imported songs…"));
   }
   function finishImportProgress(stats,error=null){
     if(importProgressFrame)cancelAnimationFrame(importProgressFrame);importProgressFrame=0;importProgressState=null;
     importRunning=false;
-    const quiet=importQuiet;importQuiet=false;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
-    if(error){showToast(tr("导入未完成：已经成功加入的歌曲会保留","Import incomplete: songs already added remain available"));return;}
-    const added=stats?.cacheMisses||0,restored=stats?.cacheHits||0;
-    if(quiet||!(added+restored))return;
-    showToast(tr(`已加入 ${added+restored} 首歌曲${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}`,`Added ${added+restored} songs${stats?.duplicates?`, skipped ${stats.duplicates} duplicates`:""}`));
+    const autoClose=importAutoClose;importQuiet=false;importAutoClose=false;
+    stopImportSpinner();
+    const modalActive=rescanModalMode==="importRunning";
+    if(modalActive&&autoClose&&!error){
+      $("#rescanModal").classList.remove("show","is-scanning");
+      rescanModalMode="closed";
+      requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
+      return;
+    }
+    if(modalActive||error){
+      rescanModalMode=error?"importError":"importDone";
+      $("#rescanModal").classList.remove("is-scanning");
+      $("#rescanCancelBtn").style.display="none";
+      $("#rescanProgress").classList.add("show");
+      $("#rescanProgressFill").style.width="100%";
+      setImportModalText($("#rescanModalTitle"),error?tr("导入未完成","Import Incomplete"):tr("导入完成","Import Complete"));
+      setImportModalText($("#rescanModalMessage"),error
+        ?tr("导入过程中出现错误；已经成功加入的歌曲会保留。","An error interrupted the import. Songs already added remain available.")
+        :tr(`已处理 ${stats?.files||0} 首歌曲，缓存命中 ${stats?.cacheHits||0} 首，新增 ${stats?.cacheMisses||0} 首${stats?.duplicates?`，跳过重复 ${stats.duplicates} 首`:""}。`,`Processed ${stats?.files||0} songs, restored ${stats?.cacheHits||0} from cache, added ${stats?.cacheMisses||0}${stats?.duplicates?`, and skipped ${stats.duplicates} duplicates`:""}.`));
+      $("#rescanConfirmBtn").disabled=false;setImportModalText($("#rescanConfirmBtn"),tr("完成","Done"));
+      $("#rescanModal").classList.add("show");
+    }else{
+      requestAnimationFrame(()=>requestAnimationFrame(()=>positionCurrentQueueRow(true)));releaseImportBackgroundWork();
+    }
   }
   async function settleImportProgress(stats,error=null){
     if(rescanModalMode==="importRunning")$("#rescanProgressFill").style.width="100%";
-    if(rescanModalMode==="importRunning")$("#rescanModalMessage").textContent=error
+    if(rescanModalMode==="importRunning")setImportModalText($("#rescanModalMessage"),error
       ?tr("正在保留已完成的导入结果…","Preserving completed import results…")
-      :tr("所有初始化已经完成…","All initialization is complete…");
+      :tr("所有初始化已经完成…","All initialization is complete…"));
     await yieldToInputPriority();await new Promise(resolve=>{
       // 7.3.2: close on paint commit instead of a fixed 240 ms wait.
       if(!document.hidden&&typeof requestAnimationFrame==="function")requestAnimationFrame(()=>requestAnimationFrame(resolve));
@@ -825,13 +860,15 @@
     if(overrideQueue&&!overrideQueue.length)overrideQueue=null;
     if(playMode==="shuffle"&&currentIndex>=0){shuffleTimeline=[currentIndex];shuffleTimelineCursor=0;}
   }
-  async function addFiles(fileList,options={}){   // options.quiet: the start-up load of the music folder, no toast; options.pickTrack:false leaves the choice to the resumed session
+  async function addFiles(fileList,options={}){   // options.quiet: skip duplicate toast; options.autoClose: close the progress modal automatically on completion; options.pickTrack:false leaves the choice to the resumed session
     const all = Array.from(fileList);
     const audioFiles = all.filter(f => f.type.startsWith("audio/") || /\.(mp3|wav|m4a|flac|ogg|aac|wma)$/i.test(f.name));
     if(audioFiles.length === 0) return;
     if(importRunning||metadataRescanRunning)return;
     importQuiet=options.quiet===true;
+    importAutoClose=options.autoClose===true;
     openImportProgress(audioFiles.length);
+    try{
 
     const renderStart=libraryRenderCommits;
     const startedAt=performance.now();
@@ -910,6 +947,10 @@
     // decoding continues in the background slot and refreshes Daily Mix when
     // done, so large imports no longer block the modal.
     queueSpectrumAnalysis(tracks,{foreground:false});
+    }catch(error){
+      if(importRunning)finishImportProgress(null,error);
+      throw error;
+    }
   }
 
   let metadataRescanRunning=false;
